@@ -15,7 +15,7 @@ Install using the following command inside Julia:
 ]add EvoDynamics
 ```
 
-It is compatible with Julia 1.2+.
+It is compatible with Julia 1.3+.
 
 
 ## Contributions
