@@ -1,0 +1,4 @@
+name = "EvoDynamics"
+uuid = "c8768967-421d-4a02-8523-37736f3dbe06"
+authors = ["Ali R. Vahdati <arv.kavir@gmail.com>"]
+version = "0.1.0"
