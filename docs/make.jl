@@ -30,7 +30,7 @@ pages = [
     ],
 )
 
-# if get(ENV, "CI", nothing) == "true"
+if get(ENV, "CI", nothing) == "true"
     deploydocs(repo = "github.com/kavir1698/EvoDynamics.git",
                target = "build")
-# end
+end
