@@ -2,7 +2,7 @@
 
 <!-- [![](https://img.shields.io/badge/docs-stable-blue.svg)](https://kavir1698.github.io/EvoDynamics.jl/stable) -->
 [![](https://img.shields.io/badge/docs-latest-blue.svg)](https://kavir1698.github.io/EvoDynamics.jl/dev)
-[![Build Status](https://travis-ci.org/kavir1698/EvoDynamics.svg?branch=master)](https://travis-ci.org/kavir1698/EvoDynamics)
+[![Build Status](https://travis-ci.org/kavir1698/EvoDynamics.jl.svg?branch=master)](https://travis-ci.org/kavir1698/EvoDynamics.jl)
 
 
 Evolutionary dynamics on multi-trait networks.
