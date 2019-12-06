@@ -31,6 +31,6 @@ pages = [
 )
 
 if get(ENV, "CI", nothing) == "true"
-    deploydocs(repo = "github.com/kavir1698/EvoDynamics.git",
+    deploydocs(repo = "github.com/kavir1698/EvoDynamics.jl.git",
                target = "build")
 end
