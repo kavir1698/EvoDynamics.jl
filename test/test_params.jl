@@ -1,10 +1,3 @@
-# Tutorial
-
-## EvoDynamics.jl's basic usage
-
-First, define your model parameters. Here is a set of random parameters:
-
-```@example random
 using Random
 import LinearAlgebra: Symmetric
 
@@ -26,16 +19,3 @@ parameters = Dict(
   :E => (0.8, 0.8), # a tuple  of the variance of a normal distribution ε representing environmental noise for each species.
   :generations => 100 # number of generations to run the simulation
 )
-```
-
-We can the use the `runmodel` function to create a model from these parameters and run the simulation.
-
-```@docs
-EvoDynamics.runmodel
-```
-
-```@example random
-using EvoDynamics
-data = runmodel(parameters)
-data[1:5, :]
-```

@@ -2,6 +2,7 @@ using Pkg
 Pkg.activate(@__DIR__)
 
 using Documenter, Agents, Distributions, Random, StatsBase
+using EvoDynamics
 using Literate
 
 # %% Literate convertion
@@ -12,7 +13,7 @@ for file in ("example1.jl", "example2.jl")
 end
 
 # %%
-makedocs(
+makedocs(modules = [EvoDynamics,],
 sitename= "EvoDynamics.jl",
 authors = "Ali R. Vahdati and Carlos Melian.",
 doctest = false,
@@ -20,7 +21,7 @@ format = Documenter.HTML(
     prettyurls = get(ENV, "CI", nothing) == "true",
     ),
 pages = [
-    "Introduction" => "index.md",
+	"Introduction" => "index.md",
 	"Tutorial" => "tutorial.md",
 	"API" => "api.md",
 	"Examples" => [

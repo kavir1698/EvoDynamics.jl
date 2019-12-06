@@ -51,7 +51,7 @@ function model_initiation(;L, P, B, γ, m, T, Ω, M, MB, N, Y, E, generations, s
       # W = exp(γ[sind] * transpose(takeabs)* Ω[sind] *takeabs)
       W = exp(properties[:γ][sind] * transpose(takeabs)*inv(properties[:Ω][sind])*takeabs)
       W = minimum([1e5, W])
-      individual = Ind(indcounter, sind, properties[:Y][sind], z, W, properties[:B][sind])
+      individual = Ind(indcounter, sind, deepcopy(properties[:Y][sind]), z, W, deepcopy(properties[:B][sind]))
       model.agents[indcounter] = individual
     end
   end
@@ -91,21 +91,27 @@ function selection!(model::ABM)
 
 end
 
+"Mutate all agents."
 function mutation!(model::ABM, dists)
   for agent in values(model.agents)
-    # u
-    agent.y .+= rand(dists[agent.species], model.properties[:L][agent.species]);
-    # uB
-    nbelements = length(agent.B)
-    randnumbers = rand(nbelements)
-    for nn in 1:nbelements
-      if randnumbers[nn] <= model.properties[:MB][agent.species]
-        agent.B[nn] = !agent.B[nn]
-      end
-    end
+    mutation!(agent, model, dists)
   end
   # recalculate fitness
   update_fitness!(model)
+end
+
+"Mutate an agent."
+function mutation!(agent::Ind, model::ABM, dists)
+  # u
+  agent.y .+= rand(dists[agent.species], model.properties[:L][agent.species]);
+  # uB
+  nbelements = length(agent.B)
+  randnumbers = rand(nbelements)
+  for nn in 1:nbelements
+    if randnumbers[nn] <= model.properties[:MB][agent.species]
+      agent.B[nn] = !agent.B[nn]
+    end
+  end
 end
 
 function update_fitness!(model::ABM)

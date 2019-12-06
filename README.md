@@ -1,6 +1,6 @@
 # EvoDynamics
 
-[![](https://img.shields.io/badge/docs-stable-blue.svg)](https://kavir1698.github.io/EvoDynamics.jl/stable)
+<!-- [![](https://img.shields.io/badge/docs-stable-blue.svg)](https://kavir1698.github.io/EvoDynamics.jl/stable) -->
 [![](https://img.shields.io/badge/docs-latest-blue.svg)](https://kavir1698.github.io/EvoDynamics.jl/dev)
 [![Build Status](https://travis-ci.org/kavir1698/EvoDynamics.svg?branch=master)](https://travis-ci.org/kavir1698/EvoDynamics)
 
@@ -8,6 +8,11 @@
 Evolutionary dynamics on multi-trait networks.
 
 ## Installation
+
+You should clone the package, go to its directory, open julia, and put it in development mode using `]dev .`
+
+After the package is registered, you will be able to:
+
 
 Install using the following command inside Julia:
 
