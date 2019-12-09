@@ -9,15 +9,10 @@ Evolutionary dynamics on multi-trait networks.
 
 ## Installation
 
-You should clone the package, go to its directory, open julia, and put it in development mode using `]dev .`
-
-After the package is registered, you will be able to:
-
-
 Install using the following command inside Julia:
 
 ```julia
-]add EvoDynamics
+]add https://github.com/kavir1698/EvoDynamics.jl.git
 ```
 
 It is compatible with Julia 1.3+.
