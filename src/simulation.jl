@@ -78,7 +78,15 @@ function model_step!(model::ABM)
 end
 
 function selection!(model::ABM)
-  Agents.sample!(model, nagents(model), :W)
+  if model.properties[:m] == 1
+    Agents.sample!(model, nagents(model), :W)  # TODO: add a parameter for carrying capacity, so that the population can grow.
+  elseif model.properties[:m] == 2 # TODO
+    # Randomly select parents with replacement proportional to their fitness.
+    # One offspring per couple.
+    # Offspring is created from gametes that include one allele from each loci and the corresponding row of the B matrix.
+  else
+    throw("Ploidy>2 not implemented.")
+  end
 end
 
 "Mutate all agents."
