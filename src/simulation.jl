@@ -37,19 +37,21 @@ function model_initiation(;L, P, B, γ, m, T, Ω, M, MB, N, Y, E, generations, s
     Random.seed!(seed)
   end
 
-  properties = Dict(:L => L, :P => P, :B => B, :γ => γ, :m => m, :T => T, :Ω => Ω, :M => M, :MB => MB, :N => N, :Y => Y, :E => E, :generations => generations)
+  Ed = [Normal(0.0, i) for i in E]
+
+  properties = Dict(:L => L, :P => P, :B => B, :γ => γ, :m => m, :T => T, :Ω => inv.(Ω), :M => M, :MB => MB, :N => N, :Y => Y, :E => Ed, :generations => generations)
   model = ABM(Ind, properties=properties, scheduler=random_activation)
   # create and add agents
   indcounter = 0
   for (sind, n) in enumerate(properties[:N])
     x = properties[:B][sind]*properties[:Y][sind]
-    d = Normal(0.0, properties[:E][sind])
+    d = properties[:E][sind]
     for ind in 1:n
       indcounter += 1
       z = x .+ rand(d)
       takeabs = abs.(z .- properties[:T][sind])
       # W = exp(γ[sind] * transpose(takeabs)* Ω[sind] *takeabs)
-      W = exp(properties[:γ][sind] * transpose(takeabs)*inv(properties[:Ω][sind])*takeabs)
+      W = exp(properties[:γ][sind] * transpose(takeabs)*properties[:Ω][sind]*takeabs)
       W = minimum([1e5, W])
       individual = Ind(indcounter, sind, deepcopy(properties[:Y][sind]), z, W, deepcopy(properties[:B][sind]))
       model.agents[indcounter] = individual
@@ -90,8 +92,9 @@ function mutation!(agent::Ind, model::ABM, dists)
   # uB
   nbelements = length(agent.B)
   randnumbers = rand(nbelements)
+  smallers = randnumbers .<= model.properties[:MB][agent.species]
   for nn in 1:nbelements
-    if randnumbers[nn] <= model.properties[:MB][agent.species]
+    if smallers[nn]
       agent.B[nn] = !agent.B[nn]
     end
   end
@@ -104,12 +107,9 @@ function update_fitness!(model::ABM)
 end
 
 function update_fitness!(agent::Ind, model::ABM)
-  x = agent.B * agent.y
-  d = Normal(0.0, model.properties[:E][agent.species])
-  z = x .+ rand(d)
-  takeabs = abs.(z .- model.properties[:T][agent.species])
-  W = Float32(exp(model.properties[:γ][agent.species] * transpose(takeabs)* model.properties[:Ω][agent.species] *takeabs))
-  # W = Float32(exp(model.properties[:γ][agent.species] * transpose(takeabs)*inv(model.properties[:Ω][agent.species])*takeabs))
+  d = model.properties[:E][agent.species]
+  takeabs = (agent.B * agent.y .+ rand(d)) .- model.properties[:T][agent.species]
+  W = exp(model.properties[:γ][agent.species] * transpose(takeabs) * model.properties[:Ω][agent.species] * takeabs)
   W = min(1e5, W)
   agent.W = W
 end
