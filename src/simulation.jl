@@ -3,7 +3,8 @@
 A `struct` for individuals that keeps individual-specific variables.
 """
 mutable struct Ind{A<:Integer, B<:AbstractVector, C<:AbstractVector, D<:AbstractFloat, E<:AbstractArray} <: AbstractAgent
-  id::A  # the individual ID
+  id::A  # individual's ID
+  pos::A  #  individual's position in space
   species::A  # the species ID the individual belongs to
   y::B  # a vector that specifies the importance of each trait
   z::C  # the phenotype vector. z = By .+ μ
@@ -32,7 +33,7 @@ Innitializes the model.
 * E [0.8, 0.8] a tuple  of the variance of a normal distribution ε representing environmental * noise for each species.
 * generations 100  number of generations to run the simulation
 """
-function model_initiation(;L, P, B, γ, m, T, Ω, M, MB, N, Y, E, generations, seed=0)
+function model_initiation(;L, P, B, γ, m, T, Ω, M, MB, N, Y, E, generations, space=nothing, periodic=false, moore=false, seed=0)
   if seed >0
     Random.seed!(seed)
   end
@@ -43,7 +44,16 @@ function model_initiation(;L, P, B, γ, m, T, Ω, M, MB, N, Y, E, generations, s
   dnps = [DiscreteNonParametric([true, false], [i, 1-i]) for i in MB]
 
   properties = Dict(:L => L, :P => P, :B => B, :γ => γ, :m => m, :T => T, :Ω => inv.(Ω), :M => M, :MB => dnps, :N => N, :Y => Y, :E => Ed, :generations => generations)
-  model = ABM(Ind, properties=properties, scheduler=random_activation)
+
+  if space == nothing
+    fspace = nothing
+  elseif typeof(space) <: NTuple
+    fspace = Space(space, periodic=periodic, moore=moore)
+  elseif typeof(space) <: AbstractGraph
+    fspace = Space(space)
+  end
+
+  model = ABM(Ind, fspace, properties=properties, scheduler=random_activation)
   # create and add agents
   indcounter = 0
   for (sind, n) in enumerate(properties[:N])
@@ -56,7 +66,7 @@ function model_initiation(;L, P, B, γ, m, T, Ω, M, MB, N, Y, E, generations, s
       # W = exp(γ[sind] * transpose(takeabs)* Ω[sind] *takeabs)
       W = exp(properties[:γ][sind] * transpose(takeabs)*properties[:Ω][sind]*takeabs)
       W = minimum([1e5, W])
-      individual = Ind(indcounter, sind, deepcopy(properties[:Y][sind]), z, W, deepcopy(properties[:B][sind]))
+      individual = Ind(indcounter, sind, deepcopy(properties[:Y][sind]), z, W, deepcopy(properties[:B][sind]))  # TODO: add position is there is space
       model.agents[indcounter] = individual
     end
   end
