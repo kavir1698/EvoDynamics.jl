@@ -105,7 +105,7 @@ end
 
 function update_fitness!(agent::Ind, model::ABM)
   d = model.properties[:E][agent.species]
-  takeabs = (agent.B * agent.y .+ rand(d)) .- model.properties[:T][agent.species]
+  takeabs = abs.((agent.B * agent.y .+ rand(d)) .- model.properties[:T][agent.species])
   W = exp(model.properties[:γ][agent.species] * transpose(takeabs) * model.properties[:Ω][agent.species] * takeabs)
   W = min(1e5, W)
   agent.W = W
