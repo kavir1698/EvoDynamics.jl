@@ -39,7 +39,10 @@ function model_initiation(;L, P, B, γ, m, T, Ω, M, MB, N, Y, E, generations, s
 
   Ed = [Normal(0.0, i) for i in E]
 
-  properties = Dict(:L => L, :P => P, :B => B, :γ => γ, :m => m, :T => T, :Ω => inv.(Ω), :M => M, :MB => MB, :N => N, :Y => Y, :E => Ed, :generations => generations)
+  # A descrete non-parametric distribtion of uB for each species
+  dnps = [DiscreteNonParametric([true, false], [i, 1-i]) for i in MB]
+
+  properties = Dict(:L => L, :P => P, :B => B, :γ => γ, :m => m, :T => T, :Ω => inv.(Ω), :M => M, :MB => dnps, :N => N, :Y => Y, :E => Ed, :generations => generations)
   model = ABM(Ind, properties=properties, scheduler=random_activation)
   # create and add agents
   indcounter = 0
@@ -90,14 +93,8 @@ function mutation!(agent::Ind, model::ABM, dists)
   # u
   agent.y .+= rand(dists[agent.species], model.properties[:L][agent.species]);
   # uB
-  nbelements = length(agent.B)
-  randnumbers = rand(nbelements)
-  smallers = randnumbers .<= model.properties[:MB][agent.species]
-  for nn in 1:nbelements
-    if smallers[nn]
-      agent.B[nn] = !agent.B[nn]
-    end
-  end
+  randnumbers = rand(model.properties[:MB][agent.species], size(agent.B))
+  agent.B[randnumbers] .= .!agent.B[randnumbers]
 end
 
 function update_fitness!(model::ABM)
