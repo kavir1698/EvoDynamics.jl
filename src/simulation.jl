@@ -71,8 +71,7 @@ A function to define what happens within each step of the model.
 """
 function model_step!(model::ABM)
   selection!(model)
-  dists = [Normal(0, i) for i in model.properties[:M]]
-  mutation!(model, dists)
+  mutation!(model)
 end
 
 function selection!(model::ABM)
@@ -80,7 +79,8 @@ function selection!(model::ABM)
 end
 
 "Mutate all agents."
-function mutation!(model::ABM, dists)
+function mutation!(model::ABM)
+  dists = [Normal(0, i) for i in model.properties[:M]]
   for agent in values(model.agents)
     mutation!(agent, model, dists)
   end
