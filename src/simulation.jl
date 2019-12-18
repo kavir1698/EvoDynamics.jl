@@ -37,6 +37,8 @@ function model_initiation(;L, P, B, γ, m, T, Ω, M, MB, N, Y, E, generations, s
     Random.seed!(seed)
   end
 
+  @assert length.(Y) .% m == Tuple([0 for i in 1:length(Y)])
+
   Ed = [Normal(0.0, i) for i in E]
 
   # A descrete non-parametric distribtion of uB for each species
