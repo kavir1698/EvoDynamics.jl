@@ -7,7 +7,7 @@ Random.seed!(10)
 
 P = (4, 5)  # a tuple  specifying the number of traits p for each species
 L = (7, 8)  # a tuple  specifying the number of loci l for each species
-m = 2  # ploidy, m=2 diploid. Currently only haploids are implemented
+m = 1  # ploidy, m=2 diploid. Currently only haploids are implemented
 parameters = Dict(
   :L => L .* m,
   :P => P,
