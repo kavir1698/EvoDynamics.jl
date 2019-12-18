@@ -71,24 +71,7 @@ function model_step!(model::ABM)
 end
 
 function selection!(model::ABM)
-  n = sum(model.properties[:N])
-  fitness_values = [i.W for i in values(model.agents)]
-  if sum(fitness_values) <= 0.000001
-    newpop = rand(collect(keys(model.agents)), n)
-  else
-    newpop = sample(collect(keys(model.agents)), Weights(fitness_values), n, replace=true, ordered=false)
-  end
-
-  newAgents = [deepcopy(model.agents[i]) for i in newpop]
-
-  for k in keys(model.agents)
-    delete!(model.agents, k)
-  end
-
-  for (index, ag) in enumerate(newAgents)
-    model.agents[index] = Ind(index, ag.species, ag.y, ag.z, ag.W, ag.B)
-  end
-
+  Agents.sample!(model, nagents(model), :W)
 end
 
 "Mutate all agents."
