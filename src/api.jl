@@ -35,7 +35,7 @@ function runmodel(parameters::Dict;
   model = model_initiation(;parameters...)
 
   # run model and collect data
-  data = step!(model, dummystep, model_step!, parameters[:generations], collect, when=when, replicates=replicates, parallel=parallel)
+  data = step!(model, agent_step!, model_step!, parameters[:generations], collect, when=when, replicates=replicates, parallel=parallel)
 
   # Expand columns that have tuples (multiple values)
   allnames = Agents.names(data)
