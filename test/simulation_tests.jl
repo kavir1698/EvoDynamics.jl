@@ -16,15 +16,11 @@
   ag1.species = 1
   ag2.species = 2
   @test ag1.species != ag2.species
-  ag1.z[1] = 0.1342
-  ag2.z[1] = 0.4321
-  @test ag1.z[1] != ag2.z[1]
 
   model = EvoDynamics.model_initiation(;parameters...)
-  dists = [EvoDynamics.Normal(0, i) for i in model.properties[:M]]
   ag1 = deepcopy(model.agents[1])
   ag2 = deepcopy(model.agents[2])
-  EvoDynamics.mutation!(model.agents[1], model, dists)
+  EvoDynamics.mutation!(model.agents[1], model)
   EvoDynamics.update_fitness!(model.agents[1], model)
 
   @test ag1.W != model.agents[1].W
@@ -41,7 +37,6 @@ end
   # We ran rounds of mutation and selection to make sure selectio doesn't affect
   # mutation
   for i in 1:00
-    dists = [EvoDynamics.Normal(0, i) for i in model.properties[:M]]
     EvoDynamics.mutation!(model)
     EvoDynamics.selection!(model)
   end
@@ -49,8 +44,7 @@ end
   ag1 = deepcopy(model.agents[1])
   ag2 = deepcopy(model.agents[2])
   for i in 1:10
-    dists = [EvoDynamics.Normal(0, i) for i in model.properties[:M]]
-    EvoDynamics.mutation!(model.agents[1], model, dists)
+    EvoDynamics.mutation!(model.agents[1], model)
     EvoDynamics.update_fitness!(model.agents[1], model)
   end
 
