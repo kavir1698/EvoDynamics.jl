@@ -4,7 +4,7 @@ A `struct` for individuals that keeps individual-specific variables.
 """
 mutable struct Ind{A<:Integer, B<:AbstractVector, D<:AbstractFloat, E<:AbstractArray} <: AbstractAgent
   id::A  # the individual ID
-  pos::A
+  pos::A  # the individuals position
   species::A  # the species ID the individual belongs to
   y::B  # a vector that specifies the importance of each trait
   W::D  # fitness. W = exp(γ .* transpose(z .- θ)*inv(ω)*(z .- θ)). # z::C  # the phenotype vector. z = By .+ μ
@@ -44,7 +44,7 @@ function model_initiation(;L, P, B, γ, m, T, Ω, M, MB, N, Y, E, generations, s
   @assert length(γ) == length(N) == length(L) == length(B) == length(T) == length(MB) == length(M) == length(Y) == length(E) == length(P) == length(Ω) "L, B, N, γ, T, MB, M, P, Y, Ω, and E should have the same number of elements"
 
   if space == nothing
-    fspace = nothing
+    fspace = Space((1, 1), periodic=periodic, moore=moore)
   elseif typeof(space) <: NTuple
     fspace = Space(space, periodic=periodic, moore=moore)
   elseif typeof(space) <: AbstractGraph
@@ -56,8 +56,8 @@ function model_initiation(;L, P, B, γ, m, T, Ω, M, MB, N, Y, E, generations, s
   dnps = [DiscreteNonParametric([true, false], [i, 1-i]) for i in MB]
   Mdists = [Normal(0, i) for i in M]
 
-  properties = Dict(:L => L, :P => P, :B => B, :γ => γ, :m => m, :T => T, :Ω => inv.(Ω), :M => Mdists, :MB => dnps, :N => N, :Y => Y, :E => Ed, :generations => generations)
-  model = ABM(Ind, properties=properties)
+  properties = Dict(:L => L, :P => P, :B => B, :γ => γ, :m => m, :T => T, :Ω => inv.(Ω), :M => Mdists, :MB => dnps, :N => N, :Y => Y, :E => Ed, :generations => generations, :node_capacities => node_capacities)
+  model = ABM(Ind, fspace, properties=properties)
   # create and add agents
   indcounter = 0
   for (sind, n) in enumerate(properties[:N])
@@ -93,31 +93,41 @@ end
 function agent_step!(agent::Ind, model::ABM)
   mutation!(agent, model)
   update_fitness!(agent, model)
+  # TODO migration
 end
 
 function selection!(model::ABM)
-  Agents.sample!(model, nagents(model), :W)  # TODO: add a parameter for carrying capacity, so that the population can grow.
+  for node in 1:nv(model)
+    sample!(model, model.properties[:node_capacities][node], node, :W)  # TODO: think about node_capacities format. It should ideally allow different K for different species.
+  end
 end
 
 """
 Choose a random mate and produce 2 offsprings with recombination.
 """
-function sexual_reproduction!(model::ABM)
-  nparents = nagents(model)
-  mates = mate(model)
+function sexual_reproduction!(model::ABM, node_number::Int)
+  node_content = get_node_contents(node_number, model)
+  mates = mate(model, node_number)
   for pair in mates
     reproduce!(model.agents[pair[1]], model.agents[pair[2]], model)
   end
 
   # kill the parents
-  for id in 1:nparents
+  for id in node_content
     kill_agent!(model.agents[id], model)
   end
 end
 
+function sexual_reproduction!(model::ABM)
+  for node in 1:nv
+    sexual_reproduction!(model, node)
+  end
+end
+
 "Returns an array of tuples for each pair of agent ids to reproduce"
-function mate(model::ABM)
-  same_species = [[k for (k, v) in model.agents if v.species == i] for i in 1:length(model.properties[:N])]
+function mate(model::ABM, node_number::Int)
+  node_content = get_node_contents(node_number, model)
+  same_species = [[k for k in node_content if model.agents[k].species == i] for i in 1:length(model.properties[:N])]
 
   mates = Array{Tuple{Int, Int}}(undef, sum(length.(same_species)))
 
@@ -150,7 +160,7 @@ function reproduce!(agent1::Ind, agent2::Ind, model::ABM)
   childy = deepcopy(agent2.y)
   childB[:, noci1_dip] .= agent1.B[:, noci1_dip]
   childy[noci1_dip] .= agent1.y[noci1_dip]
-  child = add_agent!(model, agent1.species, childy, 0.2, childB)  
+  child = add_agent!(agent1.pos, model, agent1.species, childy, 0.2, childB)  
   update_fitness!(child, model)
 end
 
@@ -181,5 +191,39 @@ end
 function update_fitness!(model::ABM)
   for agent in values(model.agents)
     update_fitness!(agent, model)
+  end
+end
+
+function sample!(model::ABM, n::Int, node_number::Int, weight=nothing; replace=true,
+  rng::AbstractRNG=Random.GLOBAL_RNG)
+
+  max_id = maximum(keys(model.agents))
+  node_content = get_node_contents(node_number, model)
+  if weight != nothing
+      weights = Weights([getproperty(model.agents[a], weight) for a in node_content])
+      newids = sample(rng, node_content, weights, n, replace=replace)
+  else
+      newids = sample(rng, node_content, n, replace=replace)
+  end
+
+  for id in newids # add new agents while adjusting id
+    model.agents[max_id + 1] = deepcopy(model.agents[id])
+    push!(model.space.agent_positions[coord2vertex(model.agents[id].pos, model)], max_id + 1)
+    max_id += 1
+  end
+
+  # kill old/extra agents
+  genocide!(model, node_content)
+
+  return model
+end
+
+"""
+    genocide!(model::ABM, n::Array)
+Kill the agents of the model whose IDs are in n.
+"""
+function genocide!(model::ABM, n::AbstractArray)
+  for k in n
+    kill_agent!(model.agents[k], model)
   end
 end

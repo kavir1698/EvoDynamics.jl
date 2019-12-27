@@ -19,6 +19,7 @@ parameters = Dict(
   :M => (0.02, 0.02), # a tuple of mutation rates μ for each species
   :MB => (0.05, 0.05), # a tuple of mutation rates μ<sub>B</sub> for each species
   :N => (1000, 1000), # a tuple  for population size of each species
+  :node_capacities => (2000, 2000), # carrying capacity for each node
   :Y => Tuple([rand(Float16, i) for i in L .* m]), # a tuple  of Arrays, each specifying the initial y vector of each species
   :E => (0.8, 0.8), # a tuple  of the variance of a normal distribution ε representing environmental noise for each species.
   :generations => 5 # number of generations to run the simulation
