@@ -22,6 +22,8 @@
   ag2 = deepcopy(model.agents[2])
   EvoDynamics.mutation!(model.agents[1], model)
   EvoDynamics.mutation!(model.agents[1], model)
+  EvoDynamics.mutation!(model.agents[1], model)
+  EvoDynamics.mutation!(model.agents[1], model)
   EvoDynamics.update_fitness!(model.agents[1], model)
 
   @test ag1.W != model.agents[1].W
