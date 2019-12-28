@@ -46,10 +46,8 @@ end
     EvoDynamics.update_fitness!(model.agents[1], model)
   end
 
-  @test ag1.W != model.agents[1].W
   @test ag1.B != model.agents[1].B
   @test ag1.y != model.agents[1].y
-  @test ag2.W == model.agents[2].W
   @test ag2.B == model.agents[2].B
   @test ag2.y == model.agents[2].y
 end
