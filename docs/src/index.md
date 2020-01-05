@@ -36,6 +36,7 @@ The model parameters and their role in the simulations:
 	4. N<sub>e</sub> constant at 5k.
 * Initial parameter values from Jones et al. (15-17)
 
+<!-- 
 ## Problems and solutions
 
 ### Problem 
@@ -52,4 +53,4 @@ The mean fitness of populations either goes to zero or becomes too large (infini
 1. Transform each distribution T to N(0,1)
 2. Set maximum total distance to optimum Z*std(T) where Z = diagonal values cov matrix (Z=10)
 3. Set fitness surface covariance mat Diag == 10; random graph from U(0,1) U(0,-1); modular U(0,1) U(0,-1)
-4. Normalize fitness values sum(sum(w)) to have a max of 1
+4. Normalize fitness values sum(sum(w)) to have a max of 1 -->

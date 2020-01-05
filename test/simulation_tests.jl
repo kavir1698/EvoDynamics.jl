@@ -51,3 +51,20 @@ end
   @test ag2.B == model.agents[2].B
   @test ag2.y == model.agents[2].y
 end
+
+@testset "lotkaVoltera" begin
+  parameters2 = deepcopy(parameters)
+  parameters2[:N] =  Dict(1 => (100, 200), 2 => (200, 100))
+  parameters2[:K] = Dict(1 => [1000, 1000], 2 => [500, 500], 3 => [1000, 1000], 4 => [1000, 1000])
+  parameters2[:R] = (0.1, 0.1)
+  parameters2[:C] = reshape([0.1 for i in 1:4], 2, 2)
+  model = EvoDynamics.model_initiation(;parameters2...)
+
+  a11 = EvoDynamics.lotkaVoltera(model, 1, 1)
+  a21 = EvoDynamics.lotkaVoltera(model, 2, 1)
+  a12 = EvoDynamics.lotkaVoltera(model, 1, 2)
+  a22 = EvoDynamics.lotkaVoltera(model, 2, 2)
+
+  @test a11/100 > a21/200
+  @test a12/200 < a22/100
+end

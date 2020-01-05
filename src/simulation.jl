@@ -29,14 +29,14 @@ Innitializes the model.
 * MB [0.05, 0.05] A tuple of mutation rates μ<sub>B</sub> for each species
 * N  Dict(1 => (1000, 1000)), a dictionary where a key is node number and the value is a tuple for population size of each species at that node
 * Y [rand(Float16, i*m) for i in L] a tuple  of Arrays, each specifying the initial y vector of  each species
-* E [0.8, 0.8] a tuple  of the variance of a normal distribution ε representing environmental * noise for each species.
+* E [0.8, 0.8] a tuple  of the variance of a normal distribution ε representing environmental noise for each species.
 * generations 100  number of generations to run the simulation
 * space (2,2)  Either a tuple for a grid size or a SimpleGraph
-* node_capacities Dict(1 => 2000) a dictionary where a key is node number and a value is an integer for carrying capacity of the node
+* K Dict(1 => 2000) a dictionary where a key is node number and a value is an integer for carrying capacity of the node
 * migration_rates [1.0 0.02 0.02 0.02; 0.03 1.0 0.03 0.03; 0.01 0.01 1.0 0.01; 0.01 0.01 0.01 1.0] a matrix of migration rates between each pair of nodes. The rows and columns of the matrix are node numbers in order.
 * moore false whether diagonal nodes in a grid should be connected.
 """
-function model_initiation(;L, P, B, γ, m, T, Ω, M, MB, N, Y, E, generations, migration_rates, node_capacities, space=nothing, periodic=false, moore=false, seed=0)
+function model_initiation(;L, P, B, γ, m, T, Ω, M, MB, N, Y, E, R, C, generations, migration_rates, K, space=nothing, periodic=false, moore=false, seed=0)
   if seed >0
     Random.seed!(seed)
   end
@@ -56,8 +56,8 @@ function model_initiation(;L, P, B, γ, m, T, Ω, M, MB, N, Y, E, generations, m
   end
   @assert length.(Y) .% m == Tuple([0 for i in 1:length(Y)]) "Length of elements in Y are not correct. They should a factor of m"
   @assert size.(B, 2) .% m == Tuple([0 for i in 1:length(Y)]) "Length of elements in B are not correct. They should a factor of m"
-  @assert length(γ) == length(L) == length(B) == length(T) == length(MB) == length(M) == length(Y) == length(E) == length(P) == length(Ω) "L, B, γ, T, MB, M, P, Y, Ω, and E should have the same number of elements"
-  @assert length(keys(node_capacities)) >= nv(fspace) "node_capacities should have a key for every node"
+  @assert length(γ) == length(L) == length(B) == length(T) == length(MB) == length(M) == length(Y) == length(E) == length(P) == length(Ω) == length(R) "L, B, γ, T, MB, M, P, Y, Ω, R and E should have the same number of elements"
+  @assert length(keys(K)) >= nv(fspace) "K should have a key for every node"
   for (k, v) in N
     @assert length(v) == nspecies "Each value in N should have size equal to number of species"
   end
@@ -68,9 +68,9 @@ function model_initiation(;L, P, B, γ, m, T, Ω, M, MB, N, Y, E, generations, m
   Ed = [Normal(0.0, i) for i in E]
   # A descrete non-parametric distribtion of uB for each species
   dnps = [DiscreteNonParametric([true, false], [i, 1-i]) for i in MB]
-  Mdists = [Normal(0, i) for i in M]
+  Mdists = [Normal(0, δ) for δ in M]  # TODO: δ (amount of change) should be different from μ (probability of change).
   
-  properties = Dict(:L => L, :P => P, :B => B, :γ => γ, :m => m, :T => T, :Ω => inv.(Ω), :M => Mdists, :MB => dnps, :N => N, :Y => Y, :E => Ed, :generations => generations, :node_capacities => node_capacities, :migration_rates => migration_rates, :nspecies => nspecies)
+  properties = Dict(:L => L, :P => P, :B => B, :R => R, :C => C, :γ => γ, :m => m, :T => T, :Ω => inv.(Ω), :M => Mdists, :MB => dnps, :N => N, :Y => Y, :E => Ed, :generations => generations, :K => K, :migration_rates => migration_rates, :nspecies => nspecies)
   model = ABM(Ind, fspace, properties=properties)
   # create and add agents
   for (pos, Ns) in properties[:N]
@@ -110,7 +110,9 @@ end
 
 function selection!(model::ABM)
   for node in 1:nv(model)
-    sample!(model, model.properties[:node_capacities][node], node, :W)
+    for species in 1:model.properties[:nspecies]
+      sample!(model, species, node, :W)
+    end
   end
 end
 
@@ -220,11 +222,17 @@ function migration!(agent::Ind, model::ABM)
 end
 
 "Replace Inds in a node with a weighted by :W sample of Inds with replacement"
-function sample!(model::ABM, n::Int, node_number::Int, weight=nothing; replace=true,
+function sample!(model::ABM, species::Int, node_number::Int,
+  weight=nothing; replace=true,
   rng::AbstractRNG=Random.GLOBAL_RNG)
 
   max_id = maximum(keys(model.agents))
-  node_content = get_node_contents(node_number, model)
+  node_content_all = get_node_contents(node_number, model)
+  node_content = [i for i in node_content_all if model.agents[i].species == species]
+  n = lotkaVoltera(model, species, node_number)
+  if n == 0
+
+  end
   if weight != nothing
       weights = Weights([getproperty(model.agents[a], weight) for a in node_content])
       newids = sample(rng, node_content, weights, n, replace=replace)
@@ -243,8 +251,6 @@ function sample!(model::ABM, n::Int, node_number::Int, weight=nothing; replace=t
 
   # kill old/extra agents
   genocide!(model, node_content)
-
-  return model
 end
 
 """
@@ -255,4 +261,41 @@ function genocide!(model::ABM, n::AbstractArray)
   for k in n
     kill_agent!(model.agents[k], model)
   end
+end
+
+"""
+Calculates the next population size of a species given its current size, intrinsic growth rate, carrying capacity, and competition with other species.
+
+# Arguments
+
+* node: node number
+* species: species number
+
+"""
+function lotkaVoltera(model::ABM, species::Int, node::Int)
+  Ns = nagents_species(model, node)
+  N = Ns[species]
+  if N == 0
+    return
+  end
+  as = model.properties[:C]
+  species_ids = collect(1:model.properties[:nspecies])
+  splice!(species_ids, species)
+  aNs = as[species_ids]' * [Ns[i] for i in species_ids]
+  r = model.properties[:R][species]
+  K = model.properties[:K][node][species]
+  nextN = N + r*N*(1 - ((N+aNs)/K))
+  return round(Int, nextN)
+end
+
+"Returns population size per species in the node"
+function nagents_species(model::ABM, node::Int)
+  counter = Dict{Int, Int}()
+  for i in 1:model.properties[:nspecies]
+    counter[i] = 0
+  end
+  for id in model.space.agent_positions[node]
+    counter[model.agents[id].species] += 1
+  end
+  return counter
 end
