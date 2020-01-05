@@ -29,7 +29,7 @@ Innitializes the model.
 * MB [0.05, 0.05] A tuple of mutation rates μ<sub>B</sub> for each species
 * N  Dict(1 => (1000, 1000)), a dictionary where a key is node number and the value is a tuple for population size of each species at that node
 * Y [rand(Float16, i*m) for i in L] a tuple  of Arrays, each specifying the initial y vector of  each species
-* E [0.8, 0.8] a tuple  of the variance of a normal distribution ε representing environmental * noise for each species.
+* E [0.8, 0.8] a tuple  of the variance of a normal distribution ε representing environmental noise for each species.
 * generations 100  number of generations to run the simulation
 * space (2,2)  Either a tuple for a grid size or a SimpleGraph
 * node_capacities Dict(1 => 2000) a dictionary where a key is node number and a value is an integer for carrying capacity of the node
@@ -68,7 +68,7 @@ function model_initiation(;L, P, B, γ, m, T, Ω, M, MB, N, Y, E, generations, m
   Ed = [Normal(0.0, i) for i in E]
   # A descrete non-parametric distribtion of uB for each species
   dnps = [DiscreteNonParametric([true, false], [i, 1-i]) for i in MB]
-  Mdists = [Normal(0, i) for i in M]
+  Mdists = [Normal(0, δ) for δ in M]  # TODO: δ (amount of change) should be different from μ (probability of change).
   
   properties = Dict(:L => L, :P => P, :B => B, :γ => γ, :m => m, :T => T, :Ω => inv.(Ω), :M => Mdists, :MB => dnps, :N => N, :Y => Y, :E => Ed, :generations => generations, :node_capacities => node_capacities, :migration_rates => migration_rates, :nspecies => nspecies)
   model = ABM(Ind, fspace, properties=properties)
