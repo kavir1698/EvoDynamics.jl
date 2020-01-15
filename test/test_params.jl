@@ -19,7 +19,7 @@ parameters = Dict(
   :MB => (0.05, 0.05), # a tuple of mutation rates μ of B for each species
   :N => Dict(1 => (1000, 1000)), # a dictionary where a key is node number and the value is a tuple for population size of each species at that node
   :K => Dict(1 => [1000, 1000], 2 => [1000, 1000], 3 => [1000, 1000], 4 => [1000, 1000]), # a dictionary where a key is node number and a value is tuple for carrying capacity of the node for each species.
-  :migration_rates => [1.0 0.02 0.02 0.02; 0.03 1.0 0.03 0.03; 0.01 0.01 1.0 0.01; 0.01 0.01 0.01 1.0],  # a matrix of migration rates between each pair of nodes. The rows and columns of the matrix are node numbers in order.
+  :migration_rates => [[1.0 0.02 0.02 0.02; 0.03 1.0 0.03 0.03; 0.01 0.01 1.0 0.01; 0.01 0.01 0.01 1.0] for i in 1:2],  # a matrix of migration rates between each pair of nodes. The rows and columns of the matrix are node numbers in order.
   :Y => Tuple([rand(Float16, i) for i in L .* m]), # a tuple  of Arrays, each specifying the initial y vector of each species
   :E => (0.8, 0.8), # a tuple  of the variance of a normal distribution ε representing environmental noise for each species.
   :generations => 5, # number of generations to run the simulation
