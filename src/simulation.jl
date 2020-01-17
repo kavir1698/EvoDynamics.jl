@@ -2,21 +2,20 @@
 """
 A `struct` for individuals that keeps individual-specific variables.
 """
-mutable struct Ind{A<:Integer, B<:AbstractVector, D<:AbstractFloat, E<:AbstractArray} <: AbstractAgent
+mutable struct Ind{A<:Integer, D<:AbstractFloat, E<:AbstractArray} <: AbstractAgent
   id::A  # the individual ID
   pos  # the individuals position
   species::A  # the species ID the individual belongs to
-  y::B  # a vector that specifies the importance of each trait
-  W::D  # fitness. W = exp(γ .* transpose(z .- θ)*inv(ω)*(z .- θ)). # z::C  # the phenotype vector. z = By .+ μ
-  B::E  # the B matrix
+  W::D  # fitness. W = exp(γ .* transpose(sum(A, dims=2) .- θ)*inv(ω)*(sum(A, dims=2) .- θ)).
+  A::E  # the A matrix. Each entry of which specifies the amount of contribution of each gene on each phenotype. This will be equivalent to z=By .+ μ in the original design. Rows are phenotypes/trais p and columns are loci l (number of columns is m*l).
 end
 
 """
-    model_initiation(;L, P, B, γ, m, T, Ω, M, MB, N, Y, E, generations, seed=0)
+    model_initiation(;L, P, A, Y, m, T, Ω, M, N, E, generations, seed=0)
 
 Innitializes the model.
 """
-function model_initiation(;L, P, B, γ, m, T, Ω, M, MB, N, Y, E, R, C, generations, migration_rates, K, space=nothing, periodic=false, moore=false, seed=0)
+function model_initiation(;L, P, A, Y, m, T, Ω, M, N, E, R, C, generations, migration_rates, K, space=nothing, periodic=false, moore=false, seed=0)
   if seed >0
     Random.seed!(seed)
   end
@@ -34,9 +33,8 @@ function model_initiation(;L, P, B, γ, m, T, Ω, M, MB, N, Y, E, R, C, generati
   for i in m
     @assert i < 3  "Ploidy more than 2 is not implemented"
   end
-  @assert length.(Y) .% m == Tuple([0 for i in 1:length(Y)]) "Length of elements in Y are not correct. They should a factor of m"
-  @assert size.(B, 2) .% m == Tuple([0 for i in 1:length(Y)]) "Length of elements in B are not correct. They should a factor of m"
-  @assert length(γ) == length(L) == length(B) == length(T) == length(MB) == length(M) == length(Y) == length(E) == length(P) == length(Ω) == length(R) "L, B, γ, T, MB, M, P, Y, Ω, R and E should have the same number of elements"
+  @assert size.(A, 2) .% m == Tuple(zeros(length(A))) "number of columns in A are not correct. They should a factor of m"
+  @assert length(Y) == length(L) == length(A) == length(T) == length(M) == length(E) == length(P) == length(Ω) == length(R) "L, A, Y, T, M, P, Ω, R and E should have the same number of elements"
   @assert length(keys(K)) >= nv(fspace) "K should have a key for every node"
   for (k, v) in N
     @assert length(v) == nspecies "Each value in N should have size equal to number of species"
@@ -48,23 +46,21 @@ function model_initiation(;L, P, B, γ, m, T, Ω, M, MB, N, Y, E, R, C, generati
   end
 
   Ed = [Normal(0.0, i) for i in E]
-  # A descrete non-parametric distribtion of uB for each species
-  dnps = [DiscreteNonParametric([true, false], [i, 1-i]) for i in MB]
-  Mdists = [Normal(0, δ) for δ in M]  # TODO: δ (amount of change) should be different from μ (probability of change).
+  Mdists = [Normal(0, δ) for δ in M]  # TODO: δ (amount of change) should be different from μ (probability of change)?
   
-  properties = Dict(:L => L, :P => P, :B => B, :R => R, :C => C, :γ => γ, :m => m, :T => T, :Ω => inv.(Ω), :M => Mdists, :MB => dnps, :N => N, :Y => Y, :E => Ed, :generations => generations, :K => K, :migration_rates => migration_rates, :nspecies => nspecies)
+  properties = Dict(:L => L, :P => P, :A => A, :R => R, :C => C, :Y => Y, :m => m, :T => T, :Ω => inv.(Ω), :M => Mdists, :N => N, :E => Ed, :generations => generations, :K => K, :migration_rates => migration_rates, :nspecies => nspecies)
   model = ABM(Ind, fspace, properties=properties)
   # create and add agents
   for (pos, Ns) in properties[:N]
-    for (sind, n) in enumerate(Ns)
-      x = properties[:B][sind]*properties[:Y][sind]
-      d = properties[:E][sind]
+    for (ind2, n) in enumerate(Ns)
+      x = vec(sum(properties[:A][ind2], dims=2))  # phenotypic values
+      d = properties[:E][ind2]
       for ind in 1:n
         z = x .+ rand(d)
-        takeabs = abs.(z .- properties[:T][sind])
-        W = exp(properties[:γ][sind] * transpose(takeabs)*properties[:Ω][sind]*takeabs)
+        takeabs = abs.(z .- properties[:T][ind2])
+        W = exp(properties[:Y][ind2] * transpose(takeabs)*properties[:Ω][ind2]*takeabs)
         W = minimum([1e5, W])
-        add_agent!(pos, model, sind, deepcopy(properties[:Y][sind]), W, deepcopy(properties[:B][sind]))
+        add_agent!(pos, model, ind2, W, deepcopy(properties[:A][ind2]))
       end
     end
   end
@@ -144,29 +140,23 @@ end
 """
 For sexual reproduction of diploids.
 
-An offspring is created from gametes that include one allele from each loci and the corresponding column of the B matrix.
-Each gamete is half of `y` and half of `B` (column-wise)
+An offspring is created from gametes that include one allele from each loci and the corresponding column of the A matrix.
+Each gamete is half of `A` (column-wise)
 """
 function reproduce!(agent1::Ind, agent2::Ind, model::ABM)
   nloci = Int(model.properties[:L][agent1.species]/2)
   loci_shuffled = shuffle(1:nloci)
   loci1 = 1:ceil(Int, nloci/2)
   noci1_dip = vcat(loci_shuffled[loci1], loci_shuffled[loci1] .+ nloci)
-  childB = deepcopy(agent2.B)
-  childy = deepcopy(agent2.y)
-  childB[:, noci1_dip] .= agent1.B[:, noci1_dip]
-  childy[noci1_dip] .= agent1.y[noci1_dip]
-  child = add_agent!(agent1.pos, model, agent1.species, childy, 0.2, childB)  
+  childA = deepcopy(agent2.A)
+  childA[:, noci1_dip] .= agent1.A[:, noci1_dip]
+  child = add_agent!(agent1.pos, model, agent1.species, 0.2, childA)  
   update_fitness!(child, model)
 end
 
 "Mutate an agent."
 function mutation!(agent::Ind, model::ABM)
-  # u
-  agent.y .+= rand(model.properties[:M][agent.species], model.properties[:L][agent.species]);
-  # uB
-  randnumbers = rand(model.properties[:MB][agent.species], size(agent.B))
-  agent.B[randnumbers] .= .!agent.B[randnumbers]
+  agent.A .+= rand(model.properties[:M][agent.species], size(agent.A))
 end
 
 function mutation!(model::ABM)
@@ -178,8 +168,8 @@ end
 "Recalculate the fitness of `agent`"
 function update_fitness!(agent::Ind, model::ABM)
   d = model.properties[:E][agent.species]
-  takeabs = abs.((agent.B * agent.y .+ rand(d)) .- model.properties[:T][agent.species])
-  W = exp(model.properties[:γ][agent.species] * transpose(takeabs) * model.properties[:Ω][agent.species] * takeabs)
+  takeabs = abs.((vec(sum(agent.A, dims=2)) .+ rand(d)) .- model.properties[:T][agent.species])
+  W = exp(model.properties[:Y][agent.species] * transpose(takeabs) * model.properties[:Ω][agent.species] * takeabs)
   W = min(1e5, W)
   agent.W = W
 end

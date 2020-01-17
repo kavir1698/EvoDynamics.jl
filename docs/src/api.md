@@ -9,16 +9,14 @@ The parameters below are required for any simulation. They should be in a dictio
 * __L:__ A tuple or an array specifying the number of loci _l_ for each species.
 * __R:__ A tuple or an array specifying growth for each species. Growth rates are for a logistic growth model, where $N_{t+1} = N_t + r\times N\times (1 - ((N/K))$, where N is population size, t is time, r is growth rate and K is carrying capacity. If _r=0_, population size remains constant.
 * __C:__ A matrix containing competition coefficients between each pair of species. A competition coefficient denotes the strength of competition exerted by an individual of species j on an individual of species i. It uses the Lotka-Voltera equation $Ni_{t+1} = Ni_t + r\times N\times (1 - ((Ni + cNj)/K)$ where c is competition coefficient. When competition coefficient is positive, population j competes with population i. If negative, population j helps population i to grow. And if 0, population j does not affect population i. If $c_{ij} > 0$ and $c_{ji} > 0$, both populations are in competition, if $c_{ij} > 0$ and $c_{ji} < 0$, species i is a parasite of species j. If $c_{ij} < 0$ and $c_{ji} < 0$, the two species have a mutualistic relationship. If $c_{ij} < 0$ and $c_{ji} = 0$, they have a commensal relationship.
-* __B:__ A tuple or an array of pleiotropy matrices, one for each species. Each matrix consists of zeros and ones only. It has P rows and L columns. Make sure that a row is not all zero (a trait is not controlled any locus).
-* __γ:__ A tuple or an array  of selection coefficients for each species.
+* __A:__ A tuple or an array of genotype-phenotype matrices, one for each species. Each matrix shows the amount of contribution of each locus to each phenotype. It has P rows and L columns. Make sure that a row is not all zero (a trait is controlled by no locus).
+* __Y:__ A tuple or an array  of selection coefficients for each species.
 * __T:__ A tuple or an array of arrays, where each inner array specifies optimal phenotypes θ for each species. Each inner array should be of length _p_ (number of traits) of its corresponding species.
 * __Ω:__ A tuple or an array of matrices, each of which ω represents a covariance matrix of the selection surface. Each matrix is of size $p\times p$.
 * __M:__ A tuple or an array of mutation rates _μ_ for each species.
-* __MB:__ A tuple or an array of mutation rates $μ_B$for each species
 * __N:__ A dictionary where each key is a node number and its value is a tuple for population size of each species at that node. This dictionary does not have to have a key for all the nodes, but it should have a value for all the species.
 * __K:__ A dictionary where each key is a node number and its value is tuple of carrying capacities K of the node for each species. The dictionary should have a key for all the nodes and carrying capacity for each species per node.
 * __migration_rates:__ An array of matrices, each matrix shows of migration rates between each pair of nodes for a species. The rows and columns of the matrix are node numbers in order. If instead of a matrix, there is `nothing`, no migration occurs for that species.
-* __Y:__ A tuple or an array of arrays, each specifying the initial genotypic values _y_ of each species. Each _y_ is of length L.
 * __E:__ A tuple  or an array of the variance of a normal distribution ε representing environmental noise for each species.
 * __generations:__ number of generations to run the simulation.
 * __space:__ Either a tuple of size 2 or 3 for a grid size or a `SimpleGraph` object for an arbitrary graph. If it is a tuple, a grid is built internally
