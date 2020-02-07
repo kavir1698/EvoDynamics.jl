@@ -2,10 +2,10 @@
 """
 A `struct` for individuals that keeps individual-specific variables.
 """
-mutable struct Ind{A<:Integer, B<:AbstractFloat, C<:AbstractArray, D<:AbstractArray, E::AbstractArray} <: AbstractAgent
-  id::A  # the individual ID
+mutable struct Ind{X<:Integer, B<:AbstractFloat, C<:AbstractArray, D<:AbstractArray, E<:AbstractArray} <: AbstractAgent
+  id::X  # the individual ID
   pos  # the individuals position
-  species::A  # the species ID the individual belongs to
+  species::X  # the species ID the individual belongs to
   W::B  # fitness. W = exp(γ .* transpose(sum(A, dims=2) .- θ)*inv(ω)*(sum(A, dims=2) .- θ)).
   A::C  # epistasis matrix
   B::D  # pleiotropy matrix
@@ -17,7 +17,7 @@ end
 
 Innitializes the model.
 """
-function model_initiation(;L, P, A, Y, m, T, Ω, M, N, E, R, C, D, generations, migration_rates, K, space=nothing, periodic=false, moore=false, seed=0)
+function model_initiation(;L, P, A, B, Q, Y, m, T, Ω, M, N, E, R, C, D, generations, migration_rates, K, space=nothing, periodic=false, moore=false, seed=0)
   if seed >0
     Random.seed!(seed)
   end
@@ -48,24 +48,24 @@ function model_initiation(;L, P, A, Y, m, T, Ω, M, N, E, R, C, D, generations, 
   end
 
   Ed = [Normal(0.0, i) for i in E]
-  Ddists = [Normal(0, δ) for δ in D]  # δ (amount of change)
-  Mdists = [DiscreteNonParametric([true, false], [i, 1-i]) for i in M]
-  
+  Mdists = [[DiscreteNonParametric([true, false], [i, 1-i]) for i in arr] for arr in M]
+  Ddists = [[Normal(0, ar[1]), DiscreteNonParametric([true, false], [ar[2], 1-ar[2]]), Normal(0, ar[3])] for ar in D]  # amount of change in case of mutation
+
   # μ (probability of change)
   
-  properties = Dict(:L => L, :P => P, :A => A, :R => R, :C => C, :Y => Y, :m => m, :T => T, :Ω => inv.(Ω), :M => Mdists, :D => Ddists, :N => N, :E => Ed, :generations => generations, :K => K, :migration_rates => migration_rates, :nspecies => nspecies)
+  properties = Dict(:L => L, :P => P, :A => A, :B => B, :Q => Q, :R => R, :C => C, :Y => Y, :m => m, :T => T, :Ω => inv.(Ω), :M => Mdists, :D => Ddists, :N => N, :E => Ed, :generations => generations, :K => K, :migration_rates => migration_rates, :nspecies => nspecies)
   model = ABM(Ind, fspace, properties=properties)
-  # create and add agents TODO
+  # create and add agents
   for (pos, Ns) in properties[:N]
     for (ind2, n) in enumerate(Ns)
-      x = vec(sum(properties[:A][ind2], dims=2))  # phenotypic values
+      x = properties[:B][ind2] * (properties[:A][ind2] * properties[:Q][ind2])  # phenotypic values
       d = properties[:E][ind2]
       for ind in 1:n
         z = x .+ rand(d)
         takeabs = abs.(z .- properties[:T][ind2])
         W = exp(properties[:Y][ind2] * transpose(takeabs)*properties[:Ω][ind2]*takeabs)
         W = minimum([1e5, W])
-        add_agent!(pos, model, ind2, W, deepcopy(properties[:A][ind2]))
+        add_agent!(pos, model, ind2, W, deepcopy(properties[:A][ind2]), deepcopy(properties[:B][ind2]), deepcopy(properties[:Q][ind2]))
       end
     end
   end
@@ -87,7 +87,6 @@ end
 
 function agent_step!(agent::Ind, model::ABM)
   mutation!(agent, model)
-  update_fitness!(agent, model)  # TODO: move to mutation function to only update the fitness mutated individuals.
   migration!(agent, model)
 end
 
@@ -165,13 +164,20 @@ end
 
 "Mutate an agent."
 function mutation!(agent::Ind, model::ABM)
-  if model.properties[:M][agent.species]
-    agent.q .+= rand(model.properties[:D][agent.species], model.properties[:L](agent.species))
+  # mutate gene expression
+  if rand(model.properties[:M][agent.species][1])
+    agent.q .+= rand(model.properties[:D][agent.species][1], model.properties[:L][agent.species])
   end
-  # if pleiotropy mutates (TODO: add new param), use this, MB is DiscreteNonParametric (TODO)
-  randnumbers = rand(model.properties[:MB][agent.species], size(agent.B))
-  agent.B[randnumbers] .= .!agent.B[randnumbers]
-  # TODO: mutate epistasis matrices like above. You need two new parameters
+  # mutate pleiotropy matrix
+  if rand(model.properties[:M][agent.species][2])
+    randnumbers = rand(model.properties[:D][agent.species][2], size(agent.B))
+    agent.B[randnumbers] .= .!agent.B[randnumbers]
+  end
+  # mutate epistasis matrix
+  if rand(model.properties[:M][agent.species][3])
+    agent.A .+= rand(model.properties[:D][agent.species][3], size(agent.A))
+  end
+  update_fitness!(agent, model)
 end
 
 function mutation!(model::ABM)
@@ -209,7 +215,7 @@ function migration!(agent::Ind, model::ABM)
   end
 end
 
-"Replace Inds in a node with a weighted by :W sample of Inds with replacement"
+"Replace Inds in a node with a weighted sample by replacement of Inds"
 function sample!(model::ABM, species::Int, node_number::Int,
   weight=nothing; replace=true,
   rng::AbstractRNG=Random.GLOBAL_RNG)
@@ -217,9 +223,12 @@ function sample!(model::ABM, species::Int, node_number::Int,
   max_id = maximum(keys(model.agents))
   node_content_all = get_node_contents(node_number, model)
   node_content = [i for i in node_content_all if model.agents[i].species == species]
+  if length(node_content) == 0
+    return
+  end
   n = lotkaVoltera(model, species, node_number)
   if n == 0
-
+    return
   end
   if weight != nothing
       weights = Weights([getproperty(model.agents[a], weight) for a in node_content])

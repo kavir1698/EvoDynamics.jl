@@ -15,8 +15,8 @@ The parameters below are required for any simulation. They should be in a dictio
 * __Y:__ A tuple  of selection coefficients for each species.
 * __T:__ A tuple of arrays, where each inner array specifies optimal phenotypes θ for each species. Each inner array should be of length _p_ (number of phenotypes) of its corresponding species.
 * __Ω:__ A tuple of matrices, each of which ω represents a covariance matrix of the selection surface. Each matrix is of size $p\times p$.
-* __M:__ A tuple of mutation probabilities per individual for each species.
-* __D:__ A tuple of numbers, each of each specifying the variance of a normal distribution. If an individual is going to mutate, a random number from a normal distribution with mean at zero and variance at $d$ is added to the expression of each locus.
+* __M:__ A tuple of arrays, one per species. Each inner array specifies the probabilities for different type of mutations. An inner array has three values with the following order: first, the probability that an individual's gene expressions (array $q$) mutate per generation. Second, the probability that an individual's pleiotropy matrix mutates per generation. Third, the probability that an individual's epistasis matrix mutates per generation. If an individual is going to receive a mutation at any of the mentioned levels, the amount of change that it receives is determined by $D$.
+* __D:__ A tuple of array, one for each species. Each inner array has three numbers specifying the amount of change in gene expression ($q$), pleiotropy matrix ($b$), and epistasis matrix $a$, respectively. The first number is the variance of a normal distribution with mean zero. If an individual's gene expression is going to mutate, random numbers from that distribution are added to the expression of each locus. The second number is a probability that any one element in the pleiotropy matrix will switch - if on, becomes off, and vice versa. The third number is again the variance of another normal distribution with mean zero. Random numbers taken from such distribution are added to each element of the epistasis matrix.
 * __N:__ A dictionary where each key is a node number and its value is a tuple for population size of each species at that node. This dictionary does not have to have a key for all the nodes, but it should have a value for all the species.
 * __K:__ A dictionary where each key is a node number and its value is tuple of carrying capacities K of the node for each species. The dictionary should have a key for all the nodes and carrying capacity for each species per node.
 * __migration_rates:__ An array of matrices, each matrix shows of migration rates between each pair of nodes for a species. The rows and columns of the matrix are node numbers in order. If instead of a matrix, there is `nothing`, no migration occurs for that species.
@@ -35,13 +35,14 @@ Within each time-step, the following occurs:
 4. Reproduction (only for diploids)
 5. selection
 
-### Mutation TODO: fix
+### Mutation
 
+Mutation can happen at three levels: changing the expression of each gene Q, changing the pleiotropy matrix B, and changing the epistatic interactions between genes. The probability that a mutation occurs at each of these levels is controlled by parameter M. And size of mutations when they occur are controlled by parameter D.
 The genotype vector _y_ and pleiotropy matrix _B_ of each individual mutates.
 
-_y_ mutates by adding random numbers from a normal distribution with mean 0 and standard deviation from the δ to the current values of _y_. δ is specified by the M parameter.
+Epistatic matrix _A_ and expression vectors _Q_ mutate by adding their values to random numbers from a normal distribution with mean 0 and standard deviation given in parameter D.
 
-_B_ mutates by randomly switching 0s and 1s with probability given in parameter MB.
+_B_ mutates by randomly switching 0s and 1s with probability given in parameter D.
 
 ### Fitness update
 
