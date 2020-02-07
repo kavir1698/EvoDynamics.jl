@@ -5,8 +5,8 @@
   ag1 = model.agents[1]
   ag2 = model.agents[2]
 
-  ag1.A[1] = 0.23423423
-  @test ag2.A[1] != ag1.A[1]
+  ag1.A[2] = 0.23423423
+  @test ag2.A[2] != ag1.A[1]
   ag1.W = 0.123
   ag2.W = 0.321
   @test ag1.W != ag2.W
@@ -18,10 +18,9 @@
   ag1 = deepcopy(model.agents[1])
   ag2 = deepcopy(model.agents[2])
   EvoDynamics.mutation!(model.agents[1], model)
-  EvoDynamics.update_fitness!(model.agents[1], model)
 
-  @test ag1.A != model.agents[1].A
-  @test ag2.A == model.agents[2].A
+  @test ag1.q != model.agents[1].q
+  @test ag2.q == model.agents[2].q
 end
 
 @testset "Mutation and selection" begin
@@ -41,8 +40,8 @@ end
     EvoDynamics.update_fitness!(model.agents[1], model)
   end
 
-  @test ag1.A != model.agents[1].A
-  @test ag2.A == model.agents[2].A
+  @test ag1.q != model.agents[1].q
+  @test ag2.q == model.agents[2].q
 end
 
 @testset "lotkaVoltera" begin
