@@ -5,41 +5,56 @@ import LinearAlgebra: Symmetric
 P = (4, 5)
 L = (7, 8)
 m = (2, 1)
+# choose random values for epistasis matrix A, but make sure the diagonal is
+# 1.0, meaning that each locus affects itself 100%.
+A = Tuple([Random.rand(-0.5:0.01:0.5, i, i) for i in (L .* m)])
+for index in 1:length(A)
+  for diag in 1:size(A[index], 1)
+    A[index][diag, diag] = 1
+  end
+end
+
 parameters = Dict(
   :L =&gt; L .* m,
   :P =&gt; P,
   :R =&gt; (0.8, 0.12),
   :C =&gt; rand(-0.1:0.01:0.1, 2, 2),
-  :A =&gt;  Tuple([Random.rand(i[1], i[2]) for i in zip(P, L .* m)]),
+  :B =&gt; (rand([true, false], P[1], L[1] * m[1]), rand([true, false], P[2], L[2] * m[2])),
+  :A =&gt;  A,
+  :Q =&gt; Tuple([rand() for el in 1:l] for l in L .* m),
   :Y =&gt; (-0.5, -0.5),
   :m =&gt; m,
   :T =&gt; Tuple([randn(Float16, n) for n in P]),
   :Ω =&gt; Tuple([Symmetric(rand(Float16, i[1], i[2])) for i in zip(P, P)]),
-  :M =&gt; (0.02, 0.02),
+  :M =&gt; Tuple([(0.02, 0.0, 0.0), (0.02, 0.0, 0.0)]),
+  :D =&gt; Tuple([(0.05, 0.0, 0.01), (0.05, 0.0, 0.01)]),
   :N =&gt; Dict(1 =&gt; (1000, 1000)),
   :K =&gt; Dict(1 =&gt; [1000, 1000], 2 =&gt; [1000, 1000], 3 =&gt; [1000, 1000], 4 =&gt; [1000, 1000]),
   :migration_rates =&gt; [[1.0 0.02 0.02 0.02; 0.03 1.0 0.03 0.03; 0.01 0.01 1.0 0.01; 0.01 0.01 0.01 1.0] for i in 1:2],
-  :E =&gt; (0.08, 0.08),
+  :E =&gt; (0.01, 0.01),
   :generations =&gt; 5,
   :space =&gt; (2,2),
   :moore =&gt; false
-)</code></pre><pre><code class="language-none">Dict{Symbol,Any} with 17 entries:
+)</code></pre><pre><code class="language-none">Dict{Symbol,Any} with 20 entries:
+  :D               =&gt; ((0.05, 0.0, 0.01), (0.05, 0.0, 0.01))
   :migration_rates =&gt; Array{Float64,2}[[1.0 0.02 0.02 0.02; 0.03 1.0 0.03 0.03;…
+  :B               =&gt; (Bool[0 0 … 1 0; 0 0 … 0 0; 1 0 … 1 1; 0 0 … 0 1], Bool[0…
   :space           =&gt; (2, 2)
   :moore           =&gt; false
-  :Ω               =&gt; (Float16[0.0547 0.292 0.332 0.4814; 0.292 0.03906 0.4004 …
+  :Ω               =&gt; (Float16[0.05664 0.875 0.6895 0.715; 0.875 0.882 0.701 0.…
   :K               =&gt; Dict(4=&gt;[1000, 1000],2=&gt;[1000, 1000],3=&gt;[1000, 1000],1=&gt;[…
   :generations     =&gt; 5
-  :E               =&gt; (0.08, 0.08)
+  :E               =&gt; (0.01, 0.01)
   :R               =&gt; (0.8, 0.12)
-  :M               =&gt; (0.02, 0.02)
-  :A               =&gt; ([0.208774 0.840939 … 0.949221 0.718442; 0.976664 0.45880…
+  :M               =&gt; ((0.02, 0.0, 0.0), (0.02, 0.0, 0.0))
+  :A               =&gt; ([1.0 0.34 … -0.3 -0.46; -0.02 1.0 … 0.36 0.44; … ; -0.17…
   :N               =&gt; Dict(1=&gt;(1000, 1000))
+  :Q               =&gt; ([0.943782, 0.659271, 0.723638, 0.0702325, 0.819462, 0.02…
   :Y               =&gt; (-0.5, -0.5)
-  :T               =&gt; (Float16[0.498, -1.387, -1.228, 2.283], Float16[-1.788, -…
+  :T               =&gt; (Float16[-0.4587, -0.347, 0.1486, 0.937], Float16[1.273, …
   :P               =&gt; (4, 5)
   :m               =&gt; (2, 1)
   :L               =&gt; (14, 8)
-  :C               =&gt; [0.05 0.06; 0.03 0.1]</code></pre><p>We can the use the <code>runmodel</code> function to create a model from these parameters and run the simulation.</p><article class="docstring"><header><a class="docstring-binding" id="EvoDynamics.runmodel" href="#EvoDynamics.runmodel"><code>EvoDynamics.runmodel</code></a> — <span class="docstring-category">Function</span></header><section><div><pre><code class="language-julia">runmodel(parameters::Dict; kwargs)</code></pre><p>Creates and runs a model given <code>parameters</code>. Returns a <code>DataFrame</code> of collected data, which are specified by <code>kwargs</code>.</p><p><strong>Keywords</strong></p><ul><li>collect::Dict=Dict(:model =&gt; [mean<em>fitness</em>per_species]) Data to be collected. By default, collects mean population fitness per species.</li><li>when::AbstractArray{Int}=1:parameters[:generations] The generations from which data are collected</li><li>replicates::Int = 0 Number of replicates per simulation.</li><li>parallel::Bool = false Whether to run replicates in parallel. If <code>true</code>, you should add processors to your julia session (e.g. by <code>addprocs(n)</code>) and define your parameters and <code>EvoDynamics</code> on all workers. To do that, add <code>@everywhere</code> before them. For example, <code>@everywhere EvoDynamics</code>.</li></ul></div><a class="docs-sourcelink" target="_blank" href="https://github.com/kavir1698/EvoDynamics.jl/blob/251a0e32802a19d9bd2b11e8f5e428883387e1db/src/api.jl#L15-L26">source</a></section></article><pre><code class="language-julia">using EvoDynamics
+  :C               =&gt; [-0.03 -0.09; 0.01 -0.01]</code></pre><p>We can the use the <code>runmodel</code> function to create a model from these parameters and run the simulation.</p><article class="docstring"><header><a class="docstring-binding" id="EvoDynamics.runmodel" href="#EvoDynamics.runmodel"><code>EvoDynamics.runmodel</code></a> — <span class="docstring-category">Function</span></header><section><div><pre><code class="language-julia">runmodel(parameters::Dict; kwargs)</code></pre><p>Creates and runs a model given <code>parameters</code>. Returns a <code>DataFrame</code> of collected data, which are specified by <code>kwargs</code>.</p><p><strong>Keywords</strong></p><ul><li>collect::Dict=Dict(:model =&gt; [mean<em>fitness</em>per_species]) Data to be collected. By default, collects mean population fitness per species.</li><li>when::AbstractArray{Int}=1:parameters[:generations] The generations from which data are collected</li><li>replicates::Int = 0 Number of replicates per simulation.</li><li>parallel::Bool = false Whether to run replicates in parallel. If <code>true</code>, you should add processors to your julia session (e.g. by <code>addprocs(n)</code>) and define your parameters and <code>EvoDynamics</code> on all workers. To do that, add <code>@everywhere</code> before them. For example, <code>@everywhere EvoDynamics</code>.</li></ul></div><a class="docs-sourcelink" target="_blank" href="https://github.com/kavir1698/EvoDynamics.jl/blob/78f63c0312586de91a86734c9e7937aa2b49aa16/src/api.jl#L15-L26">source</a></section></article><pre><code class="language-julia">using EvoDynamics
 data = runmodel(parameters)
-data[1:5, :]</code></pre><table class="data-frame"><thead><tr><th></th><th>step</th><th>mean_fitness_per_species(model)_1</th><th>mean_fitness_per_species(model)_2</th></tr><tr><th></th><th>Int64</th><th>Float32</th><th>Float32</th></tr></thead><tbody><p>5 rows × 3 columns</p><tr><th>1</th><td>0</td><td>100000.0</td><td>2.87916e-6</td></tr><tr><th>2</th><td>1</td><td>100000.0</td><td>5.10508e-6</td></tr><tr><th>3</th><td>2</td><td>100000.0</td><td>7.89586e-6</td></tr><tr><th>4</th><td>3</td><td>100000.0</td><td>1.41704e-5</td></tr><tr><th>5</th><td>4</td><td>100000.0</td><td>2.69341e-5</td></tr></tbody></table></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../">« Introduction</a><a class="docs-footer-nextpage" href="../api/">API »</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Friday 17 January 2020 16:25">Friday 17 January 2020</span>. Using Julia version 1.3.1.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+data[1:5, :]</code></pre><table class="data-frame"><thead><tr><th></th><th>step</th><th>mean_fitness_per_species(model)_1</th><th>mean_fitness_per_species(model)_2</th></tr><tr><th></th><th>Int64</th><th>Float32</th><th>Float32</th></tr></thead><tbody><p>5 rows × 3 columns</p><tr><th>1</th><td>0</td><td>1.10687</td><td>17266.2</td></tr><tr><th>2</th><td>1</td><td>1.11377</td><td>17656.8</td></tr><tr><th>3</th><td>2</td><td>1.12066</td><td>18635.4</td></tr><tr><th>4</th><td>3</td><td>1.13321</td><td>20861.5</td></tr><tr><th>5</th><td>4</td><td>1.14438</td><td>22333.3</td></tr></tbody></table></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../">« Introduction</a><a class="docs-footer-nextpage" href="../api/">API »</a></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Friday 7 February 2020 17:25">Friday 7 February 2020</span>. Using Julia version 1.3.1.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
