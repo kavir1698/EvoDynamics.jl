@@ -46,11 +46,11 @@ _B_ mutates by randomly switching 0s and 1s with probability given in parameter 
 
 ### Fitness update
 
-Fitness of each individual updates after mutation. Fitness is $W = exp(γ \times transpose(z - θ)\times inv(ω)\times (z - θ))$, where is the phenotype vector ($z = By + μ$), γ is selection coefficient, θ is optimum phenotypes vector, and ω is covariance matrix of selection surface. 
+Fitness of each individual updates after mutation. Fitness is $W = exp(γ \times transpose(z - θ)\times inv(ω)\times (z - θ))$, where is the phenotype vector ($z = B(Aq) + μ$), γ is selection coefficient, θ is optimum phenotypes vector, and ω is covariance matrix of selection surface. 
 
 ### Migration
 
-Each agent moves with probabilities given in *migration_rates* to another node.
+Each agent moves with probabilities given in *migration_rates* to other nodes.
 
 ### Reproduction
 
@@ -64,4 +64,4 @@ A number of individuals _n_ are selected for the next generation via sampling wi
 
 ## Data collection
 
-TODO
+EvoDynamics.jl uses [Agents.jl](https://github.com/JuliaDynamics/Agents.jl) underneath. See [Agents.jl's documentation](https://juliadynamics.github.io/Agents.jl/dev/) for writing functions to collect any data during simulations. 

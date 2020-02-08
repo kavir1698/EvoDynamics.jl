@@ -35,25 +35,44 @@ function model_initiation(;L, P, A, B, Q, Y, m, T, Ω, M, N, E, R, C, D, generat
   for i in m
     @assert i < 3  "Ploidy more than 2 is not implemented"
   end
-  @assert size.(A, 2) .% m == Tuple(zeros(length(A))) "number of columns in A are not correct. They should a factor of m"
+  for i in size.(A, 2) .% m
+    @assert i == 0 "number of columns in A are not correct. They should a factor of m"
+  end
   @assert length(Y) == length(L) == length(A) == length(T) == length(M) == length(E) == length(P) == length(Ω) == length(R) == length(D) "L, A, Y, T, M, P, Ω, R, D and E should have the same number of elements"
   @assert length(keys(K)) >= nv(fspace) "K should have a key for every node"
   for (k, v) in N
     @assert length(v) == nspecies "Each value in N should have size equal to number of species"
   end
-  for item in migration_rates
-    if typeof(item) <: AbstractArray
-      @assert size(item, 1) == nv(fspace) "migration_rates has different rows than there are nodes in space."
+  if migration_rates != nothing
+    for item in migration_rates
+      if typeof(item) <: AbstractArray
+        @assert size(item, 1) == nv(fspace) "migration_rates has different rows than there are nodes in space."
+      end
     end
   end
 
   Ed = [Normal(0.0, i) for i in E]
-  Mdists = [[DiscreteNonParametric([true, false], [i, 1-i]) for i in arr] for arr in M]
+  Mdists = [[DiscreteNonParametric([true, false], [i, 1-i]) for i in arr] for arr in M]  # μ (probability of change)
   Ddists = [[Normal(0, ar[1]), DiscreteNonParametric([true, false], [ar[2], 1-ar[2]]), Normal(0, ar[3])] for ar in D]  # amount of change in case of mutation
-
-  # μ (probability of change)
   
-  properties = Dict(:L => L, :P => P, :A => A, :B => B, :Q => Q, :R => R, :C => C, :Y => Y, :m => m, :T => T, :Ω => inv.(Ω), :M => Mdists, :D => Ddists, :N => N, :E => Ed, :generations => generations, :K => K, :migration_rates => migration_rates, :nspecies => nspecies)
+  # make single-element arrays 2D so that linAlg functions will work
+  newA = Array{Array{Float64}}(undef, length(A))
+  newQ = Array{Array{Float64}}(undef, length(A))
+  newΩ = Array{Array{Float64}}(undef, length(A))
+  for i in 1:length(A)
+    if length(A[i]) == 1
+      newA[i] = reshape(A[i], 1, 1)
+      newQ[i] = reshape(Q[i], 1, 1)
+      newΩ[i] = reshape(Ω[i], 1, 1)
+    else
+      newA[i] = A[i]
+      newQ[i] = Q[i]
+      newΩ[i] = Ω[i]
+    end
+  end
+
+
+  properties = Dict(:L => L, :P => P, :A => newA, :B => B, :Q => newQ, :R => R, :C => C, :Y => Y, :m => m, :T => T, :Ω => inv.(newΩ), :M => Mdists, :D => Ddists, :N => N, :E => Ed, :generations => generations, :K => K, :migration_rates => migration_rates, :nspecies => nspecies)
   model = ABM(Ind, fspace, properties=properties)
   # create and add agents
   for (pos, Ns) in properties[:N]
@@ -63,7 +82,7 @@ function model_initiation(;L, P, A, B, Q, Y, m, T, Ω, M, N, E, R, C, D, generat
       for ind in 1:n
         z = x .+ rand(d)
         takeabs = abs.(z .- properties[:T][ind2])
-        W = exp(properties[:Y][ind2] * transpose(takeabs)*properties[:Ω][ind2]*takeabs)
+        W = exp(-properties[:Y][ind2] * transpose(takeabs)*properties[:Ω][ind2]*takeabs)[1]
         W = minimum([1e5, W])
         add_agent!(pos, model, ind2, W, deepcopy(properties[:A][ind2]), deepcopy(properties[:B][ind2]), deepcopy(properties[:Q][ind2]))
       end
@@ -191,7 +210,7 @@ function update_fitness!(agent::Ind, model::ABM)
   d = model.properties[:E][agent.species]
   Fmat = agent.B * (agent.A * agent.q)
   takeabs = abs.((Fmat .+ rand(d)) .- model.properties[:T][agent.species])
-  W = exp(model.properties[:Y][agent.species] * transpose(takeabs) * model.properties[:Ω][agent.species] * takeabs)
+  W = exp(-model.properties[:Y][agent.species] * transpose(takeabs) * model.properties[:Ω][agent.species] * takeabs)[1]
   W = min(1e5, W)
   agent.W = W
 end
@@ -251,7 +270,7 @@ function sample!(model::ABM, species::Int, node_number::Int,
 end
 
 """
-    genocide!(model::ABM, n::Array)
+  genocide!(model::ABM, n::Array)
 Kill the agents of the model whose IDs are in n.
 """
 function genocide!(model::ABM, n::AbstractArray)
@@ -277,12 +296,19 @@ function lotkaVoltera(model::ABM, species::Int, node::Int)
   end
   as = model.properties[:C]
   species_ids = collect(1:model.properties[:nspecies])
-  splice!(species_ids, species)
-  aNs = as[species_ids]' * [Ns[i] for i in species_ids]
-  r = model.properties[:R][species]
-  K = model.properties[:K][node][species]
-  nextN = N + r*N*(1 - ((N+aNs)/K))
-  return round(Int, nextN)
+  if as == nothing || length(species_ids) == 0
+    r = model.properties[:R][species]
+    K = model.properties[:K][node][species]
+    nextN = N + r*N*(1 - (N/K))
+    return round(Int, nextN)
+  else 
+    splice!(species_ids, species)
+    aNs = as[species_ids]' * [Ns[i] for i in species_ids]
+    r = model.properties[:R][species]
+    K = model.properties[:K][node][species]
+    nextN = N + r*N*(1 - ((N+aNs)/K))
+    return round(Int, nextN)
+  end
 end
 
 "Returns population size per species in the node"

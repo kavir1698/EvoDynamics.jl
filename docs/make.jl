@@ -25,8 +25,8 @@ pages = [
 	"Tutorial" => "tutorial.md",
 	"API" => "api.md",
 	"Examples" => [
-	  "Example 1" => "example1.md",
-	  "Example 2" => "example2.md",
+	  "Simplest model" => "example1.md",
+	  # "Example 2" => "example2.md",
 		],
     ],
 )
