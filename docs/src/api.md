@@ -7,7 +7,7 @@ The parameters below are required for any simulation. They should be in a dictio
 * __m:__ A tuple specifying the ploidy of each species. Currently only support m=1 (haploid) and m=2 (diploid).
 * __P:__ A tuple specifying the number of phenotypes _p_ for each species.
 * __L:__ A tuple specifying the number of loci _l_ for each species.
-* __R:__ A tuple specifying growth for each species. Growth rates are for a logistic growth model, where $N_{t+1} = N_t + r\times N\times (1 - ((N/K))$, where N is population size, t is time, r is growth rate and K is carrying capacity. If _r=0_, population size remains constant.
+* __R:__ A tuple specifying growth rate for each species. Growth rates are for a logistic growth model, where $N_{t+1} = N_t + r\times N\times (1 - ((N/K))$, where N is population size, t is time, r is growth rate and K is carrying capacity. If _r=0_, population size remains constant.
 * __C:__ A matrix containing competition coefficients between each pair of species. A competition coefficient denotes the strength of competition exerted by an individual of species j on an individual of species i. It uses the Lotka-Voltera equation $Ni_{t+1} = Ni_t + r\times N\times (1 - ((Ni + cNj)/K)$ where c is competition coefficient. When competition coefficient is positive, population j competes with population i. If negative, population j helps population i to grow. And if 0, population j does not affect population i. If $c_{ij} > 0$ and $c_{ji} > 0$, both populations are in competition, if $c_{ij} > 0$ and $c_{ji} < 0$, species i is a parasite of species j. If $c_{ij} < 0$ and $c_{ji} < 0$, the two species have a mutualistic relationship. If $c_{ij} < 0$ and $c_{ji} = 0$, they have a commensal relationship.
 * __B:__ A tuple of pleiotropy matrices, one for each species. A pleitropy matrix is a binary matrix with size $p \times l$ that specifies the phenotypes that each locus affects.
 * __A:__ A tuple of epistasis matrices, one for each species. An epistasis matrix is of size $l \times l$ and specifies the direction (positive or negative) and size of effect of one loci on the other loci. For example, if at row 1 and column 2 is a value 0.2, it means that locus 1 affects locus 2 by increasing the effect of locus 2 (because its positive) with 20% of the effect of locus 1. The effect of loci are themselves specified in the $q$ vector.
@@ -16,14 +16,16 @@ The parameters below are required for any simulation. They should be in a dictio
 * __T:__ A tuple of arrays, where each inner array specifies optimal phenotypes θ for each species. Each inner array should be of length _p_ (number of phenotypes) of its corresponding species.
 * __Ω:__ A tuple of matrices, each of which ω represents a covariance matrix of the selection surface. Each matrix is of size $p\times p$.
 * __M:__ A tuple of arrays, one per species. Each inner array specifies the probabilities for different type of mutations. An inner array has three values with the following order: first, the probability that an individual's gene expressions (array $q$) mutate per generation. Second, the probability that an individual's pleiotropy matrix mutates per generation. Third, the probability that an individual's epistasis matrix mutates per generation. If an individual is going to receive a mutation at any of the mentioned levels, the amount of change that it receives is determined by $D$.
-* __D:__ A tuple of array, one for each species. Each inner array has three numbers specifying the amount of change in gene expression ($q$), pleiotropy matrix ($b$), and epistasis matrix $a$, respectively. The first number is the variance of a normal distribution with mean zero. If an individual's gene expression is going to mutate, random numbers from that distribution are added to the expression of each locus. The second number is a probability that any one element in the pleiotropy matrix will switch - if on, becomes off, and vice versa. The third number is again the variance of another normal distribution with mean zero. Random numbers taken from such distribution are added to each element of the epistasis matrix.
+* __D:__ A tuple of arrays, one for each species. Each inner array has three numbers specifying the amount of change per mutation in gene expression ($q$), pleiotropy matrix ($b$), and epistasis matrix $a$, respectively. The first number is the variance of a normal distribution with mean zero. If an individual's gene expression is going to mutate, random numbers from that distribution are added to the expression of each locus. The second number is a probability that any one element in the pleiotropy matrix will switch - if on, becomes off, and vice versa. The third number is again the variance of another normal distribution with mean zero. Random numbers taken from such distribution are added to each element of the epistasis matrix.
 * __N:__ A dictionary where each key is a node number and its value is a tuple for population size of each species at that node. This dictionary does not have to have a key for all the nodes, but it should have a value for all the species.
 * __K:__ A dictionary where each key is a node number and its value is tuple of carrying capacities K of the node for each species. The dictionary should have a key for all the nodes and carrying capacity for each species per node.
 * __migration_rates:__ An array of matrices, each matrix shows of migration rates between each pair of nodes for a species. The rows and columns of the matrix are node numbers in order. If instead of a matrix, there is `nothing`, no migration occurs for that species.
 * __E:__ A tuple  of the variance of a normal distribution ε representing environmental noise for each species.
 * __generations:__ number of generations to run the simulation.
-* __space:__ Either a tuple of size 2 or 3 for a grid size or a `SimpleGraph` object for an arbitrary graph. If it is a tuple, a grid is built internally
-* __moore:__ Whether nodes in the grid have 8 neighbors (Moore neighborhood). Default is false, i.e. cells only have 4 neighbors.
+* __space:__ (default=`nothing`) Either a tuple of size 2 or 3 for a grid size or a `SimpleGraph` object for an arbitrary graph. If it is a tuple, a grid is built internally
+* __moore:__ (default=`false`) Whether nodes in the grid have 8 neighbors (Moore neighborhood). Default is false, i.e. cells only have 4 neighbors.
+* __periodic:__ (default=`false`) If `space` is 2D, should the edges connect to the opposite side?
+* __seed:__ (default=`0`). Seed for random number generator. Only set if >0.
 
 ## Simulation outline
 
@@ -64,4 +66,38 @@ A number of individuals _n_ are selected for the next generation via sampling wi
 
 ## Data collection
 
-EvoDynamics.jl uses [Agents.jl](https://github.com/JuliaDynamics/Agents.jl) underneath. See [Agents.jl's documentation](https://juliadynamics.github.io/Agents.jl/dev/) for writing functions to collect any data during simulations. 
+The interface to the model is from the `runmodel` function.
+
+```@docs
+runmodel
+```
+
+EvoDynamics.jl uses [Agents.jl](https://github.com/JuliaDynamics/Agents.jl) underneath. See [Agents.jl's documentation](https://juliadynamics.github.io/Agents.jl/dev/) for details about writing functions to collect any data during simulations. Here, we explain the specific implementation of the model.
+
+There are two main objects from which you can collect data: and agent object of type `AbstractAgent` and a model object of type `ABM`. Both of these types are defined the `Agents.jl` package.
+
+Agent object has the following fields: `id`, `positions`, `species`, `A` (epistasis matrix), `B` (pleiotropy matrix), and `q` (gene expression array).
+
+The model object has the following fields: `space` which is a `Space` object from `Agents.jl`, `agents` that is an array holding all agents, and `properties` which is a dictionary holding all the parameters passed to the model.
+
+To collect data, provide a dictionary where the keys are either agent fields, or `:model`. The value of a key is an array of any number of functions.
+
+If a key is an agent field, all the value of the field from all agents are collected and then aggregated with the functions in the value. For example, to collect mean and median fitness of individuals which is in field `W`, your dictionary will be Dict(:W => [mean, median]).
+
+If a key is `:model`, functions in its value array should be functions that accept a single argument, the model object, and return a single number or a tuple of numbers. For example, this is the default dictionary and its function:
+
+```jl
+collect = Dict(:model => [mean_fitness_per_species])
+
+"Returns a tuple whose entries are the mean fitness of each species."
+function mean_fitness_per_species(model::ABM)
+  nspecies = length(model.properties[:P])
+  mean_fitness = Array{Float32}(undef, nspecies)
+  for species in 1:nspecies
+    fitness = mean([i.W for i in values(model.agents) if i.species == species])
+    mean_fitness[species] = fitness
+  end
+
+  return Tuple(mean_fitness)
+end
+```

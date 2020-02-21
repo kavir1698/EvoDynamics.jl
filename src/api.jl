@@ -19,7 +19,7 @@ Creates and runs a model given `parameters`. Returns a `DataFrame` of collected 
 
 # Keywords
 
-* collect::Dict=Dict(:model => [mean_fitness_per_species]) Data to be collected. By default, collects mean population fitness per species.
+* collect::Dict=Dict(:model => [mean_fitness_per_species]) Data to be collected. By default, collects mean population fitness per species. Each row of the output DataFrame corresponds to all agents and each column is the value function applied to a field. The functions in a dictionary properties are applied to the collected fields, that is, the keys of properties. For example, to collect mean and median fitness of individuals which is in field `W`, your dictionary will be Dict(:W => [mean, median]).
 * when::AbstractArray{Int}=1:parameters[:generations] The generations from which data are collected
 * replicates::Int = 0 Number of replicates per simulation.
 * parallel::Bool = false Whether to run replicates in parallel. If `true`, you should add processors to your julia session (e.g. by `addprocs(n)`) and define your parameters and `EvoDynamics` on all workers. To do that, add `@everywhere` before them. For example, `@everywhere EvoDynamics`.

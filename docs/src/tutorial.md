@@ -47,7 +47,7 @@ parameters = Dict(
 We can the use the `runmodel` function to create a model from these parameters and run the simulation.
 
 ```@docs
-EvoDynamics.runmodel
+runmodel
 ```
 
 ```@example random

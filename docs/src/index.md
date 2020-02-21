@@ -1,6 +1,10 @@
 # EvoDynamics.jl Documentation
 
-EvoDynamics.jl tries to bridge the gap in studying biological systems at a narrow scale. Some studies only focus on single genes affecting single phenotypes, some studies only analyze gene interactions, some focus on population level. EvoDynamics.jl is a framework that make it easy to simulate a system with different levels from pleiotropy, epistasis, selection acting on multiple phenotypes, spatially structured populations, migration, and interactions between species.
+EvoDynamics.jl tries to bridge the gap in studying biological systems at small and large scales. Some studies only focus on single genes affecting single phenotypes, some studies only analyze gene interactions, some focus on populations, and some on species interactions. EvoDynamics.jl is a framework to study the effect of interactions between all these levels. It includes explicit pleiotropy, epistasis, selection acting on multiple phenotypes, different phenotypes affecting fitness at different amounts, arbitrary spatial structure, migration, and interacting species.
+
+Figure below shows different biological levels controlled by the model.
+
+![Fig. 1. __Model structure.__](struct.png)
 
 We used the paper below as a starting point for this project. But EvoDynamics.jl goes way beyond that system by including multi-species interactions, spatial structure, and explicitly implementing epistasis and gene expression.
 
