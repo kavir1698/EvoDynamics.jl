@@ -1,5 +1,6 @@
 # # Weak modular structure
 
+using EvoDynamics
 using Distributions
 using Random
 using LinearAlgebra
@@ -42,16 +43,16 @@ parameters = Dict(
   :space => (5,2),
 )
 
-function nspecies_per_species1(model::ABM)
-  
-  nspecies = length(model.properties[:P])
-  mean_fitness = Array{Float32}(undef, nspecies)
-  for species in 1:nspecies
-    fitness = mean([i.W for i in values(model.agents) if i.species == species])
-    mean_fitness[species] = fitness
+function nspecies_per_node(model::ABM)
+  output = zeros(model.properties[:nspecies], nv(model))
+  for species in model.properties[:nspecies]
+    for node in 1:nv(model)
+      for ag in get_node_contents(node, model)
+        output[model.agents[ag].species, node] += 1
+      end
+    end
   end
-
-  return Tuple(mean_fitness)
+  return Tuple(output)
 end
 
-data = runmodel(parameters, collect::Dict=Dict(:model => [nspecies_per_species1]))
+data = runmodel(parameters, collect=Dict(:model => [nspecies_per_node]))
