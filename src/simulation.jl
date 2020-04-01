@@ -13,7 +13,7 @@ mutable struct Ind{X<:Integer, B<:AbstractFloat, C<:AbstractArray, D<:AbstractAr
 end
 
 """
-    model_initiation(;L, P, A, Y, m, T, Ω, M, N, E, generations, seed=0)
+    model_initiation(;L, P, A, B, Q, Y, m, T, Ω, M, N, E, R, C, D, generations, migration_rates, K, space=nothing, periodic=false, moore=false, seed=0)
 
 Innitializes the model.
 """
@@ -70,7 +70,6 @@ function model_initiation(;L, P, A, B, Q, Y, m, T, Ω, M, N, E, R, C, D, generat
       newΩ[i] = Ω[i]
     end
   end
-
 
   properties = Dict(:L => L, :P => P, :A => newA, :B => B, :Q => newQ, :R => R, :C => C, :Y => Y, :m => m, :T => T, :Ω => inv.(newΩ), :M => Mdists, :D => Ddists, :N => N, :E => Ed, :generations => generations, :K => K, :migration_rates => migration_rates, :nspecies => nspecies)
   model = ABM(Ind, fspace, properties=properties)
