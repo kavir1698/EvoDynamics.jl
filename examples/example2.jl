@@ -4,6 +4,7 @@ using EvoDynamics
 using Distributions
 using Random
 using LinearAlgebra
+using CSV
 
 nspecies = 10
 P = fill(3, nspecies)
@@ -56,3 +57,4 @@ function nspecies_per_node(model::ABM)
 end
 
 data = runmodel(parameters, collect=Dict(:model => [nspecies_per_node]))
+CSV.write("data.csv", data)
