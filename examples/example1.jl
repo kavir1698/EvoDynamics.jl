@@ -27,4 +27,4 @@ parameters = Dict(
   :space => nothing
 )
 
-data = runmodel(parameters)
+data, model = runmodel(parameters)

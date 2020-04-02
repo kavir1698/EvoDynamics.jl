@@ -52,6 +52,6 @@ runmodel
 
 ```@example random
 using EvoDynamics
-data = runmodel(parameters)
+data, model = runmodel(parameters)
 data[1:5, :]
 ```

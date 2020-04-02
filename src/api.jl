@@ -54,5 +54,5 @@ function runmodel(parameters::Dict;
     Agents.select!(data, Agents.Not(nam))  # remove the column with tuples
   end
 
-  return data
+  return data, model
 end

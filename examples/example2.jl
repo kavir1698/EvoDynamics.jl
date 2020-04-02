@@ -5,6 +5,7 @@ using Distributions
 using Random
 using LinearAlgebra
 using CSV
+using JLD2, FileIO
 
 nspecies = 10
 P = fill(3, nspecies)
@@ -56,5 +57,6 @@ function nspecies_per_node(model::ABM)
   return Tuple(output)
 end
 
-data = runmodel(parameters, collect=Dict(:model => [nspecies_per_node]))
+data, model = runmodel(parameters, collect=Dict(:model => [nspecies_per_node]))
 CSV.write("data.csv", data)
+save("model.jld2", "model", model)
