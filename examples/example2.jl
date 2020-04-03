@@ -1,6 +1,7 @@
 # # Weak modular structure
 
 using EvoDynamics
+using Agents
 using Distributions
 using Random
 using LinearAlgebra
@@ -45,7 +46,7 @@ parameters = Dict(
   :space => (5,2),
 )
 
-function nspecies_per_node(model::ABM)
+function nspecies_per_node(model)
   output = zeros(model.properties[:nspecies], nv(model))
   for species in model.properties[:nspecies]
     for node in 1:nv(model)
@@ -57,6 +58,6 @@ function nspecies_per_node(model::ABM)
   return Tuple(output)
 end
 
-data, model = runmodel(parameters, collect=Dict(:model => [nspecies_per_node]))
+data, model = runmodel(parameters, collect=Dict(:model => [nspecies_per_node]));
 CSV.write("data.csv", data)
 save("model.jld2", "model", model)
