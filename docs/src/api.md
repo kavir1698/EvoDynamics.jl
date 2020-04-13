@@ -78,7 +78,7 @@ There are two main objects from which you can collect data: and agent object of 
 
 Agent object has the following fields: `id`, `positions`, `species`, `A` (epistasis matrix), `B` (pleiotropy matrix), and `q` (gene expression array).
 
-The model object has the following fields: `space` which is a `Space` object from `Agents.jl`, `agents` that is an array holding all agents, and `properties` which is a dictionary holding all the parameters passed to the model.
+The model object has the following fields: `space` which is a `GraphSpace` or `GridSpace` object from `Agents.jl`, `agents` that is an array holding all agents, and `properties` which is a dictionary holding all the parameters passed to the model.
 
 To collect data, provide a dictionary where the keys are either agent fields, or `:model`. The value of a key is an array of any number of functions.
 

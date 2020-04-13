@@ -2,10 +2,10 @@
 """
 A `struct` for individuals that keeps individual-specific variables.
 """
-mutable struct Ind{X<:Integer, B<:AbstractFloat, C<:AbstractArray, D<:AbstractArray, E<:AbstractArray} <: AbstractAgent
-  id::X  # the individual ID
-  pos  # the individuals position
-  species::X  # the species ID the individual belongs to
+mutable struct Ind{B<:AbstractFloat, C<:AbstractArray, D<:AbstractArray, E<:AbstractArray} <: AbstractAgent
+  id::Int  # the individual ID
+  pos::Tuple{Int, Int}  # the individuals position
+  species::Int  # the species ID the individual belongs to
   W::B  # fitness. W = exp(γ .* transpose(sum(A, dims=2) .- θ)*inv(ω)*(sum(A, dims=2) .- θ)).
   A::C  # epistasis matrix
   B::D  # pleiotropy matrix
@@ -23,11 +23,11 @@ function model_initiation(;L, P, A, B, Q, Y, m, T, Ω, M, N, E, R, C, D, generat
   end
   
   if space == nothing
-    fspace = Space((1, 1))
+    fspace = GridSpace((1, 1))
   elseif typeof(space) <: NTuple
-    fspace = Space(space, periodic=periodic, moore=moore)
+    fspace = GridSpace(space, periodic=periodic, moore=moore)
   elseif typeof(space) <: AbstractGraph
-    fspace = Space(space)
+    fspace = GraphSpace(space)
   end
   nspecies = length(L)
 

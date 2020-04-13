@@ -25,7 +25,7 @@ Creates and runs a model given `parameters`. Returns a `DataFrame` of collected 
 * parallel::Bool = false Whether to run replicates in parallel. If `true`, you should add processors to your julia session (e.g. by `addprocs(n)`) and define your parameters and `EvoDynamics` on all workers. To do that, add `@everywhere` before them. For example, `@everywhere EvoDynamics`.
 """
 function runmodel(parameters::Dict;
-  collect::Dict=Dict(:model => [mean_fitness_per_species]),
+  adata::AbstractArray=[];mdata::AbstractArray=[(:model, mean_fitness_per_species)],
   when::AbstractArray{Int}=1:parameters[:generations],
   replicates::Int = 0,
   parallel::Bool = false
@@ -35,24 +35,39 @@ function runmodel(parameters::Dict;
   model = model_initiation(;parameters...)
 
   # run model and collect data
-  data = step!(model, agent_step!, model_step!, parameters[:generations], collect, when=when, replicates=replicates, parallel=parallel)
+  agdata, modata = run!(model, agent_step!, model_step!, parameters[:generations], collect, when=when, replicates=replicates, parallel=parallel)
 
   # Expand columns that have tuples (multiple values)
-  allnames = Agents.names(data)
+  allnames = Agents.names(adata)
   tuple_cols = Symbol[]
   for nam in allnames
-    if eltype(data[!, nam]) <: Tuple
+    if eltype(adata[!, nam]) <: Tuple
+      push!(tuple_cols, nam)
+    end
+  end
+  allnames = Agents.names(mdata)
+  tuple_cols = Symbol[]
+  for nam in allnames
+    if eltype(mdata[!, nam]) <: Tuple
       push!(tuple_cols, nam)
     end
   end
 
   for nam in tuple_cols
-    nitems = length(data[1, nam])
+    nitems = length(adata[1, nam])
     for item in 1:nitems
-      data[!, Symbol(string(nam) * "_$item")] = getfield.(data[!, nam], item)
+      adata[!, Symbol(string(nam) * "_$item")] = getfield.(adata[!, nam], item)
     end
-    Agents.select!(data, Agents.Not(nam))  # remove the column with tuples
+    Agents.select!(adata, Agents.Not(nam))  # remove the column with tuples
   end
 
-  return data, model
+  for nam in tuple_cols
+    nitems = length(mdata[1, nam])
+    for item in 1:nitems
+      mdata[!, Symbol(string(nam) * "_$item")] = getfield.(mdata[!, nam], item)
+    end
+    Agents.select!(mdata, Agents.Not(nam))  # remove the column with tuples
+  end
+
+  return adata, mdata, model
 end
