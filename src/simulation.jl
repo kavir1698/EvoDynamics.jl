@@ -230,7 +230,7 @@ function migration!(agent::Ind, model::ABM)
     return
   end
   vertexpos = Agents.coord2vertex(agent.pos, model)
-  row = model.properties[:migration_rates][agent.species][vertexpos, :]
+  row = model.properties[:migration_rates][agent.species][:, vertexpos]
   new_node = sample(1:length(row), Weights(row))
   if new_node != vertexpos
     move_agent!(agent, new_node, model)
