@@ -71,10 +71,12 @@ function model_initiation(;ngenes, nphenotypes, epistasisMat, pleiotropyMat, exp
     end
   end
 
-  properties = Dict(:ngenes => ngenes, :nphenotypes => nphenotypes, :epistasisMat => newA, :pleiotropyMat => pleiotropyMat, :expressionArrays => newQ, :growthrates => growthrates, :competitionCoeffs => competitionCoeffs, :selectionCoeffs => selectionCoeffs, :ploidy => ploidy, :optPhenotypes => optPhenotypes, :covMat => inv.(newcovMat), :mutProbs => Mdists, :mutMagnitudes => Ddists, :N => N, :E => Ed, :generations => generations, :K => K, :migration_rates => migration_rates, :nspecies => nspecies)
+  epistasisMatS = [MArray{Tuple{size(epistasisMat[i])...}}(newA[i]) for i in 1:length(newA)]
+  pleiotropyMatS = [MArray{Tuple{size(pleiotropyMat[i])...}}(pleiotropyMat[i]) for i in 1:length(pleiotropyMat)]
+  expressionArraysS = [MArray{Tuple{size(newQ[i])...}}(newQ[i]) for i in 1:length(newQ)]
+  properties = Dict(:ngenes => ngenes, :nphenotypes => nphenotypes, :epistasisMat => epistasisMatS, :pleiotropyMat => pleiotropyMatS, :expressionArrays => expressionArraysS, :growthrates => growthrates, :competitionCoeffs => competitionCoeffs, :selectionCoeffs => selectionCoeffs, :ploidy => ploidy, :optPhenotypes => optPhenotypes, :covMat => inv.(newcovMat), :mutProbs => Mdists, :mutMagnitudes => Ddists, :N => N, :E => Ed, :generations => generations, :K => K, :migration_rates => migration_rates, :nspecies => nspecies)
 
   indtype = EvoDynamics.Ind{typeof(0.1), eltype(properties[:epistasisMat]), eltype(properties[:pleiotropyMat]), eltype(properties[:expressionArrays])}
-  # EvoDynamics.Ind{Float64,Array{Float64,2},Array{Bool,2},Array{Float64,1}}
   model = ABM(indtype, fspace, properties=properties)
   
   # create and add agents
