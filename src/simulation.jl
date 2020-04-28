@@ -242,16 +242,13 @@ function sample!(model::ABM, species::Int, node_number::Int,
   weight=nothing; replace=true,
   rng::AbstractRNG=Random.GLOBAL_RNG)
 
-  max_id = maximum(keys(model.agents))
   node_content_all = get_node_contents(node_number, model)
   node_content = [i for i in node_content_all if model.agents[i].species == species]
-  if length(node_content) == 0
-    return
-  end
+  length(node_content) == 0 && return
+
   n = lotkaVoltera(model, species, node_number)
-  if n == 0
-    return
-  end
+  n == 0 && return
+
   if weight != nothing
       weights = Weights([getproperty(model.agents[a], weight) for a in node_content])
       newids = sample(rng, node_content, weights, n, replace=replace)
@@ -259,17 +256,21 @@ function sample!(model::ABM, species::Int, node_number::Int,
       newids = sample(rng, node_content, n, replace=replace)
   end
 
-  for id in newids # add new agents to the model
-    ag = deepcopy(model.agents[id])
-    ag.id = max_id + 1
-    add_agent_pos!(ag, model)
-    # model.agents[max_id + 1] = deepcopy(model.agents[id])
-    # push!(model.space.agent_positions[coord2vertex(model.agents[id].pos, model)], max_id + 1)
-    max_id += 1
+  n = nextid(model)
+  for id in node_content
+    if !in(id, newids)
+      kill_agent!(model.agents[id], model)
+    else
+      noccurances = count(x->x==id, newids)
+      for t in 2:noccurances
+        newagent = deepcopy(model.agents[id])
+        newagent.id = n
+        add_agent_pos!(newagent, model)
+        n += 1
+      end
+    end
   end
 
-  # kill old/extra agents
-  genocide!(model, node_content)
 end
 
 """
