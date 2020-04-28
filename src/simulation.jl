@@ -298,7 +298,6 @@ function lotkaVoltera(model::ABM, species::Int, node::Int)
     return
   end
   as = model.properties[:competitionCoeffs]
-  # species_ids = collect(1:model.properties[:nspecies])
   species_ids = 1:model.properties[:nspecies]
   if as == nothing || length(species_ids) == 0
     r = model.properties[:growthrates][species]
@@ -317,7 +316,10 @@ end
 
 "Returns population size per species in the node"
 function nagents_species(model::ABM, node::Int)
-  counter = zeros(Int, model.properties[:nspecies])
+  counter = Dict{Int, Int}()
+  for i in 1:model.properties[:nspecies]
+    counter[i] = 0
+  end
   for id in model.space.agent_positions[node]
     counter[model.agents[id].species] += 1
   end
