@@ -51,9 +51,9 @@ function model_initiation(;ngenes, nphenotypes, epistasisMat, pleiotropyMat, exp
     end
   end
 
-  Ed = MVector{nspecies}([Normal(0.0, i) for i in E])
-  Mdists = MVector{nspecies}([[DiscreteNonParametric([true, false], [i, 1-i]) for i in arr] for arr in mutProbs])  # μ (probability of change)
-  Ddists = MVector{nspecies}([[Normal(0, ar[1]), DiscreteNonParametric([true, false], [ar[2], 1-ar[2]]), Normal(0, ar[3])] for ar in mutMagnitudes])  # amount of change in case of mutation
+  Ed = [Normal(0.0, i) for i in E]
+  Mdists = [[DiscreteNonParametric([true, false], [i, 1-i]) for i in arr] for arr in mutProbs]  # μ (probability of change)
+  Ddists = [[Normal(0, ar[1]), DiscreteNonParametric([true, false], [ar[2], 1-ar[2]]), Normal(0, ar[3])] for ar in mutMagnitudes]  # amount of change in case of mutation
   
   # make single-element arrays 2D so that linAlg functions will work
   newA = Array{Array{Float64}}(undef, length(epistasisMat))
