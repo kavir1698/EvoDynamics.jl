@@ -74,7 +74,7 @@ function model_initiation(;ngenes, nphenotypes, epistasisMat, pleiotropyMat, exp
   properties = Dict(:ngenes => ngenes, :nphenotypes => nphenotypes, :epistasisMat => newA, :pleiotropyMat => pleiotropyMat, :expressionArrays => newQ, :growthrates => growthrates, :competitionCoeffs => competitionCoeffs, :selectionCoeffs => selectionCoeffs, :ploidy => ploidy, :optPhenotypes => optPhenotypes, :covMat => inv.(newcovMat), :mutProbs => Mdists, :mutMagnitudes => Ddists, :N => N, :E => Ed, :generations => generations, :K => K, :migration_rates => migration_rates, :nspecies => nspecies)
 
   indtype = EvoDynamics.Ind{typeof(0.1), eltype(properties[:epistasisMat]), eltype(properties[:pleiotropyMat]), eltype(properties[:expressionArrays])}
-EvoDynamics.Ind{Float64,Array{Float64,2},Array{Bool,2},Array{Float64,1}}
+  # EvoDynamics.Ind{Float64,Array{Float64,2},Array{Bool,2},Array{Float64,1}}
   model = ABM(indtype, fspace, properties=properties)
   
   # create and add agents
