@@ -51,9 +51,9 @@ function model_initiation(;ngenes, nphenotypes, epistasisMat, pleiotropyMat, exp
     end
   end
 
-  Ed = [Normal(0.0, i) for i in E]
-  Mdists = [[DiscreteNonParametric([true, false], [i, 1-i]) for i in arr] for arr in mutProbs]  # μ (probability of change)
-  Ddists = [[Normal(0, ar[1]), DiscreteNonParametric([true, false], [ar[2], 1-ar[2]]), Normal(0, ar[3])] for ar in mutMagnitudes]  # amount of change in case of mutation
+  Ed = MVector{nspecies}([Normal(0.0, i) for i in E])
+  Mdists = MVector{nspecies}([[DiscreteNonParametric([true, false], [i, 1-i]) for i in arr] for arr in mutProbs])  # μ (probability of change)
+  Ddists = MVector{nspecies}([[Normal(0, ar[1]), DiscreteNonParametric([true, false], [ar[2], 1-ar[2]]), Normal(0, ar[3])] for ar in mutMagnitudes])  # amount of change in case of mutation
   
   # make single-element arrays 2D so that linAlg functions will work
   newA = Array{Array{Float64}}(undef, length(epistasisMat))
@@ -87,7 +87,7 @@ EvoDynamics.Ind{Float64,Array{Float64,2},Array{Bool,2},Array{Float64,1}}
         takeabs = abs.(z .- properties[:optPhenotypes][ind2])
         W = exp(-properties[:selectionCoeffs][ind2] * transpose(takeabs)*properties[:covMat][ind2]*takeabs)[1]
         W = minimum([1e5, W])
-        add_agent!(pos, model, ind2, W, deepcopy(properties[:epistasisMat][ind2]), deepcopy(properties[:pleiotropyMat][ind2]), deepcopy(properties[:expressionArrays][ind2]))
+        add_agent!(pos, model, ind2, W, MArray{Tuple{size(properties[:epistasisMat][ind2])...}}(properties[:epistasisMat][ind2]), MArray{Tuple{size(properties[:pleiotropyMat][ind2])...}}(properties[:pleiotropyMat][ind2]), MVector{length(properties[:expressionArrays][ind2])}(properties[:expressionArrays][ind2]))
       end
     end
   end
@@ -174,11 +174,11 @@ function reproduce!(agent1::Ind, agent2::Ind, model::ABM)
   loci_shuffled = shuffle(1:nloci)
   loci1 = 1:ceil(Int, nloci/2)
   noci1_dip = vcat(loci_shuffled[loci1], loci_shuffled[loci1] .+ nloci)
-  childA = deepcopy(agent2.epistasisMat)
+  childA = MVector{length(agent2.epistasisMat)}(agent2.epistasisMat)
   childA[:, noci1_dip] .= agent1.epistasisMat[:, noci1_dip]
-  childB = deepcopy(agent2.pleiotropyMat)
+  childB = MVector{length(agent2.pleiotropyMat)}(agent2.pleiotropyMat)
   childB[:, noci1_dip] .= agent1.pleiotropyMat[:, noci1_dip]
-  childq = deepcopy(agent2.q)
+  childq = MVector{length(agent2.q)}(agent2.q)
   childq[noci1_dip] .= agent1.q[noci1_dip]
   child = add_agent!(agent1.pos, model, agent1.species, 0.2, childA, childB, childq)  
   update_fitness!(child, model)
