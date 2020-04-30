@@ -103,7 +103,7 @@ end
 A function to define what happens within each step of the model.
 """
 function model_step!(model::ABM)
-  if sum(model.properties[:ploidy]) > length(model.properties[:ploidy]) # there is at least one diploid
+  if sum(model.ploidy) > length(model.ploidy) # there is at least one diploid
     sexual_reproduction!(model)
   end
   selection!(model)
@@ -116,7 +116,7 @@ end
 
 function selection!(model::ABM)
   for node in 1:nv(model)
-    for species in 1:model.properties[:nspecies]
+    for species in 1:model.nspecies
       sample!(model, species, node, :W)
     end
   end
@@ -129,12 +129,12 @@ function sexual_reproduction!(model::ABM, node_number::Int)
   node_content = get_node_contents(node_number, model)
   mates = mate(model, node_number)
   for pair in mates
-    reproduce!(model.agents[pair[1]], model.agents[pair[2]], model)
+    reproduce!(model[pair[1]], model[pair[2]], model)
   end
 
   # kill the parents
   for id in node_content
-    kill_agent!(model.agents[id], model)
+    kill_agent!(model[id], model)
   end
 end
 
@@ -147,7 +147,7 @@ end
 "Returns an array of tuples for each pair of agent ids to reproduce"
 function mate(model::ABM, node_number::Int)
   node_content = get_node_contents(node_number, model)
-  same_species = [[k for k in node_content if model.agents[k].species == i] for i in 1:model.properties[:nspecies] if model.properties[:ploidy][i] == 2]
+  same_species = [[k for k in node_content if model[k].species == i] for i in 1:model.nspecies if model.ploidy[i] == 2]
 
   mates = Array{Tuple{Int, Int}}(undef, sum(length.(same_species)))
 
@@ -172,7 +172,7 @@ An offspring is created from gametes that include one allele from each loci and 
 Each gamete is half of `epistasisMat` (column-wise)
 """
 function reproduce!(agent1::Ind, agent2::Ind, model::ABM)
-  nloci = Int(model.properties[:ngenes][agent1.species]/2)
+  nloci = Int(model.ngenes[agent1.species]/2)
   loci_shuffled = shuffle(1:nloci)
   loci1 = 1:ceil(Int, nloci/2)
   noci1_dip = vcat(loci_shuffled[loci1], loci_shuffled[loci1] .+ nloci)
@@ -189,17 +189,17 @@ end
 "Mutate an agent."
 function mutation!(agent::Ind, model::ABM)
   # mutate gene expression
-  if rand(model.properties[:mutProbs][agent.species][1])
-    agent.q .+= rand(model.properties[:mutMagnitudes][agent.species][1], model.properties[:ngenes][agent.species])
+  if rand(model.mutProbs[agent.species][1])
+    agent.q .+= rand(model.mutMagnitudes[agent.species][1], model.ngenes[agent.species])
   end
   # mutate pleiotropy matrix
-  if rand(model.properties[:mutProbs][agent.species][2])
-    randnumbers = rand(model.properties[:mutMagnitudes][agent.species][2], size(agent.pleiotropyMat))
+  if rand(model.mutProbs[agent.species][2])
+    randnumbers = rand(model.mutMagnitudes[agent.species][2], size(agent.pleiotropyMat))
     agent.pleiotropyMat[randnumbers] .= .!agent.pleiotropyMat[randnumbers]
   end
   # mutate epistasis matrix
-  if rand(model.properties[:mutProbs][agent.species][3])
-    agent.epistasisMat .+= rand(model.properties[:mutMagnitudes][agent.species][3], size(agent.epistasisMat))
+  if rand(model.mutProbs[agent.species][3])
+    agent.epistasisMat .+= rand(model.mutMagnitudes[agent.species][3], size(agent.epistasisMat))
   end
   update_fitness!(agent, model)
 end
@@ -212,10 +212,10 @@ end
 
 "Recalculate the fitness of `agent`"
 function update_fitness!(agent::Ind, model::ABM)
-  d = model.properties[:E][agent.species]
+  d = model.E[agent.species]
   Fmat = agent.pleiotropyMat * (agent.epistasisMat * agent.q)
-  takeabs = abs.((Fmat .+ rand(d)) .- model.properties[:optPhenotypes][agent.species])
-  W = exp(-model.properties[:selectionCoeffs][agent.species] * transpose(takeabs) * model.properties[:covMat][agent.species] * takeabs)[1]
+  takeabs = abs.((Fmat .+ rand(d)) .- model.optPhenotypes[agent.species])
+  W = exp(-model.selectionCoeffs[agent.species] * transpose(takeabs) * model.covMat[agent.species] * takeabs)[1]
   W = min(1e5, W)
   agent.W = W
 end
@@ -226,13 +226,13 @@ function update_fitness!(model::ABM)
   end
 end
 
-"Move the agent to a new node with probabilities given in :migration_rates"
+"Move the agent to a new node with probabilities given in `migration_rates`"
 function migration!(agent::Ind, model::ABM)
-  if model.properties[:migration_rates][agent.species] == nothing
+  if model.migration_rates[agent.species] == nothing
     return
   end
   vertexpos = Agents.coord2vertex(agent.pos, model)
-  row = model.properties[:migration_rates][agent.species][:, vertexpos]
+  row = view(model.migration_rates[agent.species], :, vertexpos)
   new_node = sample(1:length(row), Weights(row))
   if new_node != vertexpos
     move_agent!(agent, new_node, model)
@@ -245,34 +245,38 @@ function sample!(model::ABM, species::Int, node_number::Int,
   rng::AbstractRNG=Random.GLOBAL_RNG)
 
   node_content_all = get_node_contents(node_number, model)
-  node_content = [i for i in node_content_all if model.agents[i].species == species]
+  node_content = [i for i in node_content_all if model[i].species == species]
   length(node_content) == 0 && return
 
   n = lotkaVoltera(model, species, node_number)
   n == 0 && return
 
   if weight != nothing
-      weights = Weights([getproperty(model.agents[a], weight) for a in node_content])
+      weights = Weights([getproperty(model[a], weight) for a in node_content])
       newids = sample(rng, node_content, weights, n, replace=replace)
   else
       newids = sample(rng, node_content, n, replace=replace)
   end
 
+  add_newids!(model, node_content, newids)
+end
+
+"Used in sample!"
+function add_newids!(model, node_content, newids)
   n = nextid(model)
   for id in node_content
     if !in(id, newids)
-      kill_agent!(model.agents[id], model)
+      kill_agent!(model[id], model)
     else
       noccurances = count(x->x==id, newids)
       for t in 2:noccurances
-        newagent = deepcopy(model.agents[id])
+        newagent = deepcopy(model[id])
         newagent.id = n
         add_agent_pos!(newagent, model)
         n += 1
       end
     end
   end
-
 end
 
 """
@@ -281,7 +285,7 @@ Kill the agents of the model whose IDs are in n.
 """
 function genocide!(model::ABM, n::AbstractArray)
   for k in n
-    kill_agent!(model.agents[k], model)
+    kill_agent!(model[k], model)
   end
 end
 
@@ -300,18 +304,19 @@ function lotkaVoltera(model::ABM, species::Int, node::Int)
   if N == 0
     return
   end
-  as = model.properties[:competitionCoeffs]
-  species_ids = 1:model.properties[:nspecies]
-  if as == nothing || length(species_ids) == 0
-    r = model.properties[:growthrates][species]
-    K = model.properties[:K][node][species]
+  cc = model.competitionCoeffs
+  species_ids = 1:model.nspecies
+  if cc == nothing || length(species_ids) == 0
+    r = model.growthrates[species]
+    K = model.K[node][species]
     nextN = N + r*N*(1 - (N/K))
     return round(Int, nextN)
   else 
-    aNs = as[species_ids]' * [Ns[i] for i in species_ids]
-    aNs -= as[species] * Ns[species]  # removes the current species from aNs.
-    r = model.properties[:growthrates][species]
-    K = model.properties[:K][node][species]
+    ccs = view(cc, :, species)
+    aNs = ccs' * Ns
+    aNs -= ccs[species] * Ns[species]  # removes the current species from aNs.
+    r = model.growthrates[species]
+    K = model.K[node][species]
     nextN = N + r*N*(1 - ((N+aNs)/K))
     return round(Int, nextN)
   end
@@ -319,12 +324,9 @@ end
 
 "Returns population size per species in the node"
 function nagents_species(model::ABM, node::Int)
-  counter = Dict{Int, Int}()
-  for i in 1:model.properties[:nspecies]
-    counter[i] = 0
-  end
+  counter = zeros(Int, model.nspecies)
   for id in model.space.agent_positions[node]
-    counter[model.agents[id].species] += 1
+    counter[model[id].species] += 1
   end
   return counter
 end
