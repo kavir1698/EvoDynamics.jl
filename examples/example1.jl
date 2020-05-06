@@ -6,19 +6,19 @@
 using EvoDynamics
 
 parameters = Dict(
-  :L => (1),
-  :P => (1),
-  :R => (0.7),
-  :C => nothing,
-  :B => [[true]],
-  :A =>  [[1.0]],
-  :Q => [[1.0]],
-  :Y => (0.5),
-  :m => (1),
-  :T => [[2.4]],
-  :Ω => [[0.8]],
-  :M => [(0.1, 0.0, 0.0)],
-  :D => [(0.05, 0.0, 0.01)],
+  :ngenes => (1),
+  :nphenotypes => (1),
+  :growthrates => (0.7),
+  :competitionCoeffs => nothing,
+  :pleiotropyMat => [[true]],
+  :epistasisMat =>  [[1.0]],
+  :expressionArrays => [[1.0]],
+  :selectionCoeffs => (0.5),
+  :ploidy => (1),
+  :optPhenotypes => [[2.4]],
+  :covMat => [[0.8]],
+  :mutProbs => [(0.1, 0.0, 0.0)],
+  :mutMagnitudes => [(0.05, 0.0, 0.01)],
   :N => Dict(1 => (100)),
   :K => Dict(1 => [1000]),
   :migration_rates => [nothing],
@@ -27,4 +27,4 @@ parameters = Dict(
   :space => nothing
 )
 
-data, model = runmodel(parameters)
+agentdata, modeldata, model = runmodel(parameters)

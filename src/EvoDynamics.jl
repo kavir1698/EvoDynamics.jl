@@ -5,6 +5,7 @@ using Random
 using Distributions
 using StatsBase
 using LinearAlgebra
+using StaticArrays
 
 include("simulation.jl")
 include("api.jl")
