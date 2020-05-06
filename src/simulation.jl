@@ -176,9 +176,9 @@ function reproduce!(agent1::Ind, agent2::Ind, model::ABM)
   loci_shuffled = shuffle(1:nloci)
   loci1 = 1:ceil(Int, nloci/2)
   noci1_dip = vcat(loci_shuffled[loci1], loci_shuffled[loci1] .+ nloci)
-  childA = MVector{length(agent2.epistasisMat)}(agent2.epistasisMat)
+  childA = MArray{Tuple{size(agent2.epistasisMat)...}}(agent2.epistasisMat)
   childA[:, noci1_dip] .= agent1.epistasisMat[:, noci1_dip]
-  childB = MVector{length(agent2.pleiotropyMat)}(agent2.pleiotropyMat)
+  childB = MArray{Tuple{size(agent2.pleiotropyMat)...}}(agent2.pleiotropyMat)
   childB[:, noci1_dip] .= agent1.pleiotropyMat[:, noci1_dip]
   childq = MVector{length(agent2.q)}(agent2.q)
   childq[noci1_dip] .= agent1.q[noci1_dip]
