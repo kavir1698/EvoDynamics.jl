@@ -22,7 +22,7 @@ function model_initiation(;ngenes, nphenotypes, epistasisMat, pleiotropyMat, exp
     Random.seed!(seed)
   end
   
-  if space == nothing
+  if isnothing(space)
     fspace = GridSpace((1, 1))
   elseif typeof(space) <: NTuple
     fspace = GridSpace(space, periodic=periodic, moore=moore)
@@ -43,7 +43,7 @@ function model_initiation(;ngenes, nphenotypes, epistasisMat, pleiotropyMat, exp
   for (k, v) in N
     @assert length(v) == nspecies "Each value in N should have size equal to number of species"
   end
-  if migration_rates != nothing
+  if !isnothing(migration_rates)
     for item in migration_rates
       if typeof(item) <: AbstractArray
         @assert size(item, 1) == nv(fspace) "migration_rates has different rows than there are nodes in space."
@@ -59,7 +59,7 @@ function model_initiation(;ngenes, nphenotypes, epistasisMat, pleiotropyMat, exp
   newA = Array{Array{Float64}}(undef, length(epistasisMat))
   newQ = Array{Array{Float64}}(undef, length(epistasisMat))
   newcovMat = Array{Array{Float64}}(undef, length(epistasisMat))
-  for i in 1:length(epistasisMat)
+  for i in eachindex(epistasisMat)
     if length(epistasisMat[i]) == 1
       newA[i] = reshape(epistasisMat[i], 1, 1)
       newQ[i] = reshape(expressionArrays[i], 1, 1)
@@ -71,9 +71,9 @@ function model_initiation(;ngenes, nphenotypes, epistasisMat, pleiotropyMat, exp
     end
   end
 
-  epistasisMatS = [MArray{Tuple{size(epistasisMat[i])...}}(newA[i]) for i in 1:length(newA)]
-  pleiotropyMatS = [MArray{Tuple{size(pleiotropyMat[i])...}}(pleiotropyMat[i]) for i in 1:length(pleiotropyMat)]
-  expressionArraysS = [MArray{Tuple{size(newQ[i])...}}(newQ[i]) for i in 1:length(newQ)]
+  epistasisMatS = [MArray{Tuple{size(epistasisMat[i])...}}(newA[i]) for i in eachindex(newA)]
+  pleiotropyMatS = [MArray{Tuple{size(pleiotropyMat[i])...}}(pleiotropyMat[i]) for i in eachindex(pleiotropyMat)]
+  expressionArraysS = [MArray{Tuple{size(newQ[i])...}}(newQ[i]) for i in eachindex(newQ)]
   properties = Dict(:ngenes => ngenes, :nphenotypes => nphenotypes, :epistasisMat => epistasisMatS, :pleiotropyMat => pleiotropyMatS, :expressionArrays => expressionArraysS, :growthrates => growthrates, :competitionCoeffs => competitionCoeffs, :selectionCoeffs => selectionCoeffs, :ploidy => ploidy, :optPhenotypes => optPhenotypes, :covMat => inv.(newcovMat), :mutProbs => Mdists, :mutMagnitudes => Ddists, :N => N, :E => Ed, :generations => generations, :K => K, :migration_rates => migration_rates, :nspecies => nspecies)
 
   indtype = EvoDynamics.Ind{typeof(0.1), eltype(properties[:epistasisMat]), eltype(properties[:pleiotropyMat]), eltype(properties[:expressionArrays])}
@@ -228,7 +228,7 @@ end
 
 "Move the agent to a new node with probabilities given in `migration_rates`"
 function migration!(agent::Ind, model::ABM)
-  if model.migration_rates[agent.species] == nothing
+  if isnothing(model.migration_rates[agent.species])
     return
   end
   vertexpos = Agents.coord2vertex(agent.pos, model)
@@ -251,7 +251,7 @@ function sample!(model::ABM, species::Int, node_number::Int,
   n = lotkaVoltera(model, species, node_number)
   n == 0 && return
 
-  if weight != nothing
+  if !isnothing(weight)
       weights = Weights([getproperty(model[a], weight) for a in node_content])
       newids = sample(rng, node_content, weights, n, replace=replace)
   else
@@ -306,7 +306,7 @@ function lotkaVoltera(model::ABM, species::Int, node::Int)
   end
   cc = model.competitionCoeffs
   species_ids = 1:model.nspecies
-  if cc == nothing || length(species_ids) == 0
+  if isnothing(cc) || length(species_ids) == 0
     r = model.growthrates[species]
     K = model.K[node][species]
     nextN = N + r*N*(1 - (N/K))

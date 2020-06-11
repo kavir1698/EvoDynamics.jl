@@ -40,14 +40,14 @@ function runmodel(parameters::Dict;
 
   # Expand columns that have tuples (multiple values)
   allnames = Agents.names(agdata)
-  tuple_colsa = Symbol[]
+  tuple_colsa = String[]
   for nam in allnames
     if eltype(agdata[!, nam]) <: Tuple
       push!(tuple_colsa, nam)
     end
   end
   allnames = Agents.names(modata)
-  tuple_colsm = Symbol[]
+  tuple_colsm = String[]
   for nam in allnames
     if eltype(modata[!, nam]) <: Tuple
       push!(tuple_colsm, nam)
@@ -57,7 +57,7 @@ function runmodel(parameters::Dict;
   for nam in tuple_colsa
     nitems = length(agdata[1, nam])
     for item in 1:nitems
-      agdata[!, Symbol(string(nam) * "_$item")] = getfield.(agdata[!, nam], item)
+      agdata[!, Symbol(nam * "_$item")] = getfield.(agdata[!, Symbol(nam)], item)
     end
     Agents.select!(agdata, Agents.Not(nam))  # remove the column with tuples
   end
@@ -65,9 +65,9 @@ function runmodel(parameters::Dict;
   for nam in tuple_colsm
     nitems = length(modata[1, nam])
     for item in 1:nitems
-      modata[!, Symbol(string(nam) * "_$item")] = getfield.(modata[!, nam], item)
+      modata[!, Symbol(nam * "_$item")] = getfield.(modata[!, Symbol(nam)], item)
     end
-    Agents.select!(modata, Agents.Not(nam))  # remove the column with tuples
+    Agents.select!(modata, Agents.Not(Symbol(nam)))  # remove the column with tuples
   end
 
   return agdata, modata, model
