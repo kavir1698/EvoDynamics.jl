@@ -29,14 +29,16 @@ function runmodel(parameters::Dict;
   adata=nothing, mdata=[mean_fitness_per_species],
   when::AbstractArray{Int}=0:parameters[:generations],
   replicates::Int = 0,
-  parallel::Bool = false
+  parallel::Bool = false,
+  model_function = model_step!,
+  agent_function = agent_step!
   )
 
   # create model
   model = model_initiation(;parameters...)
 
   # run model and collect data
-  agdata, modata = run!(model, agent_step!, model_step!, parameters[:generations], adata=adata, mdata=mdata, when=when, replicates=replicates, parallel=parallel)
+  agdata, modata = run!(model, agent_function, model_function, parameters[:generations], adata=adata, mdata=mdata, when=when, replicates=replicates, parallel=parallel)
 
   # Expand columns that have tuples (multiple values)
   allnames = Agents.names(agdata)
