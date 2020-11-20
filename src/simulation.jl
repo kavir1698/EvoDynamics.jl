@@ -13,11 +13,11 @@ mutable struct Ind{B<:AbstractFloat, C<:AbstractArray, D<:AbstractArray, E<:Abst
 end
 
 """
-    model_initiation(;ngenes, nphenotypes, epistasisMat, pleiotropyMat, expressionArrays, selectionCoeffs, ploidy, optPhenotypes, covMat, mutProbs, N, E, growthrates, competitionCoeffs, mutMagnitudes, generations, migration_rates, K, space=nothing, periodic=false, moore=false, seed=0)
+    model_initiation(;ngenes, nphenotypes, epistasisMat, pleiotropyMat, expressionArrays, selectionCoeffs, ploidy, optPhenotypes, covMat, mutProbs, N, E, growthrates, interactionCoeffs, mutMagnitudes, generations, migration_rates, K, space=nothing, periodic=false, moore=false, seed=0)
 
 Innitializes the model.
 """
-function model_initiation(;ngenes, nphenotypes, epistasisMat, pleiotropyMat, expressionArrays, selectionCoeffs, ploidy, optPhenotypes, covMat, mutProbs, N, E, growthrates, competitionCoeffs, mutMagnitudes, generations, migration_rates, K, space=nothing, periodic=false, moore=false, seed=0)
+function model_initiation(;ngenes, nphenotypes, epistasisMat, pleiotropyMat, expressionArrays, selectionCoeffs, ploidy, optPhenotypes, covMat, mutProbs, N, E, growthrates, interactionCoeffs, mutMagnitudes, generations, migration_rates, K, space=nothing, periodic=false, moore=false, seed=0)
   if seed >0
     Random.seed!(seed)
   end
@@ -74,7 +74,7 @@ function model_initiation(;ngenes, nphenotypes, epistasisMat, pleiotropyMat, exp
   epistasisMatS = [MArray{Tuple{size(epistasisMat[i])...}}(newA[i]) for i in eachindex(newA)]
   pleiotropyMatS = [MArray{Tuple{size(pleiotropyMat[i])...}}(pleiotropyMat[i]) for i in eachindex(pleiotropyMat)]
   expressionArraysS = [MArray{Tuple{size(newQ[i])...}}(newQ[i]) for i in eachindex(newQ)]
-  properties = Dict(:ngenes => ngenes, :nphenotypes => nphenotypes, :epistasisMat => epistasisMatS, :pleiotropyMat => pleiotropyMatS, :expressionArrays => expressionArraysS, :growthrates => growthrates, :competitionCoeffs => competitionCoeffs, :selectionCoeffs => selectionCoeffs, :ploidy => ploidy, :optPhenotypes => optPhenotypes, :covMat => inv.(newcovMat), :mutProbs => Mdists, :mutMagnitudes => Ddists, :N => N, :E => Ed, :generations => generations, :K => K, :migration_rates => migration_rates, :nspecies => nspecies)
+  properties = Dict(:ngenes => ngenes, :nphenotypes => nphenotypes, :epistasisMat => epistasisMatS, :pleiotropyMat => pleiotropyMatS, :expressionArrays => expressionArraysS, :growthrates => growthrates, :interactionCoeffs => interactionCoeffs, :selectionCoeffs => selectionCoeffs, :ploidy => ploidy, :optPhenotypes => optPhenotypes, :covMat => inv.(newcovMat), :mutProbs => Mdists, :mutMagnitudes => Ddists, :N => N, :E => Ed, :generations => generations, :K => K, :migration_rates => migration_rates, :nspecies => nspecies)
 
   indtype = EvoDynamics.Ind{typeof(0.1), eltype(properties[:epistasisMat]), eltype(properties[:pleiotropyMat]), eltype(properties[:expressionArrays])}
   model = ABM(indtype, fspace, properties=properties)
@@ -304,7 +304,7 @@ function lotkaVoltera(model::ABM, species::Int, node::Int)
   if N == 0
     return
   end
-  cc = model.competitionCoeffs
+  cc = model.interactionCoeffs
   species_ids = 1:model.nspecies
   if isnothing(cc) || length(species_ids) == 0
     r = model.growthrates[species]

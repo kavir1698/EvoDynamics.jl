@@ -49,7 +49,7 @@ end
   parameters2[:N] =  Dict(1 => (100, 200), 2 => (200, 100))
   parameters2[:K] = Dict(1 => [1000, 1000], 2 => [500, 500], 3 => [1000, 1000], 4 => [1000, 1000])
   parameters2[:growthrates] = (0.1, 0.1)
-  parameters2[:competitionCoeffs] = reshape([0.1 for i in 1:4], 2, 2)
+  parameters2[:interactionCoeffs] = reshape([0.1 for i in 1:4], 2, 2)
   model = EvoDynamics.model_initiation(;parameters2...)
 
   a11 = EvoDynamics.lotkaVoltera(model, 1, 1)
