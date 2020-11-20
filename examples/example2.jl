@@ -59,5 +59,4 @@ function nspecies_per_node(model)
 end
 
 agentdata, modeldata, model = runmodel(parameters, mdata=[nspecies_per_node]);
-CSV.write("data.csv", modeldata)
-save("model.jld2", "model", model)
+modeldata

@@ -15,9 +15,6 @@ Install using the following command in Julia REPL:
 ]add EvoDynamics
 ```
 
-It is compatible with Julia 1.3+.
-
-
 ## Contributions
 
 Any contribution to EvoDynamics.jl is welcome in the following ways:
