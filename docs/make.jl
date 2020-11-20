@@ -26,7 +26,7 @@ pages = [
 	"API" => "api.md",
 	"Examples" => [
 	  "Simplest model" => "example1.md",
-	  # "Example 2" => "example2.md",
+	  "Weak modular structure" => "example2.md",
 		],
     ],
 )
