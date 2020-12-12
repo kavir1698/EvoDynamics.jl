@@ -2,7 +2,6 @@ using Pkg
 Pkg.activate(@__DIR__)
 
 using Documenter, Agents, Distributions, Random, StatsBase, Plots
-using EvoDynamics
 using Literate
 
 # %% Literate convertion
