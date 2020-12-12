@@ -5,8 +5,6 @@ using Agents
 using Distributions
 using Random
 using LinearAlgebra
-using CSV
-using JLD2, FileIO
 
 nspecies = 10
 nphenotypes = fill(3, nspecies)
