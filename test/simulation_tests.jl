@@ -52,10 +52,10 @@ end
   parameters2[:interactionCoeffs] = reshape([0.1 for i in 1:4], 2, 2)
   model = EvoDynamics.model_initiation(;parameters2...)
 
-  a11 = EvoDynamics.lotkaVoltera(model, 1, 1)
-  a21 = EvoDynamics.lotkaVoltera(model, 2, 1)
-  a12 = EvoDynamics.lotkaVoltera(model, 1, 2)
-  a22 = EvoDynamics.lotkaVoltera(model, 2, 2)
+  a11 = EvoDynamics.lotkaVoltera_competition(model, 1, 1)
+  a21 = EvoDynamics.lotkaVoltera_competition(model, 2, 1)
+  a12 = EvoDynamics.lotkaVoltera_competition(model, 1, 2)
+  a22 = EvoDynamics.lotkaVoltera_competition(model, 2, 2)
 
   @test a11/100 > a21/200
   @test a12/200 < a22/100

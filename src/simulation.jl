@@ -17,7 +17,7 @@ end
 
 Innitializes the model.
 """
-function model_initiation(;ngenes, nphenotypes, epistasisMat, pleiotropyMat, expressionArrays, selectionCoeffs, ploidy, optPhenotypes, covMat, mutProbs, N, E, growthrates, interactionCoeffs, mutMagnitudes, generations, migration_rates, K, space=nothing, periodic=false, moore=false, seed=0)
+function model_initiation(;ngenes, nphenotypes, epistasisMat, pleiotropyMat, expressionArrays, selectionCoeffs, ploidy, optPhenotypes, covMat, mutProbs, N, E, growthrates, interactionCoeffs, mutMagnitudes, generations, migration_rates, K, space=nothing, periodic=false, moore=false, interaction_equation="lotkaVoltera_competition", seed=0)
   if seed >0
     Random.seed!(seed)
   end
@@ -74,7 +74,7 @@ function model_initiation(;ngenes, nphenotypes, epistasisMat, pleiotropyMat, exp
   epistasisMatS = [MArray{Tuple{size(epistasisMat[i])...}}(newA[i]) for i in eachindex(newA)]
   pleiotropyMatS = [MArray{Tuple{size(pleiotropyMat[i])...}}(pleiotropyMat[i]) for i in eachindex(pleiotropyMat)]
   expressionArraysS = [MArray{Tuple{size(newQ[i])...}}(newQ[i]) for i in eachindex(newQ)]
-  properties = Dict(:ngenes => ngenes, :nphenotypes => nphenotypes, :epistasisMat => epistasisMatS, :pleiotropyMat => pleiotropyMatS, :expressionArrays => expressionArraysS, :growthrates => growthrates, :interactionCoeffs => interactionCoeffs, :selectionCoeffs => selectionCoeffs, :ploidy => ploidy, :optPhenotypes => optPhenotypes, :covMat => inv.(newcovMat), :mutProbs => Mdists, :mutMagnitudes => Ddists, :N => N, :E => Ed, :generations => generations, :K => K, :migration_rates => migration_rates, :nspecies => nspecies)
+  properties = Dict(:ngenes => ngenes, :nphenotypes => nphenotypes, :epistasisMat => epistasisMatS, :pleiotropyMat => pleiotropyMatS, :expressionArrays => expressionArraysS, :growthrates => growthrates, :interactionCoeffs => interactionCoeffs, :selectionCoeffs => selectionCoeffs, :ploidy => ploidy, :optPhenotypes => optPhenotypes, :covMat => inv.(newcovMat), :mutProbs => Mdists, :mutMagnitudes => Ddists, :N => N, :E => Ed, :generations => generations, :K => K, :migration_rates => migration_rates, :nspecies => nspecies, :new_N => N, :interaction_equation => interaction_equation)
 
   indtype = EvoDynamics.Ind{typeof(0.1), eltype(properties[:epistasisMat]), eltype(properties[:pleiotropyMat]), eltype(properties[:expressionArrays])}
   model = ABM(indtype, fspace, properties=properties)
@@ -107,6 +107,11 @@ function model_step!(model::ABM)
     sexual_reproduction!(model)
   end
   selection!(model)
+  if model.interaction_equation == "lotkaVoltera_generalized"
+    for node in 1:nv(model)
+      model.new_N[node] = Tuple(lotkaVoltera_generalized(model, node))
+    end
+  end
 end
 
 function agent_step!(agent::Ind, model::ABM)
@@ -127,7 +132,7 @@ Choose a random mate and produce one offsprings with recombination.
 """
 function sexual_reproduction!(model::ABM, node_number::Int)
   node_content = get_node_contents(node_number, model)
-  mates = mate(model, node_number)
+  mates = mate(model, node_content)
   for pair in mates
     reproduce!(model[pair[1]], model[pair[2]], model)
   end
@@ -145,8 +150,7 @@ function sexual_reproduction!(model::ABM)
 end
 
 "Returns an array of tuples for each pair of agent ids to reproduce"
-function mate(model::ABM, node_number::Int)
-  node_content = get_node_contents(node_number, model)
+function mate(model::ABM, node_content)
   same_species = [[k for k in node_content if model[k].species == i] for i in 1:model.nspecies if model.ploidy[i] == 2]
 
   mates = Array{Tuple{Int, Int}}(undef, sum(length.(same_species)))
@@ -248,7 +252,11 @@ function sample!(model::ABM, species::Int, node_number::Int,
   node_content = [i for i in node_content_all if model[i].species == species]
   length(node_content) == 0 && return
 
-  n = lotkaVoltera(model, species, node_number)
+  if model.interaction_equation == "lotkaVoltera_competition"
+    n = lotkaVoltera_competition(model, species, node_number)
+  elseif model.interaction_equation == "lotkaVoltera_generalized"
+    n = model.new_N[node_number][species]
+  end
   n == 0 && return
 
   if !isnothing(weight)
@@ -298,7 +306,7 @@ Calculates the next population size of a species given its current size, intrins
 * species: species number
 
 """
-function lotkaVoltera(model::ABM, species::Int, node::Int)
+function lotkaVoltera_competition(model::ABM, species::Int, node::Int)
   Ns = nagents_species(model, node)
   N = Ns[species]
   if N == 0
@@ -320,6 +328,25 @@ function lotkaVoltera(model::ABM, species::Int, node::Int)
     nextN = N + r*N*(1 - ((N+aNs)/K))
     return round(Int, nextN)
   end
+end
+
+"""
+Same as lotkaVoltera_competition but uses the generalized equation (see below). This version calculates the next population sizes for all species.
+
+* xt+1 = D(xt) + D(xt)(r + Axt)
+* xt: array of n population densities (N/K) at time t.
+* r: vector of n intrinsic growth rates, measuring the growth of population i when grown alone
+* A: n*n matrix of interaction coefficients (`model.interactionCoeffs`)
+* D(x): diagonal matrix with xt on diagonal
+"""
+function lotkaVoltera_generalized(model::ABM, node::Int)
+  x = nagents_species(model, node) ./ model.K[node]
+  r = model.growthrates
+  Dx = diagm(x)
+  A = model.interactionCoeffs
+  new_x = x .+ (Dx*(r .+ A*x))
+  new_N = new_x .* model.K[node]
+  return round.(Int, new_N)
 end
 
 "Returns population size per species in the node"
