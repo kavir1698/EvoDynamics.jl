@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Host-parasite dynamics · EvoDynamics.jl</title><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.0/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.0/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.0/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.11.1/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit">EvoDynamics.jl</span></div><form class="docs-search" action="../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../">Introduction</a></li><li><a class="tocitem" href="../tutorial/">Tutorial</a></li><li><a class="tocitem" href="../api/">API</a></li><li><span class="tocitem">Examples</span><ul><li><a class="tocitem" href="../example1/">Simplest model</a></li><li><a class="tocitem" href="../example2/">Weak modular structure</a></li><li class="is-active"><a class="tocitem" href>Host-parasite dynamics</a></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Examples</a></li><li class="is-active"><a href>Host-parasite dynamics</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Host-parasite dynamics</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/kavir1698/EvoDynamics.jl/blob/master/examples/host-parasite.jl" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="Host-parasite-and-predator-prey-models"><a class="docs-heading-anchor" href="#Host-parasite-and-predator-prey-models">Host-parasite and predator-prey models</a><a id="Host-parasite-and-predator-prey-models-1"></a><a class="docs-heading-anchor-permalink" href="#Host-parasite-and-predator-prey-models" title="Permalink"></a></h1><p>There are two species interaction equations we can use the Lotka-Voltera competition equation and the generalized Lotka-Voltera equation. The competition equation can model any kind of species interactions except when one species depends on other species to grow, that is, without the other species it has a negative growth rate (e.g. in predator-prey and host-parasite). The generalized equation can model predator-prey and host-parasite dynamics, but it is not suitable for mutualistic dynamics where two species help each other (they may grow indefinitely).</p><p>Here we model a host-parasite dynamic. The important parameters are <code>interactionCoeffs</code>, <code>interaction_equation</code>, and <code>growthrates</code>. The first species is the parasite that has an intrinsite negative growth rate (-0.1) and completely depends on its host for growth ($ \textrm{interactionCoeffs}_{12} = 0.5 $). The host has a positive intrinsic growth rate (0.1) and it reduces in the presence of parasite.</p><pre><code class="language-">using EvoDynamics
+using Agents
+using Plots
+
+parameters = Dict(
+  :ngenes =&gt; (2, 2),
+  :nphenotypes =&gt; (2, 2),
+  :growthrates =&gt; (-0.1, 0.1),
+  :interactionCoeffs =&gt; [0 0.5; -0.2 0],
+  :interaction_equation =&gt; &quot;lotkaVoltera_generalized&quot;,
+  :pleiotropyMat =&gt; ([true false; false true], [true false; false true]),
+  :epistasisMat =&gt;  ([1 0; 0 1], [1 0; 0 1]),
+  :expressionArrays =&gt; ([1, 1], [1, 1]),
+  :selectionCoeffs =&gt; (0.5, 0.5),
+  :ploidy =&gt; (1, 2),
+  :optPhenotypes =&gt; ([2.5, 3], [3.1 2]),
+  :covMat =&gt; (rand(2, 2), rand(2, 2)),
+  :mutProbs =&gt; ((0.001, 0.0, 0.0), (0.001, 0.0, 0.0)),
+  :mutMagnitudes =&gt;((0.005, 0.0, 0.01), (0.005, 0.0, 0.01)),
+  :N =&gt; Dict(1 =&gt; (100, 100)),
+  :K =&gt; Dict(1 =&gt; (1000, 1000)),
+  :migration_rates =&gt; [nothing, nothing],
+  :E =&gt; (0.01, 0.01),
+  :generations =&gt; 20,
+  :space =&gt; nothing
+)
+
+function nspecies_per_node(model)
+  output = zeros(model.properties[:nspecies], nv(model))
+  for species in model.properties[:nspecies]
+    for node in 1:nv(model)
+      for ag in EvoDynamics.get_node_contents(node, model)
+        output[model.agents[ag].species, node] += 1
+      end
+    end
+  end
+  return Tuple(output)
+end
+
+agentdata, modeldata, model = runmodel(parameters, mdata=[nspecies_per_node])
+plot(1:101, modeldata[!, 2], label=&quot;Parasite&quot;)
+plot!(1:101, modeldata[!, 3], label=&quot;Host&quot;)</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../example2/">« Weak modular structure</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Saturday 12 December 2020 21:50">Saturday 12 December 2020</span>. Using Julia version 1.5.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
