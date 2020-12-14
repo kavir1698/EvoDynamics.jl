@@ -257,7 +257,7 @@ function sample!(model::ABM, species::Int, node_number::Int,
   elseif model.interaction_equation == "lotkaVoltera_generalized"
     n = model.new_N[node_number][species]
   end
-  n == 0 && return
+  n <= 0 && return  # n can be <0 in lotkaVoltera_generalized
 
   if !isnothing(weight)
       weights = Weights([getproperty(model[a], weight) for a in node_content])
