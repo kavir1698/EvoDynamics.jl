@@ -1,5 +1,5 @@
 ```@meta
-EditURL = "<unknown>/../examples/example1.jl"
+EditURL = "<unknown>/examples/example1.jl"
 ```
 
 # Simplest model
@@ -25,13 +25,13 @@ parameters = Dict(
   :mutMagnitudes => [(0.05, 0.0, 0.01)],
   :N => Dict(1 => (100)),
   :K => Dict(1 => [1000]),
-  :migration_rates => [nothing],
+  :migration_rates => (nothing,),
   :E => (0.01),
   :generations => 10,
   :space => nothing
 )
 
-data = runmodel(parameters)
+_, modeldata, model = runmodel(parameters)
 ```
 
 ---
