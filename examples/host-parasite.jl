@@ -43,6 +43,7 @@ function nspecies_per_node(model)
   return Tuple(output)
 end
 
-agentdata, modeldata, model = runmodel(parameters, mdata=[nspecies_per_node])
+_, modeldata, model = runmodel(parameters, mdata=[nspecies_per_node]);
+
 plot(1:101, modeldata[!, 2], label="Parasite")
 plot!(1:101, modeldata[!, 3], label="Host")
