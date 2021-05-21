@@ -2,9 +2,9 @@
 """
 A `struct` for individuals that keeps individual-specific variables.
 """
-mutable struct Ind{B<:AbstractFloat, C<:AbstractArray, D<:AbstractArray, E<:AbstractArray} <: AbstractAgent
+mutable struct Ind2{A, B<:AbstractFloat, C<:AbstractArray, D<:AbstractArray, E<:AbstractArray} <: AbstractAgent
   id::Int  # the individual ID
-  pos::Tuple{Int, Int}  # the individuals position
+  pos::A  # the individuals position
   species::Int  # the species ID the individual belongs to
   W::B  # fitness. W = exp(γ .* transpose(sum(epistasisMat, dims=2) .- θ)*inv(ω)*(sum(epistasisMat, dims=2) .- θ)).
   epistasisMat::C  # epistasis matrix
@@ -13,19 +13,19 @@ mutable struct Ind{B<:AbstractFloat, C<:AbstractArray, D<:AbstractArray, E<:Abst
 end
 
 """
-    model_initiation(;ngenes, nphenotypes, epistasisMat, pleiotropyMat, expressionArrays, selectionCoeffs, ploidy, optPhenotypes, covMat, mutProbs, N, E, growthrates, interactionCoeffs, mutMagnitudes, generations, migration_rates, K, space=nothing, periodic=false, moore=false, seed=0)
+    model_initiation(;ngenes, nphenotypes, epistasisMat, pleiotropyMat, expressionArrays, selectionCoeffs, ploidy, optPhenotypes, covMat, mutProbs, N, E, growthrates, interactionCoeffs, mutMagnitudes, generations, migration_rates, K, space=nothing, periodic=false, metric=:chebyshev, seed=0)
 
 Innitializes the model.
 """
-function model_initiation(;ngenes, nphenotypes, epistasisMat, pleiotropyMat, expressionArrays, selectionCoeffs, ploidy, optPhenotypes, covMat, mutProbs, N, E, growthrates, interactionCoeffs, mutMagnitudes, generations, migration_rates, K, space=nothing, periodic=false, moore=false, interaction_equation="lotkaVoltera_competition", seed=0)
+function model_initiation(;ngenes, nphenotypes, epistasisMat, pleiotropyMat, expressionArrays, selectionCoeffs, ploidy, optPhenotypes, covMat, mutProbs, N, E, growthrates, interactionCoeffs, mutMagnitudes, generations, migration_rates, K, space=nothing, periodic=false, metric=:chebyshev, interaction_equation="lotkaVoltera_competition", seed=0)
   if seed >0
     Random.seed!(seed)
   end
   
   if isnothing(space)
     fspace = GridSpace((1, 1))
-  elseif typeof(space) <: NTuple
-    fspace = GridSpace(space, periodic=periodic, moore=moore)
+  elseif typeof(space) <: Tuple
+    fspace = GridSpace(space, periodic=periodic, metric=metric)
   elseif typeof(space) <: AbstractGraph
     fspace = GraphSpace(space)
   end
@@ -39,14 +39,14 @@ function model_initiation(;ngenes, nphenotypes, epistasisMat, pleiotropyMat, exp
     @assert i == 0 "number of columns in epistasisMat are not correct. They should a factor of ploidy"
   end
   @assert length(selectionCoeffs) == length(ngenes) == length(epistasisMat) == length(optPhenotypes) == length(mutProbs) == length(E) == length(nphenotypes) == length(covMat) == length(growthrates) == length(mutMagnitudes) "ngenes, epistasisMat, selectionCoeffs, optPhenotypes, mutProbs, nphenotypes, covMat, growthrates, mutMagnitudes and E should have the same number of elements"
-  @assert length(keys(K)) >= nv(fspace) "K should have a key for every node"
+  @assert length(keys(K)) >= nnodes(fspace) "K should have a key for every node"
   for (k, v) in N
     @assert length(v) == nspecies "Each value in N should have size equal to number of species"
   end
   if !isnothing(migration_rates)
     for item in migration_rates
       if typeof(item) <: AbstractArray
-        @assert size(item, 1) == nv(fspace) "migration_rates has different rows than there are nodes in space."
+        @assert size(item, 1) == nnodes(fspace) "migration_rates has different rows than there are nodes in space."
       end
     end
   end
@@ -76,10 +76,14 @@ function model_initiation(;ngenes, nphenotypes, epistasisMat, pleiotropyMat, exp
   expressionArraysS = [MArray{Tuple{size(newQ[i])...}}(newQ[i]) for i in eachindex(newQ)]
   properties = Dict(:ngenes => ngenes, :nphenotypes => nphenotypes, :epistasisMat => epistasisMatS, :pleiotropyMat => pleiotropyMatS, :expressionArrays => expressionArraysS, :growthrates => growthrates, :interactionCoeffs => interactionCoeffs, :selectionCoeffs => selectionCoeffs, :ploidy => ploidy, :optPhenotypes => optPhenotypes, :covMat => inv.(newcovMat), :mutProbs => Mdists, :mutMagnitudes => Ddists, :N => N, :E => Ed, :generations => generations, :K => K, :migration_rates => migration_rates, :nspecies => nspecies, :new_N => N, :interaction_equation => interaction_equation)
 
-  indtype = EvoDynamics.Ind{typeof(0.1), eltype(properties[:epistasisMat]), eltype(properties[:pleiotropyMat]), eltype(properties[:expressionArrays])}
+  postype = typeof(fspace) <: GridSpace ? typeof(size(fspace)) : typeof(1)
+  indtype = EvoDynamics.Ind2{postype, typeof(0.1), eltype(properties[:epistasisMat]), eltype(properties[:pleiotropyMat]), eltype(properties[:expressionArrays])}
   model = ABM(indtype, fspace, properties=properties)
   
+  model.properties[:nodes] = collect(nodes(model))
+
   # create and add agents
+  nns = collect(nodes(model))
   for (pos, Ns) in properties[:N]
     for (ind2, n) in enumerate(Ns)
       x = properties[:pleiotropyMat][ind2] * (properties[:epistasisMat][ind2] * properties[:expressionArrays][ind2])  # phenotypic values
@@ -89,13 +93,17 @@ function model_initiation(;ngenes, nphenotypes, epistasisMat, pleiotropyMat, exp
         takeabs = abs.(z .- properties[:optPhenotypes][ind2])
         W = exp(-properties[:selectionCoeffs][ind2] * transpose(takeabs)*properties[:covMat][ind2]*takeabs)[1]
         W = minimum([1e5, W])
-        add_agent!(pos, model, ind2, W, MArray{Tuple{size(properties[:epistasisMat][ind2])...}}(properties[:epistasisMat][ind2]), MArray{Tuple{size(properties[:pleiotropyMat][ind2])...}}(properties[:pleiotropyMat][ind2]), MVector{length(properties[:expressionArrays][ind2])}(properties[:expressionArrays][ind2]))
+        add_agent!(nns[pos], model, ind2, W, MArray{Tuple{size(properties[:epistasisMat][ind2])...}}(properties[:epistasisMat][ind2]), MArray{Tuple{size(properties[:pleiotropyMat][ind2])...}}(properties[:pleiotropyMat][ind2]), MVector{length(properties[:expressionArrays][ind2])}(properties[:expressionArrays][ind2]))
       end
     end
   end
 
   return model
 end
+
+nnodes(x::GridSpace) = prod(size(x))
+nnodes(x::GraphSpace) = Agents.LightGraphs.nv(x)
+nnodes(x::ABM) = nnodes(x.space)
 
 """
     model_step!(model::ABM)
@@ -108,19 +116,19 @@ function model_step!(model::ABM)
   end
   selection!(model)
   if model.interaction_equation == "lotkaVoltera_generalized"
-    for node in 1:nv(model)
+    for node in 1:nnodes(model)
       model.new_N[node] = Tuple(lotkaVoltera_generalized(model, node))
     end
   end
 end
 
-function agent_step!(agent::Ind, model::ABM)
+function agent_step!(agent::Ind2, model::ABM)
   mutation!(agent, model)
   migration!(agent, model)
 end
 
 function selection!(model::ABM)
-  for node in 1:nv(model)
+  for node in 1:nnodes(model)
     for species in 1:model.nspecies
       sample!(model, species, node, :W)
     end
@@ -131,7 +139,7 @@ end
 Choose a random mate and produce one offsprings with recombination.
 """
 function sexual_reproduction!(model::ABM, node_number::Int)
-  node_content = get_node_contents(node_number, model)
+  node_content = ids_in_position(node_number, model)
   mates = mate(model, node_content)
   for pair in mates
     reproduce!(model[pair[1]], model[pair[2]], model)
@@ -144,7 +152,7 @@ function sexual_reproduction!(model::ABM, node_number::Int)
 end
 
 function sexual_reproduction!(model::ABM)
-  for node in 1:nv(model)
+  for node in 1:nnodes(model)
     sexual_reproduction!(model, node)
   end
 end
@@ -175,7 +183,7 @@ For sexual reproduction of diploids.
 An offspring is created from gametes that include one allele from each loci and the corresponding column of the epistasisMat matrix.
 Each gamete is half of `epistasisMat` (column-wise)
 """
-function reproduce!(agent1::Ind, agent2::Ind, model::ABM)
+function reproduce!(agent1::Ind2, agent2::Ind2, model::ABM)
   nloci = Int(model.ngenes[agent1.species]/2)
   loci_shuffled = shuffle(1:nloci)
   loci1 = 1:ceil(Int, nloci/2)
@@ -191,7 +199,7 @@ function reproduce!(agent1::Ind, agent2::Ind, model::ABM)
 end
 
 "Mutate an agent."
-function mutation!(agent::Ind, model::ABM)
+function mutation!(agent::Ind2, model::ABM)
   # mutate gene expression
   if rand(model.mutProbs[agent.species][1])
     agent.q .+= rand(model.mutMagnitudes[agent.species][1], model.ngenes[agent.species])
@@ -215,7 +223,7 @@ function mutation!(model::ABM)
 end
 
 "Recalculate the fitness of `agent`"
-function update_fitness!(agent::Ind, model::ABM)
+function update_fitness!(agent::Ind2, model::ABM)
   d = model.E[agent.species]
   Fmat = agent.pleiotropyMat * (agent.epistasisMat * agent.q)
   takeabs = abs.((Fmat .+ rand(d)) .- model.optPhenotypes[agent.species])
@@ -230,16 +238,18 @@ function update_fitness!(model::ABM)
   end
 end
 
+coord2vertex(c, model) = c[1] + (size(model.space)[1] * (c[2]-1))
+
 "Move the agent to a new node with probabilities given in `migration_rates`"
-function migration!(agent::Ind, model::ABM)
+function migration!(agent::Ind2, model::ABM)
   if isnothing(model.migration_rates[agent.species])
     return
   end
-  vertexpos = Agents.coord2vertex(agent.pos, model)
+  vertexpos = coord2vertex(agent.pos, model)  # cell order. Only works for 2D grids
   row = view(model.migration_rates[agent.species], :, vertexpos)
   new_node = sample(1:length(row), Weights(row))
   if new_node != vertexpos
-    move_agent!(agent, new_node, model)
+    move_agent!(agent, model.nodes[new_node], model)
   end
 end
 
@@ -248,7 +258,7 @@ function sample!(model::ABM, species::Int, node_number::Int,
   weight=nothing; replace=true,
   rng::AbstractRNG=Random.GLOBAL_RNG)
 
-  node_content_all = get_node_contents(node_number, model)
+  node_content_all = ids_in_position(node_number, model)
   node_content = [i for i in node_content_all if model[i].species == species]
   length(node_content) == 0 && return
 
@@ -352,8 +362,8 @@ end
 "Returns population size per species in the node"
 function nagents_species(model::ABM, node::Int)
   counter = zeros(Int, model.nspecies)
-  for id in model.space.agent_positions[node]
-    counter[model[id].species] += 1
+  for ag in agents_in_position(node, model)
+    counter[ag.species] += 1
   end
   return counter
 end

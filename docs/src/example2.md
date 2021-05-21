@@ -57,7 +57,7 @@ function nspecies_per_node(model)
   output = zeros(model.properties[:nspecies], nv(model))
   for species in model.properties[:nspecies]
     for node in 1:nv(model)
-      for ag in get_node_contents(node, model)
+      for ag in ids_in_position(node, model)
         output[model.agents[ag].species, node] += 1
       end
     end

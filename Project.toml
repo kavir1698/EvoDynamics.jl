@@ -1,7 +1,7 @@
 name = "EvoDynamics"
 uuid = "c8768967-421d-4a02-8523-37736f3dbe06"
 authors = ["Ali R. Vahdati <arv.kavir@gmail.com>", "Carlos Melian"]
-version = "0.7.1"
+version = "0.8.0"
 
 [deps]
 Agents = "46ada45e-f475-11e8-01d0-f70cc89e6671"
@@ -13,8 +13,8 @@ StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [compat]
-Agents = "3.7"
-Distributions = "0.22, 0.23, 0.24, 1"
+Agents = "4"
+Distributions = "0.25"
 StaticArrays = "0.12"
 StatsBase = "0.33"
 julia = "1.5"

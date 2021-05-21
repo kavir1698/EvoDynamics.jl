@@ -24,8 +24,8 @@ The parameters below are required for any simulation. They should be in a dictio
 * __E:__ A tuple  of the variance of a normal distribution ε representing environmental noise for each species.
 * __generations:__ number of generations to run the simulation.
 * __space:__ (default=`nothing`) Either a tuple of size 2 or 3 for a grid size or a `SimpleGraph` object for an arbitrary graph. If it is a tuple, a grid is built internally
-* __moore:__ (default=`false`) Whether nodes in the grid have 8 neighbors (Moore neighborhood). Default is false, i.e. cells only have 4 neighbors.
-* __periodic:__ (default=`false`) If `space` is 2D, should the edges connect to the opposite side?
+* __metric:__ (default=`:chebyshev`) Other option is `:euclidean`. How neighboring cells are identified.
+* __periodic:__ (default=`false`) If should the edges connect to the opposite side?
 * __seed:__ (default=`0`). Seed for random number generator. Only set if >0.
 
 ## Simulation outline

@@ -34,5 +34,5 @@ parameters = Dict(
   :E => (0.01, 0.01),
   :generations => 5,
   :space => (2,2),
-  :moore => false
+  :metric => :chebyshev
 )
