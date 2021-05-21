@@ -23,22 +23,21 @@ parameters = Dict(
   :space =&gt; nothing
 )
 
-_, modeldata, model = runmodel(parameters)</code></pre><pre class="documenter-example-output">(0×0 DataFrame
-, 11×2 DataFrame
-│ Row │ step  │ mean_fitness_per_species │
-│     │ Int64 │ Array{Float32,1}         │
-├─────┼───────┼──────────────────────────┤
-│ 1   │ 0     │ [0.293451]               │
-│ 2   │ 1     │ [0.293267]               │
-│ 3   │ 2     │ [0.292983]               │
-│ 4   │ 3     │ [0.294912]               │
-│ 5   │ 4     │ [0.295771]               │
-│ 6   │ 5     │ [0.297987]               │
-│ 7   │ 6     │ [0.299918]               │
-│ 8   │ 7     │ [0.301163]               │
-│ 9   │ 8     │ [0.303028]               │
-│ 10  │ 9     │ [0.306342]               │
-│ 11  │ 10    │ [0.307809]               │, AgentBasedModel with 998 agents of type Ind
- space: GridSpace with 1 nodes and 0 edges
+_, modeldata, model = runmodel(parameters)</code></pre><pre class="documenter-example-output">(0×0 DataFrame, 11×2 DataFrame
+ Row │ step   mean_fitness_per_species
+     │ Int64  Vector{Float32}
+─────┼─────────────────────────────────
+   1 │     0  Float32[0.294035]
+   2 │     1  Float32[0.293935]
+   3 │     2  Float32[0.293527]
+   4 │     3  Float32[0.295056]
+   5 │     4  Float32[0.295493]
+   6 │     5  Float32[0.296596]
+   7 │     6  Float32[0.29776]
+   8 │     7  Float32[0.298081]
+   9 │     8  Float32[0.299568]
+  10 │     9  Float32[0.300351]
+  11 │    10  Float32[0.302023], AgentBasedModel with 998 agents of type Ind2
+ space: GridSpace with size (1, 1), metric=chebyshev, periodic=true
  scheduler: fastest
- properties: Dict{Symbol,Any}(:ploidy =&gt; 1,:expressionArrays =&gt; StaticArrays.MArray{Tuple{1,1},Float64,2,1}[[1.0]],:interactionCoeffs =&gt; nothing,:migration_rates =&gt; (nothing,),:interaction_equation =&gt; &quot;lotkaVoltera_competition&quot;,:epistasisMat =&gt; StaticArrays.MArray{Tuple{1},Float64,1,1}[[1.0]],:selectionCoeffs =&gt; 0.5,:nspecies =&gt; 1,:K =&gt; Dict(1 =&gt; [1000]),:generations =&gt; 10…))</pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../api/">« API</a><a class="docs-footer-nextpage" href="../example2/">Weak modular structure »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Monday 14 December 2020 10:49">Monday 14 December 2020</span>. Using Julia version 1.5.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+ properties: Dict{Symbol, Any}(:ploidy =&gt; 1, :expressionArrays =&gt; StaticArrays.MMatrix{1, 1, Float64, 1}[[1.0]], :interactionCoeffs =&gt; nothing, :migration_rates =&gt; (nothing,), :nodes =&gt; [(1, 1)], :interaction_equation =&gt; &quot;lotkaVoltera_competition&quot;, :epistasisMat =&gt; StaticArrays.MVector{1, Float64}[[1.0]], :selectionCoeffs =&gt; 0.5, :nspecies =&gt; 1, :K =&gt; Dict(1 =&gt; [1000])…))</pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../api/">« API</a><a class="docs-footer-nextpage" href="../example2/">Weak modular structure »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Friday 21 May 2021 15:55">Friday 21 May 2021</span>. Using Julia version 1.6.1.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
