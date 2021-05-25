@@ -21,10 +21,6 @@ function model_initiation(;ngenes, nphenotypes, epistasisMat, pleiotropyMat, exp
   if seed >0
     Random.seed!(seed)
   end
-
-  # TODO: Users should define migration trait and specify its genes with pleiotropy.
-  # TODO: We cannot have an optimal phenotype for migration to be selected, right?
-  # covMat, however, should include migration trait
   
   if isnothing(space)
     fspace = GridSpace((1, 1))
