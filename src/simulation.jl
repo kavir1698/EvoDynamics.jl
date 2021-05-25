@@ -2,7 +2,7 @@
 """
 A `struct` for individuals that keeps individual-specific variables.
 """
-mutable struct Ind2{A, B<:AbstractFloat, C<:AbstractArray, D<:AbstractArray, E<:AbstractArray} <: AbstractAgent
+mutable struct Ind{A, B<:AbstractFloat, C<:AbstractArray, D<:AbstractArray, E<:AbstractArray} <: AbstractAgent
   id::Int  # the individual ID
   pos::A  # the individuals position
   species::Int  # the species ID the individual belongs to
@@ -21,6 +21,10 @@ function model_initiation(;ngenes, nphenotypes, epistasisMat, pleiotropyMat, exp
   if seed >0
     Random.seed!(seed)
   end
+
+  # TODO: Users should define migration trait and specify its genes with pleiotropy.
+  # TODO: We cannot have an optimal phenotype for migration to be selected, right?
+  # covMat, however, should include migration trait
   
   if isnothing(space)
     fspace = GridSpace((1, 1))
@@ -77,13 +81,13 @@ function model_initiation(;ngenes, nphenotypes, epistasisMat, pleiotropyMat, exp
   properties = Dict(:ngenes => ngenes, :nphenotypes => nphenotypes, :epistasisMat => epistasisMatS, :pleiotropyMat => pleiotropyMatS, :expressionArrays => expressionArraysS, :growthrates => growthrates, :interactionCoeffs => interactionCoeffs, :selectionCoeffs => selectionCoeffs, :ploidy => ploidy, :optPhenotypes => optPhenotypes, :covMat => inv.(newcovMat), :mutProbs => Mdists, :mutMagnitudes => Ddists, :N => N, :E => Ed, :generations => generations, :K => K, :migration_rates => migration_rates, :nspecies => nspecies, :new_N => N, :interaction_equation => interaction_equation)
 
   postype = typeof(fspace) <: GridSpace ? typeof(size(fspace)) : typeof(1)
-  indtype = EvoDynamics.Ind2{postype, typeof(0.1), eltype(properties[:epistasisMat]), eltype(properties[:pleiotropyMat]), eltype(properties[:expressionArrays])}
+  indtype = EvoDynamics.Ind{postype, typeof(0.1), eltype(properties[:epistasisMat]), eltype(properties[:pleiotropyMat]), eltype(properties[:expressionArrays])}
   model = ABM(indtype, fspace, properties=properties)
   
-  model.properties[:nodes] = collect(nodes(model))
+  model.properties[:nodes] = collect(positions(model))
 
   # create and add agents
-  nns = collect(nodes(model))
+  nns = collect(positions(model))
   for (pos, Ns) in properties[:N]
     for (ind2, n) in enumerate(Ns)
       x = properties[:pleiotropyMat][ind2] * (properties[:epistasisMat][ind2] * properties[:expressionArrays][ind2])  # phenotypic values
@@ -122,7 +126,7 @@ function model_step!(model::ABM)
   end
 end
 
-function agent_step!(agent::Ind2, model::ABM)
+function agent_step!(agent::Ind, model::ABM)
   mutation!(agent, model)
   migration!(agent, model)
 end
@@ -183,7 +187,7 @@ For sexual reproduction of diploids.
 An offspring is created from gametes that include one allele from each loci and the corresponding column of the epistasisMat matrix.
 Each gamete is half of `epistasisMat` (column-wise)
 """
-function reproduce!(agent1::Ind2, agent2::Ind2, model::ABM)
+function reproduce!(agent1::Ind, agent2::Ind, model::ABM)
   nloci = Int(model.ngenes[agent1.species]/2)
   loci_shuffled = shuffle(1:nloci)
   loci1 = 1:ceil(Int, nloci/2)
@@ -199,7 +203,7 @@ function reproduce!(agent1::Ind2, agent2::Ind2, model::ABM)
 end
 
 "Mutate an agent."
-function mutation!(agent::Ind2, model::ABM)
+function mutation!(agent::Ind, model::ABM)
   # mutate gene expression
   if rand(model.mutProbs[agent.species][1])
     agent.q .+= rand(model.mutMagnitudes[agent.species][1], model.ngenes[agent.species])
@@ -223,7 +227,7 @@ function mutation!(model::ABM)
 end
 
 "Recalculate the fitness of `agent`"
-function update_fitness!(agent::Ind2, model::ABM)
+function update_fitness!(agent::Ind, model::ABM)
   d = model.E[agent.species]
   Fmat = agent.pleiotropyMat * (agent.epistasisMat * agent.q)
   takeabs = abs.((Fmat .+ rand(d)) .- model.optPhenotypes[agent.species])
@@ -241,7 +245,7 @@ end
 coord2vertex(c, model) = c[1] + (size(model.space)[1] * (c[2]-1))
 
 "Move the agent to a new node with probabilities given in `migration_rates`"
-function migration!(agent::Ind2, model::ABM)
+function migration!(agent::Ind, model::ABM)
   if isnothing(model.migration_rates[agent.species])
     return
   end
