@@ -13,11 +13,11 @@ mutable struct Ind{A, B<:AbstractFloat, C<:AbstractArray, D<:AbstractArray, E<:A
 end
 
 """
-    model_initiation(;ngenes, nphenotypes, epistasisMat, pleiotropyMat, expressionArrays, selectionCoeffs, ploidy, optPhenotypes, covMat, mutProbs, N, E, growthrates, interactionCoeffs, mutMagnitudes, generations, migration_rates, K, space=nothing, periodic=false, metric=:chebyshev, seed=0)
+    model_initiation(;ngenes, nphenotypes, epistasisMat, pleiotropyMat, expressionArrays, selectionCoeffs, ploidy, optPhenotypes, covMat, mutProbs, N, E, growthrates, interactionCoeffs, mutMagnitudes, generations, physical_distance, K, space=nothing, periodic=false, metric=:chebyshev, seed=0)
 
 Innitializes the model.
 """
-function model_initiation(;ngenes, nphenotypes, epistasisMat, pleiotropyMat, expressionArrays, selectionCoeffs, ploidy, optPhenotypes, covMat, mutProbs, N, E, growthrates, interactionCoeffs, mutMagnitudes, generations, migration_rates, K, space=nothing, periodic=false, metric=:chebyshev, interaction_equation="lotkaVoltera_competition", seed=0)
+function model_initiation(;ngenes, nphenotypes, epistasisMat, pleiotropyMat, expressionArrays, selectionCoeffs, ploidy, optPhenotypes, covMat, mutProbs, N, E, growthrates, interactionCoeffs, mutMagnitudes, generations, physical_distance, migration_traits, K, space=nothing, periodic=false, metric=:chebyshev, interaction_equation="lotkaVoltera_competition", seed=0)
   if seed >0
     Random.seed!(seed)
   end
@@ -43,10 +43,13 @@ function model_initiation(;ngenes, nphenotypes, epistasisMat, pleiotropyMat, exp
   for (k, v) in N
     @assert length(v) == nspecies "Each value in N should have size equal to number of species"
   end
-  if !isnothing(migration_rates)
-    for item in migration_rates
+  if !isnothing(physical_distance)
+    for item in physical_distance
       if typeof(item) <: AbstractArray
-        @assert size(item, 1) == nnodes(fspace) "migration_rates has different rows than there are nodes in space."
+        @assert size(item, 1) == nnodes(fspace) "physical_distance has different rows than there are nodes in space."
+      end
+      for n in 1:size(item, 1)
+        item[n, n] = 0.0
       end
     end
   end
@@ -74,7 +77,7 @@ function model_initiation(;ngenes, nphenotypes, epistasisMat, pleiotropyMat, exp
   epistasisMatS = [MArray{Tuple{size(epistasisMat[i])...}}(newA[i]) for i in eachindex(newA)]
   pleiotropyMatS = [MArray{Tuple{size(pleiotropyMat[i])...}}(pleiotropyMat[i]) for i in eachindex(pleiotropyMat)]
   expressionArraysS = [MArray{Tuple{size(newQ[i])...}}(newQ[i]) for i in eachindex(newQ)]
-  properties = Dict(:ngenes => ngenes, :nphenotypes => nphenotypes, :epistasisMat => epistasisMatS, :pleiotropyMat => pleiotropyMatS, :expressionArrays => expressionArraysS, :growthrates => growthrates, :interactionCoeffs => interactionCoeffs, :selectionCoeffs => selectionCoeffs, :ploidy => ploidy, :optPhenotypes => optPhenotypes, :covMat => inv.(newcovMat), :mutProbs => Mdists, :mutMagnitudes => Ddists, :N => N, :E => Ed, :generations => generations, :K => K, :migration_rates => migration_rates, :nspecies => nspecies, :new_N => N, :interaction_equation => interaction_equation)
+  properties = Dict(:ngenes => ngenes, :nphenotypes => nphenotypes, :epistasisMat => epistasisMatS, :pleiotropyMat => pleiotropyMatS, :expressionArrays => expressionArraysS, :growthrates => growthrates, :interactionCoeffs => interactionCoeffs, :selectionCoeffs => selectionCoeffs, :ploidy => ploidy, :optPhenotypes => optPhenotypes, :covMat => inv.(newcovMat), :mutProbs => Mdists, :mutMagnitudes => Ddists, :N => N, :E => Ed, :generations => generations, :K => K, :physical_distance => physical_distance, :nspecies => nspecies, :new_N => N, :interaction_equation => interaction_equation, :migration_traits => migration_traits)
 
   postype = typeof(fspace) <: GridSpace ? typeof(size(fspace)) : typeof(1)
   indtype = EvoDynamics.Ind{postype, typeof(0.1), eltype(properties[:epistasisMat]), eltype(properties[:pleiotropyMat]), eltype(properties[:expressionArrays])}
@@ -240,17 +243,23 @@ end
 
 coord2vertex(c, model) = c[1] + (size(model.space)[1] * (c[2]-1))
 
-"Move the agent to a new node with probabilities given in `migration_rates`"
+"Move the agent to a new node with probabilities given in `physical_distance`"
 function migration!(agent::Ind, model::ABM)
-  if isnothing(model.migration_rates[agent.species])
+  if isnothing(model.physical_distance[agent.species]) || isnothing(model.migration_traits[agent.species])
     return
   end
+  rand() > get_migration_trait(agent, model) && return
   vertexpos = coord2vertex(agent.pos, model)  # cell order. Only works for 2D grids
-  row = view(model.migration_rates[agent.species], :, vertexpos)
+  row = view(model.physical_distance[agent.species], :, vertexpos)
   new_node = sample(1:length(row), Weights(row))
-  if new_node != vertexpos
-    move_agent!(agent, model.nodes[new_node], model)
-  end
+  # TODO: add migration cost. If it survives migration, then do the migration.
+  move_agent!(agent, model.nodes[new_node], model)
+end
+
+# TODO: migration trait is more than 1.
+function get_migration_trait(agent, model)
+  mtrait = agent.pleiotropyMat[model.migration_traits[agent.species], :]
+  sum(agent.epistasisMat[mtrait, :] * agent.q)
 end
 
 "Replace Inds in a node with a weighted sample by replacement of Inds"
