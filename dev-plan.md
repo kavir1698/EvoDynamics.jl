@@ -6,7 +6,7 @@
 * [x] users should provide the numbers and the type of distribution.
 * [x] remove migration rates? replace it with Physical distances
 * [ ] Migration cost? a function of fitness or the migration probability itself.
-* [ ] TODO: what to do when migration trait is > 1?
+* [ ] Allow `nothing` for some environmental optimal phenotypes.
 
 # 2. Variable fitness peaks per site and per species.
 

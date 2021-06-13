@@ -13,11 +13,11 @@ mutable struct Ind{A, B<:AbstractFloat, C<:AbstractArray, D<:AbstractArray, E<:A
 end
 
 """
-    model_initiation(;ngenes, nphenotypes, epistasisMat, pleiotropyMat, expressionArrays, selectionCoeffs, ploidy, optPhenotypes, covMat, mutProbs, N, E, growthrates, interactionCoeffs, mutMagnitudes, generations, physical_distance, K, space=nothing, periodic=false, metric=:chebyshev, seed=0)
+    model_initiation(;ngenes, nphenotypes, epistasisMat, pleiotropyMat, expressionArrays, selectionCoeffs, ploidy, optPhenotypes, covMat, mutProbs, N, E, growthrates, interactionCoeffs, mutMagnitudes, generations, migration_traits, migration_thresholds, K, space=nothing, periodic=false, metric=:chebyshev, interaction_equation="lotkaVoltera_competition", seed=0)
 
 Innitializes the model.
 """
-function model_initiation(;ngenes, nphenotypes, epistasisMat, pleiotropyMat, expressionArrays, selectionCoeffs, ploidy, optPhenotypes, covMat, mutProbs, N, E, growthrates, interactionCoeffs, mutMagnitudes, generations, physical_distance, migration_traits, K, space=nothing, periodic=false, metric=:chebyshev, interaction_equation="lotkaVoltera_competition", seed=0)
+function model_initiation(;ngenes, nphenotypes, epistasisMat, pleiotropyMat, expressionArrays, selectionCoeffs, ploidy, optPhenotypes, covMat, mutProbs, N, E, growthrates, interactionCoeffs, mutMagnitudes, generations, migration_traits, migration_thresholds, vision_radius, check_fraction, K, space=nothing, periodic=false, metric=:chebyshev, interaction_equation="lotkaVoltera_competition", seed=0)
   if seed >0
     Random.seed!(seed)
   end
@@ -26,8 +26,8 @@ function model_initiation(;ngenes, nphenotypes, epistasisMat, pleiotropyMat, exp
     fspace = GridSpace((1, 1))
   elseif typeof(space) <: Tuple
     fspace = GridSpace(space, periodic=periodic, metric=metric)
-  elseif typeof(space) <: AbstractGraph
-    fspace = GraphSpace(space)
+  # elseif typeof(space) <: AbstractGraph
+  #   fspace = GraphSpace(space)
   end
   nspecies = length(ngenes)
 
@@ -38,21 +38,21 @@ function model_initiation(;ngenes, nphenotypes, epistasisMat, pleiotropyMat, exp
   for i in size.(epistasisMat, 2) .% ploidy
     @assert i == 0 "number of columns in epistasisMat are not correct. They should a factor of ploidy"
   end
-  @assert length(selectionCoeffs) == length(ngenes) == length(epistasisMat) == length(optPhenotypes) == length(mutProbs) == length(E) == length(nphenotypes) == length(covMat) == length(growthrates) == length(mutMagnitudes) "ngenes, epistasisMat, selectionCoeffs, optPhenotypes, mutProbs, nphenotypes, covMat, growthrates, mutMagnitudes and E should have the same number of elements"
+  @assert length(selectionCoeffs) == length(ngenes) == length(epistasisMat) == length(mutProbs) == length(E) == length(nphenotypes) == length(covMat) == length(growthrates) == length(mutMagnitudes) "ngenes, epistasisMat, selectionCoeffs, mutProbs, nphenotypes, covMat, growthrates, mutMagnitudes and E should have the same number of elements"
   @assert length(keys(K)) >= nnodes(fspace) "K should have a key for every node"
   for (k, v) in N
     @assert length(v) == nspecies "Each value in N should have size equal to number of species"
   end
-  if !isnothing(physical_distance)
-    for item in physical_distance
-      if typeof(item) <: AbstractArray
-        @assert size(item, 1) == nnodes(fspace) "physical_distance has different rows than there are nodes in space."
-      end
-      for n in 1:size(item, 1)
-        item[n, n] = 0.0
-      end
-    end
-  end
+  # if !isnothing(physical_distance)
+  #   for item in physical_distance
+  #     if typeof(item) <: AbstractArray
+  #       @assert size(item, 1) == nnodes(fspace) "physical_distance has different rows than there are nodes in space."
+  #     end
+  #     for n in 1:size(item, 1)
+  #       item[n, n] = 0.0
+  #     end
+  #   end
+  # end
 
   Ed = [Normal(0.0, i) for i in E]
   Mdists = [[DiscreteNonParametric([true, false], [i, 1-i]) for i in arr] for arr in mutProbs]  # μ (probability of change)
@@ -77,7 +77,10 @@ function model_initiation(;ngenes, nphenotypes, epistasisMat, pleiotropyMat, exp
   epistasisMatS = [MArray{Tuple{size(epistasisMat[i])...}}(newA[i]) for i in eachindex(newA)]
   pleiotropyMatS = [MArray{Tuple{size(pleiotropyMat[i])...}}(pleiotropyMat[i]) for i in eachindex(pleiotropyMat)]
   expressionArraysS = [MArray{Tuple{size(newQ[i])...}}(newQ[i]) for i in eachindex(newQ)]
-  properties = Dict(:ngenes => ngenes, :nphenotypes => nphenotypes, :epistasisMat => epistasisMatS, :pleiotropyMat => pleiotropyMatS, :expressionArrays => expressionArraysS, :growthrates => growthrates, :interactionCoeffs => interactionCoeffs, :selectionCoeffs => selectionCoeffs, :ploidy => ploidy, :optPhenotypes => optPhenotypes, :covMat => inv.(newcovMat), :mutProbs => Mdists, :mutMagnitudes => Ddists, :N => N, :E => Ed, :generations => generations, :K => K, :physical_distance => physical_distance, :nspecies => nspecies, :new_N => N, :interaction_equation => interaction_equation, :migration_traits => migration_traits)
+
+  site_peaks = Array{Array{Float64, 1}}(undef, size(fspace))
+
+  properties = Dict(:ngenes => ngenes, :nphenotypes => nphenotypes, :epistasisMat => epistasisMatS, :pleiotropyMat => pleiotropyMatS, :expressionArrays => expressionArraysS, :growthrates => growthrates, :interactionCoeffs => interactionCoeffs, :selectionCoeffs => selectionCoeffs, :ploidy => ploidy, :optPhenotypes => optPhenotypes, :covMat => inv.(newcovMat), :mutProbs => Mdists, :mutMagnitudes => Ddists, :N => N, :E => Ed, :generations => generations, :K => K, :nspecies => nspecies, :new_N => N, :interaction_equation => interaction_equation, :migration_traits => migration_traits, :vision_radius => vision_radius, :check_fraction => check_fraction, :migration_thresholds => migration_thresholds, :site_peaks => site_peaks, :step => 0)
 
   postype = typeof(fspace) <: GridSpace ? typeof(size(fspace)) : typeof(1)
   indtype = EvoDynamics.Ind{postype, typeof(0.1), eltype(properties[:epistasisMat]), eltype(properties[:pleiotropyMat]), eltype(properties[:expressionArrays])}
@@ -93,7 +96,7 @@ function model_initiation(;ngenes, nphenotypes, epistasisMat, pleiotropyMat, exp
       d = properties[:E][ind2]
       for ind in 1:n
         z = x .+ rand(d)
-        takeabs = abs.(z .- properties[:optPhenotypes][ind2])
+        takeabs = abs.(z .- return_opt_phenotype(ind2, 0, optPhenotypes))
         W = exp(-properties[:selectionCoeffs][ind2] * transpose(takeabs)*properties[:covMat][ind2]*takeabs)[1]
         W = minimum([1e5, W])
         add_agent!(nns[pos], model, ind2, W, MArray{Tuple{size(properties[:epistasisMat][ind2])...}}(properties[:epistasisMat][ind2]), MArray{Tuple{size(properties[:pleiotropyMat][ind2])...}}(properties[:pleiotropyMat][ind2]), MVector{length(properties[:expressionArrays][ind2])}(properties[:expressionArrays][ind2]))
@@ -108,10 +111,15 @@ nnodes(x::GridSpace) = prod(size(x))
 nnodes(x::GraphSpace) = Agents.LightGraphs.nv(x)
 nnodes(x::ABM) = nnodes(x.space)
 
+function return_opt_phenotype(species, generation, optPhenotype)
+  optPhenotype[species][2][optPhenotype[species][1][generation]]
+end
+
 """
     model_step!(model::ABM)
 
 A function to define what happens within each step of the model.
+# TODO: change the model such that these functions are at agent level.
 """
 function model_step!(model::ABM)
   if sum(model.ploidy) > length(model.ploidy) # there is at least one diploid
@@ -123,6 +131,8 @@ function model_step!(model::ABM)
       model.new_N[node] = Tuple(lotkaVoltera_generalized(model, node))
     end
   end
+  
+  model.step += 1
 end
 
 function agent_step!(agent::Ind, model::ABM)
@@ -229,7 +239,7 @@ end
 function update_fitness!(agent::Ind, model::ABM)
   d = model.E[agent.species]
   Fmat = agent.pleiotropyMat * (agent.epistasisMat * agent.q)
-  takeabs = abs.((Fmat .+ rand(d)) .- model.optPhenotypes[agent.species])
+  takeabs = abs.((Fmat .+ rand(d)) .- return_opt_phenotype(agent.species, model.step, model.optPhenotypes))
   W = exp(-model.selectionCoeffs[agent.species] * transpose(takeabs) * model.covMat[agent.species] * takeabs)[1]
   W = min(1e5, W)
   agent.W = W
@@ -243,20 +253,30 @@ end
 
 coord2vertex(c, model) = c[1] + (size(model.space)[1] * (c[2]-1))
 
-"Move the agent to a new node with probabilities given in `physical_distance`"
 function migration!(agent::Ind, model::ABM)
-  if isnothing(model.physical_distance[agent.species]) || isnothing(model.migration_traits[agent.species])
+  if isnothing(model.migration_traits[agent.species])
+    return
+  elseif model.migration_thresholds[agent.species] > get_migration_trait(agent, model)
     return
   end
-  rand() > get_migration_trait(agent, model) && return
-  vertexpos = coord2vertex(agent.pos, model)  # cell order. Only works for 2D grids
-  row = view(model.physical_distance[agent.species], :, vertexpos)
-  new_node = sample(1:length(row), Weights(row))
+
+  sites = collect(nearby_positions(agent, model, model.vision_radius[agent.species]))
+  nsites = length(sites)
+  nsites_selected = round(Int, model.check_fraction[agent.species] * nsites)
+  sites_checked = EvoDynamics.sample(sites, nsites_selected, replace=false)
+  # TODO: check_site
+  # vertexpos = coord2vertex(agent.pos, model)  # cell order. Only works for 2D grids
+  # row = view(model.physical_distance[agent.species], :, vertexpos)
+  # new_node = sample(1:length(row), Weights(row))
   # TODO: add migration cost. If it survives migration, then do the migration.
   move_agent!(agent, model.nodes[new_node], model)
 end
 
-# TODO: migration trait is more than 1.
+# TODO
+"Agent evaluates the site and gives it a score"
+function check_site(agent, site, model)
+end
+
 function get_migration_trait(agent, model)
   mtrait = agent.pleiotropyMat[model.migration_traits[agent.species], :]
   sum(agent.epistasisMat[mtrait, :] * agent.q)
@@ -314,65 +334,4 @@ function genocide!(model::ABM, n::AbstractArray)
   for k in n
     kill_agent!(model[k], model)
   end
-end
-
-"""
-Calculates the next population size of a species given its current size, intrinsic growth rate, carrying capacity, and competition with other species.
-
-# Arguments
-
-* node: node number
-* species: species number
-
-"""
-function lotkaVoltera_competition(model::ABM, species::Int, node::Int)
-  Ns = nagents_species(model, node)
-  N = Ns[species]
-  if N == 0
-    return
-  end
-  cc = model.interactionCoeffs
-  species_ids = 1:model.nspecies
-  if isnothing(cc) || length(species_ids) == 0
-    r = model.growthrates[species]
-    K = model.K[node][species]
-    nextN = N + r*N*(1 - (N/K))
-    return round(Int, nextN)
-  else 
-    ccs = view(cc, :, species)
-    aNs = ccs' * Ns
-    aNs -= ccs[species] * Ns[species]  # removes the current species from aNs.
-    r = model.growthrates[species]
-    K = model.K[node][species]
-    nextN = N + r*N*(1 - ((N+aNs)/K))
-    return round(Int, nextN)
-  end
-end
-
-"""
-Same as lotkaVoltera_competition but uses the generalized equation (see below). This version calculates the next population sizes for all species.
-
-* xt+1 = D(xt) + D(xt)(r + Axt)
-* xt: array of n population densities (N/K) at time t.
-* r: vector of n intrinsic growth rates, measuring the growth of population i when grown alone
-* A: n*n matrix of interaction coefficients (`model.interactionCoeffs`)
-* D(x): diagonal matrix with xt on diagonal
-"""
-function lotkaVoltera_generalized(model::ABM, node::Int)
-  x = nagents_species(model, node) ./ model.K[node]
-  r = model.growthrates
-  Dx = diagm(x)
-  A = model.interactionCoeffs
-  new_x = x .+ (Dx*(r .+ A*x))
-  new_N = new_x .* model.K[node]
-  return round.(Int, new_N)
-end
-
-"Returns population size per species in the node"
-function nagents_species(model::ABM, node::Int)
-  counter = zeros(Int, model.nspecies)
-  for ag in agents_in_position(node, model)
-    counter[ag.species] += 1
-  end
-  return counter
 end
