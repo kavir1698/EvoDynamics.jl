@@ -12,95 +12,73 @@ mutable struct Ind{A, B<:AbstractFloat, C<:AbstractArray, D<:AbstractArray, E<:A
   q::E  # expression array
 end
 
+struct Params{F<:AbstractFloat, I<:Int}
+  ngenes::Vector{I}
+  nphenotypes::Vector{I}
+  epistasisMat::Vector{MArray{S, F, 2, L} where {S<:Tuple, L}}
+  pleiotropyMat::Vector{MArray{S, Bool, 2, L} where {S<:Tuple, L}}
+  expressionArrays::Vector{MArray{S, Float64, 1, L} where {S<:Tuple, L}}
+  growthrates::Vector{F}
+  selectionCoeffs::Vector{F}
+  ploidy::Vector{I}
+  optvals::Vector{Vector{Vector{Matrix{F}}}}
+  optinds::Vector{Vector{I}}
+  covMat::Vector{Matrix{F}}
+  mutProbs::Vector{Vector{DiscreteNonParametric{Bool, Float64, Vector{Bool}, Vector{Float64}}}}
+  mutMagnitudes::Vector{Vector{UnivariateDistribution{S} where S<:ValueSupport}}
+  N::Vector{Vector{I}}
+  E::Vector{Normal{F}}
+  generations::I
+  K::Vector{Vector{I}}
+  nspecies::I
+  new_N::Vector{Vector{I}}
+  migration_traits::Vector{I}
+  vision_radius::Vector{I}
+  check_fraction::Vector{F}
+  migration_thresholds::Vector{F}
+  step::MVector{1, Int64}
+  nodes::Matrix{Tuple{I, I}}
+  biotic_phenotypes::Vector{Vector{I}}
+  abiotic_phenotypes::Vector{Vector{I}}
+end
+
 """
-    model_initiation(;ngenes, nphenotypes, epistasisMat, pleiotropyMat, expressionArrays, selectionCoeffs, ploidy, optPhenotypes, covMat, mutProbs, N, E, growthrates, interactionCoeffs, mutMagnitudes, generations, migration_traits, migration_thresholds, K, space=nothing, periodic=false, metric=:chebyshev, interaction_equation="lotkaVoltera_competition", seed=0)
+    model_initiation(param_file)
 
 Innitializes the model.
 """
-function model_initiation(;ngenes, nphenotypes, epistasisMat, pleiotropyMat, expressionArrays, selectionCoeffs, ploidy, optPhenotypes, covMat, mutProbs, N, E, growthrates, interactionCoeffs, mutMagnitudes, generations, migration_traits, migration_thresholds, vision_radius, check_fraction, K, space=nothing, periodic=false, metric=:chebyshev, interaction_equation="lotkaVoltera_competition", seed=0)
-  if seed >0
-    Random.seed!(seed)
+function model_initiation(param_file)
+  dd = load_parameters(param_file)
+  if !isnothing(dd[:model]["seed"])
+    Random.seed!(dd[:model]["seed"])
   end
   
+  properties = create_properties(dd)
+
+  space = dd[:model]["space"]
   if isnothing(space)
     fspace = GridSpace((1, 1))
   elseif typeof(space) <: Tuple
-    fspace = GridSpace(space, periodic=periodic, metric=metric)
-  # elseif typeof(space) <: AbstractGraph
-  #   fspace = GraphSpace(space)
+    fspace = GridSpace(space, periodic=dd[:model]["periodic"], metric=dd[:model]["metric"])
   end
-  nspecies = length(ngenes)
-
-  # Some checks for parameters having the correct dimensions
-  for i in ploidy
-    @assert i < 3  "Ploidy more than 2 is not implemented"
-  end
-  for i in size.(epistasisMat, 2) .% ploidy
-    @assert i == 0 "number of columns in epistasisMat are not correct. They should a factor of ploidy"
-  end
-  @assert length(selectionCoeffs) == length(ngenes) == length(epistasisMat) == length(mutProbs) == length(E) == length(nphenotypes) == length(covMat) == length(growthrates) == length(mutMagnitudes) "ngenes, epistasisMat, selectionCoeffs, mutProbs, nphenotypes, covMat, growthrates, mutMagnitudes and E should have the same number of elements"
-  @assert length(keys(K)) >= nnodes(fspace) "K should have a key for every node"
-  for (k, v) in N
-    @assert length(v) == nspecies "Each value in N should have size equal to number of species"
-  end
-  # if !isnothing(physical_distance)
-  #   for item in physical_distance
-  #     if typeof(item) <: AbstractArray
-  #       @assert size(item, 1) == nnodes(fspace) "physical_distance has different rows than there are nodes in space."
-  #     end
-  #     for n in 1:size(item, 1)
-  #       item[n, n] = 0.0
-  #     end
-  #   end
-  # end
-
-  Ed = [Normal(0.0, i) for i in E]
-  Mdists = [[DiscreteNonParametric([true, false], [i, 1-i]) for i in arr] for arr in mutProbs]  # μ (probability of change)
-  Ddists = [[Normal(0, ar[1]), DiscreteNonParametric([true, false], [ar[2], 1-ar[2]]), Normal(0, ar[3])] for ar in mutMagnitudes]  # amount of change in case of mutation
-  
-  # make single-element arrays 2D so that linAlg functions will work
-  newA = Array{Array{Float64}}(undef, length(epistasisMat))
-  newQ = Array{Array{Float64}}(undef, length(epistasisMat))
-  newcovMat = Array{Array{Float64}}(undef, length(epistasisMat))
-  for i in eachindex(epistasisMat)
-    if length(epistasisMat[i]) == 1
-      newA[i] = reshape(epistasisMat[i], 1, 1)
-      newQ[i] = reshape(expressionArrays[i], 1, 1)
-      newcovMat[i] = reshape(covMat[i], 1, 1)
-    else
-      newA[i] = epistasisMat[i]
-      newQ[i] = expressionArrays[i]
-      newcovMat[i] = covMat[i]
-    end
-  end
-
-  epistasisMatS = [MArray{Tuple{size(epistasisMat[i])...}}(newA[i]) for i in eachindex(newA)]
-  pleiotropyMatS = [MArray{Tuple{size(pleiotropyMat[i])...}}(pleiotropyMat[i]) for i in eachindex(pleiotropyMat)]
-  expressionArraysS = [MArray{Tuple{size(newQ[i])...}}(newQ[i]) for i in eachindex(newQ)]
-
-  site_peaks = Array{Array{Float64, 1}}(undef, size(fspace))
-
-  properties = Dict(:ngenes => ngenes, :nphenotypes => nphenotypes, :epistasisMat => epistasisMatS, :pleiotropyMat => pleiotropyMatS, :expressionArrays => expressionArraysS, :growthrates => growthrates, :interactionCoeffs => interactionCoeffs, :selectionCoeffs => selectionCoeffs, :ploidy => ploidy, :optPhenotypes => optPhenotypes, :covMat => inv.(newcovMat), :mutProbs => Mdists, :mutMagnitudes => Ddists, :N => N, :E => Ed, :generations => generations, :K => K, :nspecies => nspecies, :new_N => N, :interaction_equation => interaction_equation, :migration_traits => migration_traits, :vision_radius => vision_radius, :check_fraction => check_fraction, :migration_thresholds => migration_thresholds, :site_peaks => site_peaks, :step => 0)
 
   postype = typeof(fspace) <: GridSpace ? typeof(size(fspace)) : typeof(1)
-  indtype = EvoDynamics.Ind{postype, typeof(0.1), eltype(properties[:epistasisMat]), eltype(properties[:pleiotropyMat]), eltype(properties[:expressionArrays])}
+  indtype = EvoDynamics.Ind{postype, typeof(0.1), eltype(properties.epistasisMat), eltype(properties.pleiotropyMat), eltype(properties.expressionArrays)}
   model = ABM(indtype, fspace, properties=properties)
   
-  model.properties[:nodes] = collect(positions(model))
-
   # create and add agents
-  nns = collect(positions(model))
-  for (pos, Ns) in properties[:N]
-    for (ind2, n) in enumerate(Ns)
-      x = properties[:pleiotropyMat][ind2] * (properties[:epistasisMat][ind2] * properties[:expressionArrays][ind2])  # phenotypic values
-      d = properties[:E][ind2]
+  for sp in 1:model.nspecies
+    for (pos, n) in enumerate(model.N[sp])
+      x = properties.pleiotropyMat[sp] * (properties.epistasisMat[sp] * properties.expressionArrays[sp])  # phenotypic values
+      d = properties.E[sp]
       for ind in 1:n
         z = x .+ rand(d)
-        takeabs = abs.(z .- return_opt_phenotype(ind2, 0, optPhenotypes))
-        W = exp(-properties[:selectionCoeffs][ind2] * transpose(takeabs)*properties[:covMat][ind2]*takeabs)[1]
+        # TODO: calculate fitness given other individuals.
+        takeabs = abs.(z[model.abiotic_phenotypes[sp]] .- return_opt_phenotype(sp, 0, model))
+        W = exp(-properties.selectionCoeffs[sp] * transpose(takeabs)*properties.covMat[sp]*takeabs)[1]
         W = minimum([1e5, W])
-        add_agent!(nns[pos], model, ind2, W, MArray{Tuple{size(properties[:epistasisMat][ind2])...}}(properties[:epistasisMat][ind2]), MArray{Tuple{size(properties[:pleiotropyMat][ind2])...}}(properties[:pleiotropyMat][ind2]), MVector{length(properties[:expressionArrays][ind2])}(properties[:expressionArrays][ind2]))
-      end
+        add_agent!(model.nodes[pos], model, sp, W, MArray{Tuple{size(properties.epistasisMat[sp])...}}(properties.epistasisMat[sp]), MArray{Tuple{size(properties.pleiotropyMat[sp])...}}(properties.pleiotropyMat[sp]), MVector{length(properties.expressionArrays[sp])}(properties.expressionArrays[sp]))
+      end      
     end
   end
 
@@ -108,11 +86,67 @@ function model_initiation(;ngenes, nphenotypes, epistasisMat, pleiotropyMat, exp
 end
 
 nnodes(x::GridSpace) = prod(size(x))
-nnodes(x::GraphSpace) = Agents.LightGraphs.nv(x)
 nnodes(x::ABM) = nnodes(x.space)
 
-function return_opt_phenotype(species, generation, optPhenotype)
-  optPhenotype[species][2][optPhenotype[species][1][generation]]
+function create_properties(dd)
+  nspecies = length(dd[:species])
+
+  Ed = [Normal(0.0, dd[:species][i]["environmental noise"]) for i in 1:nspecies]
+  Mdists = [[DiscreteNonParametric([true, false], [i, 1-i]) for i in dd[:species][arr]["mutation probabilities"]] for arr in 1:nspecies]  # μ (probability of change)
+  Ddists = [[Normal(0, dd[:species][ar]["mutation magnitudes"][1]), DiscreteNonParametric([true, false], [dd[:species][ar]["mutation magnitudes"][2], 1-dd[:species][ar]["mutation magnitudes"][2]]), Normal(0, dd[:species][ar]["mutation magnitudes"][3])] for ar in 1:nspecies]  # amount of change in case of mutation
+  
+  # make single-element arrays 2D so that linAlg functions will work
+  newA = Array{Array{Float64}}(undef, nspecies)
+  newQ = Array{Array{Float64}}(undef, nspecies)
+  newcovMat = Array{Array{Float64}}(undef, nspecies)
+  for i in 1:nspecies
+    if length(dd[:species][i]["epistasis matrix"]) == 1
+      newA[i] = reshape(dd[:species][i]["epistasis matrix"], 1, 1)
+      newQ[i] = reshape(dd[:species][i]["expression array"], 1, 1)
+      newcovMat[i] = reshape(dd[:species][i]["covariance matrix"], 1, 1)
+    else
+      newA[i] = dd[:species][i]["epistasis matrix"]
+      newQ[i] = dd[:species][i]["expression array"]
+      newcovMat[i] = dd[:species][i]["covariance matrix"]
+    end
+  end
+
+  epistasisMatS = [MArray{Tuple{size(newA[i])...}}(newA[i]) for i in eachindex(newA)]
+  pleiotropyMatS = [MArray{Tuple{size(dd[:species][i]["pleiotropy matrix"])...}}(dd[:species][i]["pleiotropy matrix"]) for i in 1:nspecies]
+  expressionArraysS = [MArray{Tuple{size(newQ[i])...}}(newQ[i]) for i in eachindex(newQ)]
+
+  ngenes = [dd[:species][i]["number of genes"] for i in 1:nspecies]
+  nphenotypes = [dd[:species][i]["number of phenotypes"] for i in 1:nspecies]
+  growthrates = [dd[:species][i]["growth rate"] for i in 1:nspecies]
+  selectionCoeffs = [dd[:species][i]["selection coefficient"] for i in 1:nspecies]
+  ploidy = [dd[:species][i]["ploidy"] for i in 1:nspecies]
+  optvals = [dd[:species][i]["optimal phenotype values"] for i in 1:nspecies]
+  optinds = [dd[:species][i]["optimal phenotypes"] for i in 1:nspecies]
+  Ns = [dd[:species][i]["N"] for i in 1:nspecies]
+  Ks = [dd[:species][i]["K"] for i in 1:nspecies]
+  migration_traits = [dd[:species][i]["migration phenotype"] for i in 1:nspecies]
+  vision_radius = [dd[:species][i]["vision radius"] for i in 1:nspecies]
+  check_fraction = [dd[:species][i]["check fraction"] for i in 1:nspecies]
+  migration_thresholds = [dd[:species][i]["migration threshold"] for i in 1:nspecies]
+  generations = dd[:model]["generations"]
+  step = MVector{1, Int}(undef)
+  step[1] = 0
+  nnodes = Matrix{Tuple{Int, Int}}(undef, dd[:model]["space"]...)
+  for col in 1:size(nnodes, 2)
+    for row in 1:size(nnodes, 1)
+      nnodes[row, col] = (row, col)
+    end
+  end
+  biotic_phenotyps = [dd[:species][i]["biotic phenotypes"] for i in 1:nspecies]
+  abiotic_phenotyps = [dd[:species][i]["abiotic phenotypes"] for i in 1:nspecies]
+
+  properties = Params(ngenes, nphenotypes, epistasisMatS, pleiotropyMatS, expressionArraysS, growthrates, selectionCoeffs, ploidy, optvals, optinds, inv.(newcovMat), Mdists, Ddists, Ns, Ed, generations, Ks, nspecies, Ns, migration_traits, vision_radius, check_fraction, migration_thresholds, step, nnodes, biotic_phenotyps, abiotic_phenotyps)
+  
+  return properties
+end
+
+function return_opt_phenotype(species, generation, model)
+  model.optvals[species][model.optinds[species][generation+1]]
 end
 
 """

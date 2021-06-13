@@ -1,6 +1,5 @@
 module EvoDynamics
 
-using Distributions: include
 using Agents
 using Random
 using Distributions
