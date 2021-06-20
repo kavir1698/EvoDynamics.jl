@@ -17,7 +17,6 @@
     mutation probabilities: [0.9, 0.0, 0.0]
     mutation magnitudes: [0.05, 0.0, 0.01]
     N: [1000, 0, 0, 0]
-    K: [1000, 1000, 1000, 1000]
     vision radius: 1
     check fraction: 0.5
     environmental noise: 0.01
@@ -29,6 +28,7 @@
     # Optimal phenotype indices for each generation, including generation zero.
     optimal phenotypes: [1,1,1,2,3,3]
     age: 5
+    recombination: true
 
   - id: 2
     number of genes: 8 
@@ -47,7 +47,6 @@
     mutation probabilities: [0.9, 0.0, 0.0]
     mutation magnitudes: [0.05, 0.0, 0.01]
     N: [1000, 0, 0, 0]
-    K: [1000, 1000, 1000, 1000]
     vision radius: 1
     check fraction: 0.5
     environmental noise: 0.01
@@ -56,6 +55,7 @@
       - [0.6437641305315445, 0.9954545836033715, 2.469792530385348, 1.6158867433451882, 2.097629262577973, 1.1314248848669466, 1.490299526620522, 0.2566056477862022]
     optimal phenotypes: [1,1,1,2,2,2]
     age: 3
+    recombination: false
 
 - model:
   generations: 5
@@ -65,4 +65,5 @@
   resources: [200, 158, 183, 190]  # available resources per site per time
   interactions: [0.1, 0.0, 0.0, -1.0]  # How species interact
   food sources: [1.0, 0.5, 0.0, 0.0]  # What each species feeds on (consumption rate). Has priority over interactions. If diagonal is non-zero in the matrix, it means the food resource is from the environment. It will be read from rows (species order) to columns (species order).
+  area: [10, 10, 10, 10]
   seed: Null

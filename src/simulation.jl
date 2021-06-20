@@ -11,6 +11,9 @@ mutable struct Ind{B<:AbstractFloat, C<:AbstractArray, D<:AbstractArray, E<:Abst
   pleiotropyMat::D  # pleiotropy matrix
   q::E  # expression array
   age::Int
+  sex::Bool
+  interaction_history::MArray{S, Int} where S # records the last interaction with all species
+  energy::B  # determines whether need to feed (energy=0) or not.
 end
 
 struct Params{F<:AbstractFloat, I<:Int}
@@ -29,7 +32,6 @@ struct Params{F<:AbstractFloat, I<:Int}
   N::Vector{Vector{I}}
   E::Vector{Normal{F}}
   generations::I
-  K::Vector{Vector{I}}
   nspecies::I
   new_N::Vector{Vector{I}}
   migration_traits::Vector{I}
@@ -45,6 +47,7 @@ struct Params{F<:AbstractFloat, I<:Int}
   food_sources::Matrix{F}
   interactions::Matrix{F}
   resources::Matrix{I}
+  recombination::SVector{S, Bool} where {S}
 end
 
 """
@@ -54,7 +57,7 @@ Innitializes the model.
 """
 function model_initiation(param_file)
   dd = load_parameters(param_file)
-  
+
   if !isnothing(dd[:model]["seed"])
     Random.seed!(dd[:model]["seed"])
   end
@@ -70,7 +73,7 @@ function model_initiation(param_file)
 
   indtype = EvoDynamics.Ind{typeof(0.1), eltype(properties.epistasisMat), eltype(properties.pleiotropyMat), eltype(properties.expressionArrays)}
 
-  model = ABM(indtype, fspace, properties=properties)
+  model = ABM(indtype, fspace, properties=properties, scheduler=Schedulers.randomly)
   
   # create and add agents
   for sp in 1:model.nspecies
@@ -81,7 +84,12 @@ function model_initiation(param_file)
         z = x .+ rand(d)
         abp = model.abiotic_phenotypes[sp]
         W = abiotic_distance(z[abp], return_opt_phenotype(sp, 0, pos, model), 1.0)
-        add_agent!(model.nodes[pos], model, sp, W, MArray{Tuple{size(properties.epistasisMat[sp])...}}(properties.epistasisMat[sp]), MArray{Tuple{size(properties.pleiotropyMat[sp])...}}(properties.pleiotropyMat[sp]), MVector{length(properties.expressionArrays[sp])}(properties.expressionArrays[sp]), model.max_ages[sp])
+        sex = false
+        if model.ploidy[sp] == 2
+          sex = rand([true, false])
+        end
+        interaction_history = MVector{model.nspecies, Int}(fill(0, model.nspecies))
+        add_agent!(model.nodes[pos], model, sp, W, MArray{Tuple{size(properties.epistasisMat[sp])...}}(properties.epistasisMat[sp]), MArray{Tuple{size(properties.pleiotropyMat[sp])...}}(properties.pleiotropyMat[sp]), MVector{length(properties.expressionArrays[sp])}(properties.expressionArrays[sp]), model.max_ages[sp], sex, interaction_history, 0)
       end      
     end
   end
@@ -124,7 +132,6 @@ function create_properties(dd)
   optvals = [dd[:species][i]["optimal phenotype values"] for i in 1:nspecies]
   optinds = [dd[:species][i]["optimal phenotypes"] for i in 1:nspecies]
   Ns = [dd[:species][i]["N"] for i in 1:nspecies]
-  Ks = [dd[:species][i]["K"] for i in 1:nspecies]
   migration_traits = [dd[:species][i]["migration phenotype"] for i in 1:nspecies]
   vision_radius = [dd[:species][i]["vision radius"] for i in 1:nspecies]
   check_fraction = [dd[:species][i]["check fraction"] for i in 1:nspecies]
@@ -142,8 +149,10 @@ function create_properties(dd)
   abiotic_phenotyps = [dd[:species][i]["abiotic phenotypes"] for i in 1:nspecies]
   max_ages = [dd[:species][i]["age"] for i in 1:nspecies]
   ids = Dict(i => dd[:species][i]["id"] for i in 1:nspecies)
+  recombination_array = [dd[:species][i]["recombination"] for i in 1:nspecies]
+  recombination = SVector{nspecies, Bool}(recombination_array)
 
-  properties = Params(ngenes, nphenotypes, epistasisMatS, pleiotropyMatS, expressionArraysS, growthrates, selectionCoeffs, ploidy, optvals, optinds, Mdists, Ddists, Ns, Ed, generations, Ks, nspecies, Ns, migration_traits, vision_radius, check_fraction, migration_thresholds, step, nnodes, biotic_phenotyps, abiotic_phenotyps, max_ages, ids, dd[:model]["food sources"], dd[:model]["interactions"], dd[:model]["resources"])
+  properties = Params(ngenes, nphenotypes, epistasisMatS, pleiotropyMatS, expressionArraysS, growthrates, selectionCoeffs, ploidy, optvals, optinds, Mdists, Ddists, Ns, Ed, generations, nspecies, Ns, migration_traits, vision_radius, check_fraction, migration_thresholds, step, nnodes, biotic_phenotyps, abiotic_phenotyps, max_ages, ids, dd[:model]["food sources"], dd[:model]["interactions"], dd[:model]["resources"], recombination)
   
   return properties
 end
@@ -167,12 +176,12 @@ function model_step!(model::ABM)
   if sum(model.ploidy) > length(model.ploidy) # there is at least one diploid
     sexual_reproduction!(model)
   end
-  selection!(model)
-  if model.interaction_equation == "lotkaVoltera_generalized"
-    for node in 1:nnodes(model)
-      model.new_N[node] = Tuple(lotkaVoltera_generalized(model, node))
-    end
-  end
+  # selection!(model)
+  # if model.interaction_equation == "lotkaVoltera_generalized"
+  #   for node in 1:nnodes(model)
+  #     model.new_N[node] = Tuple(lotkaVoltera_generalized(model, node))
+  #   end
+  # end
   
   model.step += 1
 end
@@ -182,13 +191,13 @@ function agent_step!(agent::Ind, model::ABM)
   migration!(agent, model)
 end
 
-function selection!(model::ABM)
-  for node in 1:nnodes(model)
-    for species in 1:model.nspecies
-      sample!(model, species, node, :W)
-    end
-  end
-end
+# function selection!(model::ABM)
+#   for node in 1:nnodes(model)
+#     for species in 1:model.nspecies
+#       sample!(model, species, node, :W)
+#     end
+#   end
+# end
 
 """
 Choose a random mate and produce one offsprings with recombination.
@@ -239,7 +248,11 @@ An offspring is created from gametes that include one allele from each loci and 
 Each gamete is half of `epistasisMat` (column-wise)
 """
 function reproduce!(agent1::Ind, agent2::Ind, model::ABM)
-  nloci = Int(model.ngenes[agent1.species]/2)
+  if model.recombination[agent1.species] == false
+    return
+  end
+  # nloci = floor(Int, model.ngenes[agent1.species]/2)
+  nloci = model.ngenes[agent1.species]
   loci_shuffled = shuffle(1:nloci)
   loci1 = 1:ceil(Int, nloci/2)
   noci1_dip = vcat(loci_shuffled[loci1], loci_shuffled[loci1] .+ nloci)

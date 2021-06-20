@@ -1,4 +1,3 @@
-using Distributions
 
 """
 Calculates the average distance between two sets of phenotypes.
@@ -7,18 +6,18 @@ Distance is a probability and is calculated by the number of standard deviation 
 
 Variance can stand for selection coefficient, with a larger variance, less sever the difference.
 """
-function phenotypic_distance(individual1::AbstractArray, individual2::AbstractArray, sign::Symbol, variance::Float64)
+function phenotypic_distance(phenotype1, phenotype2, sign::Symbol, variance::Float64)
   distance = 0.0
   counter = 0.0
-  for phenotype1 in individual1
-    for phenotype2 in individual2
-      d= abs(0.5 - cdf(Normal(phenotype1,  variance), phenotype2)) # 0.5 is the max possible value
+  for ph1 in phenotype1
+    for ph2 in phenotype2
+      d= abs(0.5 - cdf(Normal(ph1,  variance), ph2)) # 0.5 is the max possible value
       distance += d
       counter += 1.0
     end
   end
-  distance += distance
-  distance /= counter
+  distance += distance  # Double the distance so that it is in range 0 to 1.
+  distance /= counter  # average distance
   if sign != :match
     distance = 1.0 - distance
   end

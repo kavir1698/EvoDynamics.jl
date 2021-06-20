@@ -1,6 +1,6 @@
 function check_yml_params(d, species_index, model_index)
-  species_keys = ["migration threshold", "number of genes", "number of phenotypes", "abiotic phenotypes", "biotic phenotypes", "migration phenotype", "migration threshold", "ploidy", "epistasis matrix", "pleiotropy matrix", "covariance matrix", "growth rate", "expression array", "selection coefficient", "mutation probabilities", "mutation magnitudes", "N", "K", "vision radius", "check fraction", "environmental noise", "optimal phenotype values", "optimal phenotypes", "age"]
-  model_keys = ["generations", "space", "metric", "periodic", "resources", "interactions", "food sources", "seed"]
+  species_keys = ["migration threshold", "number of genes", "number of phenotypes", "abiotic phenotypes", "biotic phenotypes", "migration phenotype", "migration threshold", "ploidy", "epistasis matrix", "pleiotropy matrix", "covariance matrix", "growth rate", "expression array", "selection coefficient", "mutation probabilities", "mutation magnitudes", "N", "vision radius", "check fraction", "environmental noise", "optimal phenotype values", "optimal phenotypes", "age", "recombination"]
+  model_keys = ["generations", "space", "metric", "periodic", "resources", "interactions", "food sources", "area", "seed"]
   for sp in d[species_index]["species"]
     @assert haskey(sp, "id") "Species ID field missing."
     for kk in species_keys
@@ -35,12 +35,12 @@ function check_param_shapes(d, species_index, model_index)
     @assert dd["ploidy"] < 3  "Ploidy more than 2 is not implemented"
     # epistasis matrix
     @assert size(dd["epistasis matrix"], 2) % dd["ploidy"] == 0 "Number of columns in epistasisMat are not correct. They should a factor of ploidy"
-    # K and N
-    @assert length(dd["K"]) == length(dd["N"]) == spacesize "There should be an N and K value for every site. Species: $species"
     # age is integer
     @assert typeof(dd["age"]) <: Int "Age of species $species should be integer."
     # id is integer
     @assert typeof(dd["id"]) <: Int "Age of species $species should be integer."
+    # recombination is Bool
+    @assert typeof(dd["recombination"]) <: Bool "recombination of species $species should be type Bool (true or false)."
   end
   # Space should be 2D
   if !isnothing(d[model_index]["space"]) && d[model_index]["space"] != "nothing"
@@ -49,6 +49,10 @@ function check_param_shapes(d, species_index, model_index)
   # Resources
   @assert typeof(d[model_index]["resources"]) <: AbstractArray{Int} "Resources should be array of Integers"
   @assert length(d[model_index]["resources"]) == prod(d[model_index]["space"]) "Resources should be as long as number of sites"
+  # Area
+  @assert typeof(d[model_index]["area"]) <: AbstractArray "Area should be array"
+  @assert eltype(d[model_index]["area"]) <: Real "Area elements should be numbers"
+  @assert length(d[model_index]["area"]) == prod(d[model_index]["space"]) "Area should be as long as number of sites"
   # Interactions
   @assert typeof(d[model_index]["interactions"]) <: AbstractArray "Interactions should be an array"
   @assert eltype(d[model_index]["interactions"]) <: AbstractFloat "Elements of interactions should be floating numbers"
@@ -109,6 +113,8 @@ function reformat_params!(d, species_index, model_index)
 
   # reshape and convert resources
   d[model_index]["resources"] = reshape(d[model_index]["resources"], d[model_index]["space"]...)
+  # reshape and convert area
+  d[model_index]["area"] = reshape(d[model_index]["area"], d[model_index]["space"]...)
   # reshape and convert interactions
   d[model_index]["interactions"] = reshape(d[model_index]["interactions"], nspecies, nspecies)
   # reshape and convert food sources

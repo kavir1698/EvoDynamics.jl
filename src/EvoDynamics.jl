@@ -1,5 +1,6 @@
 module EvoDynamics
 
+using Distributions: length
 using Agents
 using Random
 using Distributions
