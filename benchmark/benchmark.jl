@@ -28,7 +28,7 @@ parameters = Dict(
   :selectionCoeffs => (0.5, 0.5),
   :ploidy => ploidy,
   :optPhenotypes => Tuple([randn(Float16, n) for n in nphenotypes]),
-  :covMat => Tuple([Symmetric(rand(Float16, i[1], i[2])) for i in zip(nphenotypes, nphenotypes)]),
+  # :covMat => Tuple([Symmetric(rand(Float16, i[1], i[2])) for i in zip(nphenotypes, nphenotypes)]),
   :mutProbs => Tuple([(0.02, 0.0, 0.0), (0.02, 0.0, 0.0)]),
   :mutMagnitudes => Tuple([(0.05, 0.0, 0.01), (0.05, 0.0, 0.01)]),
   :N => Dict(1 => (1000, 1000)),

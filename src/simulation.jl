@@ -2,14 +2,15 @@
 """
 A `struct` for individuals that keeps individual-specific variables.
 """
-mutable struct Ind{A, B<:AbstractFloat, C<:AbstractArray, D<:AbstractArray, E<:AbstractArray} <: AbstractAgent
+mutable struct Ind{B<:AbstractFloat, C<:AbstractArray, D<:AbstractArray, E<:AbstractArray} <: AbstractAgent
   id::Int  # the individual ID
-  pos::A  # the individuals position
+  pos::Tuple{Int, Int}  # the individuals position
   species::Int  # the species ID the individual belongs to
-  W::B  # fitness. W = exp(γ .* transpose(sum(epistasisMat, dims=2) .- θ)*inv(ω)*(sum(epistasisMat, dims=2) .- θ)).
+  W::B  # fitness. 
   epistasisMat::C  # epistasis matrix
   pleiotropyMat::D  # pleiotropy matrix
   q::E  # expression array
+  age::Int
 end
 
 struct Params{F<:AbstractFloat, I<:Int}
@@ -23,7 +24,6 @@ struct Params{F<:AbstractFloat, I<:Int}
   ploidy::Vector{I}
   optvals::Vector{Vector{Vector{Matrix{F}}}}
   optinds::Vector{Vector{I}}
-  covMat::Vector{Matrix{F}}
   mutProbs::Vector{Vector{DiscreteNonParametric{Bool, Float64, Vector{Bool}, Vector{Float64}}}}
   mutMagnitudes::Vector{Vector{UnivariateDistribution{S} where S<:ValueSupport}}
   N::Vector{Vector{I}}
@@ -40,6 +40,11 @@ struct Params{F<:AbstractFloat, I<:Int}
   nodes::Matrix{Tuple{I, I}}
   biotic_phenotypes::Vector{Vector{I}}
   abiotic_phenotypes::Vector{Vector{I}}
+  max_ages::Vector{I}
+  ids::Dict{I, I}
+  food_sources::Matrix{F}
+  interactions::Matrix{F}
+  resources::Matrix{I}
 end
 
 """
@@ -49,6 +54,7 @@ Innitializes the model.
 """
 function model_initiation(param_file)
   dd = load_parameters(param_file)
+  
   if !isnothing(dd[:model]["seed"])
     Random.seed!(dd[:model]["seed"])
   end
@@ -62,8 +68,8 @@ function model_initiation(param_file)
     fspace = GridSpace(space, periodic=dd[:model]["periodic"], metric=dd[:model]["metric"])
   end
 
-  postype = typeof(fspace) <: GridSpace ? typeof(size(fspace)) : typeof(1)
-  indtype = EvoDynamics.Ind{postype, typeof(0.1), eltype(properties.epistasisMat), eltype(properties.pleiotropyMat), eltype(properties.expressionArrays)}
+  indtype = EvoDynamics.Ind{typeof(0.1), eltype(properties.epistasisMat), eltype(properties.pleiotropyMat), eltype(properties.expressionArrays)}
+
   model = ABM(indtype, fspace, properties=properties)
   
   # create and add agents
@@ -73,11 +79,9 @@ function model_initiation(param_file)
       d = properties.E[sp]
       for ind in 1:n
         z = x .+ rand(d)
-        # TODO: calculate fitness given other individuals.
-        takeabs = abs.(z[model.abiotic_phenotypes[sp]] .- return_opt_phenotype(sp, 0, model))
-        W = exp(-properties.selectionCoeffs[sp] * transpose(takeabs)*properties.covMat[sp]*takeabs)[1]
-        W = minimum([1e5, W])
-        add_agent!(model.nodes[pos], model, sp, W, MArray{Tuple{size(properties.epistasisMat[sp])...}}(properties.epistasisMat[sp]), MArray{Tuple{size(properties.pleiotropyMat[sp])...}}(properties.pleiotropyMat[sp]), MVector{length(properties.expressionArrays[sp])}(properties.expressionArrays[sp]))
+        abp = model.abiotic_phenotypes[sp]
+        W = abiotic_distance(z[abp], return_opt_phenotype(sp, 0, pos, model), 1.0)
+        add_agent!(model.nodes[pos], model, sp, W, MArray{Tuple{size(properties.epistasisMat[sp])...}}(properties.epistasisMat[sp]), MArray{Tuple{size(properties.pleiotropyMat[sp])...}}(properties.pleiotropyMat[sp]), MVector{length(properties.expressionArrays[sp])}(properties.expressionArrays[sp]), model.max_ages[sp])
       end      
     end
   end
@@ -98,16 +102,13 @@ function create_properties(dd)
   # make single-element arrays 2D so that linAlg functions will work
   newA = Array{Array{Float64}}(undef, nspecies)
   newQ = Array{Array{Float64}}(undef, nspecies)
-  newcovMat = Array{Array{Float64}}(undef, nspecies)
   for i in 1:nspecies
     if length(dd[:species][i]["epistasis matrix"]) == 1
       newA[i] = reshape(dd[:species][i]["epistasis matrix"], 1, 1)
       newQ[i] = reshape(dd[:species][i]["expression array"], 1, 1)
-      newcovMat[i] = reshape(dd[:species][i]["covariance matrix"], 1, 1)
     else
       newA[i] = dd[:species][i]["epistasis matrix"]
       newQ[i] = dd[:species][i]["expression array"]
-      newcovMat[i] = dd[:species][i]["covariance matrix"]
     end
   end
 
@@ -139,14 +140,21 @@ function create_properties(dd)
   end
   biotic_phenotyps = [dd[:species][i]["biotic phenotypes"] for i in 1:nspecies]
   abiotic_phenotyps = [dd[:species][i]["abiotic phenotypes"] for i in 1:nspecies]
+  max_ages = [dd[:species][i]["age"] for i in 1:nspecies]
+  ids = Dict(i => dd[:species][i]["id"] for i in 1:nspecies)
 
-  properties = Params(ngenes, nphenotypes, epistasisMatS, pleiotropyMatS, expressionArraysS, growthrates, selectionCoeffs, ploidy, optvals, optinds, inv.(newcovMat), Mdists, Ddists, Ns, Ed, generations, Ks, nspecies, Ns, migration_traits, vision_radius, check_fraction, migration_thresholds, step, nnodes, biotic_phenotyps, abiotic_phenotyps)
+  properties = Params(ngenes, nphenotypes, epistasisMatS, pleiotropyMatS, expressionArraysS, growthrates, selectionCoeffs, ploidy, optvals, optinds, Mdists, Ddists, Ns, Ed, generations, Ks, nspecies, Ns, migration_traits, vision_radius, check_fraction, migration_thresholds, step, nnodes, biotic_phenotyps, abiotic_phenotyps, max_ages, ids, dd[:model]["food sources"], dd[:model]["interactions"], dd[:model]["resources"])
   
   return properties
 end
 
-function return_opt_phenotype(species, generation, model)
-  model.optvals[species][model.optinds[species][generation+1]]
+function return_opt_phenotype(species, generation, site, model)
+  nabiotic = length(model.abiotic_phenotypes[species])
+  output = Array{typeof(0.1)}(undef, nabiotic)
+  for trait in 1:nabiotic
+    output[trait] = model.optvals[species][model.optinds[species][generation+1]][trait][site]
+  end
+  return output
 end
 
 """

@@ -9,6 +9,7 @@ using StaticArrays
 using YAML
 
 include("simulation.jl")
+include("interactions.jl")
 include("api.jl")
 include("load_params.jl")
 include("check_params.jl")
