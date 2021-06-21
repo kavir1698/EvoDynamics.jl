@@ -40,7 +40,7 @@ function check_param_shapes(d, species_index, model_index)
     # id is integer
     @assert typeof(dd["id"]) <: Int "Age of species $species should be integer."
     # recombination is Bool
-    @assert typeof(dd["recombination"]) <: Bool "recombination of species $species should be type Bool (true or false)."
+    @assert typeof(dd["recombination"]) <: Real "recombination of species $species should be type numeric"
   end
   # Space should be 2D
   if !isnothing(d[model_index]["space"]) && d[model_index]["space"] != "nothing"

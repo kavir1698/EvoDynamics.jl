@@ -47,8 +47,10 @@ struct Params{F<:AbstractFloat, I<:Int}
   food_sources::Matrix{F}
   interactions::Matrix{F}
   resources::Matrix{I}
-  recombination::SVector{S, Bool} where {S}
+  recombination::Vector{Poisson{F}}
 end
+
+const variance = 1.0
 
 """
     model_initiation(param_file)
@@ -78,18 +80,14 @@ function model_initiation(param_file)
   # create and add agents
   for sp in 1:model.nspecies
     for (pos, n) in enumerate(model.N[sp])
-      x = properties.pleiotropyMat[sp] * (properties.epistasisMat[sp] * properties.expressionArrays[sp])  # phenotypic values
-      d = properties.E[sp]
       for ind in 1:n
-        z = x .+ rand(d)
-        abp = model.abiotic_phenotypes[sp]
-        W = abiotic_distance(z[abp], return_opt_phenotype(sp, 0, pos, model), 1.0)
+        W = abiotic_fitness(sp, pos, model)
         sex = false
         if model.ploidy[sp] == 2
-          sex = rand([true, false])
+          sex = rand((true, false))
         end
         interaction_history = MVector{model.nspecies, Int}(fill(0, model.nspecies))
-        add_agent!(model.nodes[pos], model, sp, W, MArray{Tuple{size(properties.epistasisMat[sp])...}}(properties.epistasisMat[sp]), MArray{Tuple{size(properties.pleiotropyMat[sp])...}}(properties.pleiotropyMat[sp]), MVector{length(properties.expressionArrays[sp])}(properties.expressionArrays[sp]), model.max_ages[sp], sex, interaction_history, 0)
+        add_agent!(model.nodes[pos], model, sp, W, MArray{Tuple{size(properties.epistasisMat[sp])...}}(properties.epistasisMat[sp]), MArray{Tuple{size(properties.pleiotropyMat[sp])...}}(properties.pleiotropyMat[sp]), MVector{length(properties.expressionArrays[sp])}(properties.expressionArrays[sp]), 0, sex, interaction_history, 0)
       end      
     end
   end
@@ -149,19 +147,27 @@ function create_properties(dd)
   abiotic_phenotyps = [dd[:species][i]["abiotic phenotypes"] for i in 1:nspecies]
   max_ages = [dd[:species][i]["age"] for i in 1:nspecies]
   ids = Dict(i => dd[:species][i]["id"] for i in 1:nspecies)
-  recombination_array = [dd[:species][i]["recombination"] for i in 1:nspecies]
-  recombination = SVector{nspecies, Bool}(recombination_array)
+  recombination = [Poisson(dd[:species][i]["recombination"]) for i in 1:nspecies]
 
   properties = Params(ngenes, nphenotypes, epistasisMatS, pleiotropyMatS, expressionArraysS, growthrates, selectionCoeffs, ploidy, optvals, optinds, Mdists, Ddists, Ns, Ed, generations, nspecies, Ns, migration_traits, vision_radius, check_fraction, migration_thresholds, step, nnodes, biotic_phenotyps, abiotic_phenotyps, max_ages, ids, dd[:model]["food sources"], dd[:model]["interactions"], dd[:model]["resources"], recombination)
   
   return properties
 end
 
-function return_opt_phenotype(species, generation, site, model)
+function return_opt_phenotype(species::Int, generation::Int, site::Int, model::ABM)
   nabiotic = length(model.abiotic_phenotypes[species])
   output = Array{typeof(0.1)}(undef, nabiotic)
   for trait in 1:nabiotic
     output[trait] = model.optvals[species][model.optinds[species][generation+1]][trait][site]
+  end
+  return output
+end
+
+function return_opt_phenotype(species::Int, generation::Int, site::Tuple{Int, Int}, model::ABM)
+  nabiotic = length(model.abiotic_phenotypes[species])
+  output = Array{typeof(0.1)}(undef, nabiotic)
+  for trait in 1:nabiotic
+    output[trait] = model.optvals[species][model.optinds[species][generation+1]][trait][site[1],site[2]]
   end
   return output
 end
@@ -241,29 +247,95 @@ function mate(model::ABM, node_content)
   return mates
 end
 
-"""
-For sexual reproduction of diploids.
-
-An offspring is created from gametes that include one allele from each loci and the corresponding column of the epistasisMat matrix.
-Each gamete is half of `epistasisMat` (column-wise)
-"""
-function reproduce!(agent1::Ind, agent2::Ind, model::ABM)
-  if model.recombination[agent1.species] == false
-    return
+function same_species(ag1::Ind, ag2::Ind)
+  if ag1.species == ag2.species
+    return true
+  else
+    return false
   end
-  # nloci = floor(Int, model.ngenes[agent1.species]/2)
-  nloci = model.ngenes[agent1.species]
-  loci_shuffled = shuffle(1:nloci)
-  loci1 = 1:ceil(Int, nloci/2)
-  noci1_dip = vcat(loci_shuffled[loci1], loci_shuffled[loci1] .+ nloci)
-  childA = MArray{Tuple{size(agent2.epistasisMat)...}}(agent2.epistasisMat)
-  childA[:, noci1_dip] .= agent1.epistasisMat[:, noci1_dip]
-  childB = MArray{Tuple{size(agent2.pleiotropyMat)...}}(agent2.pleiotropyMat)
-  childB[:, noci1_dip] .= agent1.pleiotropyMat[:, noci1_dip]
-  childq = MVector{length(agent2.q)}(agent2.q)
-  childq[noci1_dip] .= agent1.q[noci1_dip]
-  child = add_agent!(agent1.pos, model, agent1.species, 0.2, childA, childB, childq)  
-  update_fitness!(child, model)
+end
+
+"""
+Returns a bitarray for sites to be selected from the first (false) and second (true) homologous chromosome.
+"""
+function crossing_overs(nsites::Int, ncrossing_overs::Int) 
+  output = falses(nsites)
+  if ncrossing_overs == 0
+    return output
+  elseif ncrossing_overs ≥ nsites
+    output[1:2:end] .= true
+    return output
+  end
+  breaking_points = sample(1:nsites-1, ncrossing_overs, replace=false, ordered=true)
+  last = true
+  counter = 0
+  for site in 1:nsites
+    if counter < ncrossing_overs && site == breaking_points[counter+1]
+      counter += 1
+      output[site] = last
+      last = !last 
+    else
+      output[site] = last
+    end
+  end
+  return output
+end
+
+"""
+Returns gamets for epistasisMat, pleiotropyMat, and q.
+
+A ametes includes `cross_overs` sites from one homologous chr and the rest from another.the corresponding column of the `epistasisMat` and `pleiotropyMat` matrices.
+Each gamete is half of `epistasisMat` and `pleiotropyMat` (column-wise).
+"""
+function create_gamete(agent, cross_overs, nsites, first::Bool)
+  indices1 = 1:nsites
+  indices2 = indices1 .+ 7
+  if !first
+    indices1, indices2 = indices2, indices1
+  end
+  epistasisMat_gamet = agent.epistasisMat[:, indices1]
+  epistasisMat_gamet[:, cross_overs] .= agent.epistasisMat[:, indices2][:, cross_overs]
+
+  pleiotropyMat_gamet = agent.pleiotropyMat[:, indices1]
+  pleiotropyMat_gamet[:, cross_overs] .= agent.pleiotropyMat[:, indices2][:, cross_overs]
+
+  # q_gamet = MVector{nsites}(agent.q[indices1])  MArray{Tuple{nsites*2, nsites}}(
+  q_gamet = agent.q[indices1]
+  q_gamet[cross_overs] = agent.q[indices2][cross_overs]
+  
+  return epistasisMat_gamet, pleiotropyMat_gamet, q_gamet
+end
+
+"""
+Adds new individual(s) to the model as offsprings of `ag1` and `ag2`.
+# TODO: calculate the number of offsprings and do this for each offspring
+"""
+function sexual_reproduction(ag1::Int, ag2::Ind, model::ABM)
+  species = ag1.species
+  nsites = model.ngenes[species]
+  if model.recombination[species] == 0
+    nco1, nco2 = 0, 0
+  else
+    nco1, nco2 = rand(model.recombination[species], 2)
+  end
+  cross_overs1 = crossing_overs(nsites, nco1)
+  cross_overs2 = crossing_overs(nsites, nco2)
+  gamets1 = create_gamete(ag1, cross_overs1, nsites, rand((true, false)))
+  gamets2 = create_gamete(ag2, cross_overs2, nsites, rand((true, false)))
+
+  sex = rand((true, false))
+  interaction_history = MVector{model.nspecies, Int}(fill(0, model.nspecies))
+  W = abiotic_fitness(species, ag1.pos, model)
+  add_agent!(ag1.pos, model, ag1.species, W, hcat(gamets1[1], gamets2[1]), hcat(gamets1[2], gamets2[2]), vcat(gamets1[3], gamets2[3]), 0, sex, interaction_history, 0)
+end
+
+function abiotic_fitness(species, pos, model)
+  x = model.pleiotropyMat[species] * (model.epistasisMat[species] * model.expressionArrays[species])  # phenotypic values
+  d = model.E[species]
+  z = x .+ rand(d)
+  abp = model.abiotic_phenotypes[species]
+  W = abiotic_distance(z[abp], return_opt_phenotype(species, model.step[1], pos, model), variance)
+  return W
 end
 
 "Mutate an agent."
