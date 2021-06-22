@@ -1,5 +1,6 @@
 module EvoDynamics
 
+using Base: AbstractFloat
 using Distributions: length
 using Agents
 using Random
