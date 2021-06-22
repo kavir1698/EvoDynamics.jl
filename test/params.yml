@@ -24,9 +24,8 @@
     optimal phenotype values:
       - [2.8184972630154848, 1.2669190502061671, 1.7947315210311097, 0.5627451656026976]
       - [2.3186137078797455, 0.7146284070374198, 1.7331797945458374, 1.6353360768904688]
-      - [0.9847969627433162, 2.288385815295362, 2.787492289107385, 1.661183562521222]
     # Optimal phenotype indices for each generation, including generation zero.
-    optimal phenotypes: [1,1,1,2,3,3]
+    optimal phenotypes: [1,1,1,1,1,2]
     age: 5
     recombination: 1 # Mean of a Poisson distributions for number of crossing overs
     initial energy: 0 # A parameter for parental care of infants. Values more than 0 indicate that newly born individuals can survive for a number of times without requiring food from the environment/other species. The consumption rate (i.e. how many generations this initial energy suffices) is determined by the sum of the corresponding rows in "food sources"
@@ -55,7 +54,7 @@
     optimal phenotype values:
       - [0.7614758101208934, 2.2091361414343313, 0.7920974352892358, 2.587205421882114, 2.3911353663016586, 1.7858661540288683, 0.7630236717263839, 2.311211631439866]
       - [0.6437641305315445, 0.9954545836033715, 2.469792530385348, 1.6158867433451882, 2.097629262577973, 1.1314248848669466, 1.490299526620522, 0.2566056477862022]
-    optimal phenotypes: [1,1,1,2,2,2]
+    optimal phenotypes: [1,1,1,1,1,2]
     age: 3
     recombination: 1 # Mean of a Poisson distributions for number of crossing overs
     initial energy: 0
