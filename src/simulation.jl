@@ -184,16 +184,18 @@ function model_step!(model::ABM)
 end
 
 function agent_step!(agent::Ind, model::ABM)
-  mutate!(agent, model)
-  migrate!(agent, model)
   # update age
   agent.age += 1
+  # migrate
+  migrate!(agent, model)
   # use food
   use_energy!(agent, model)
   # consume basic energy if agent can
   consume_food!(agent, model)
   # interact with other species
   interact!(agent, model)
+  # reproduction for the haploid
+  reproduce!(agent, model)
   # survive
   survive!(agent, model)
 end
@@ -215,29 +217,6 @@ function survive!(agent::Ind, model::ABM)
   end
 end
 
-"""
-    interact!(agent::Ind, model::ABM)
-
-Includes interaction with other species such as competition, cooperation, and predation. It also includes sexual reproduction (if meeting an individual from other sex) and within species competition/cooperation (if meeting an individual from the same sex).
-"""
-function interact!(agent::Ind, model::ABM)
-  sp = agent.species
-  target_ids = target_species_ids(agent, model)
-  for id in target_ids
-    target = model[id]
-    target_sp = target.species
-    if agent.interaction_history[target_sp] != model.step[1] || target.interaction_history[sp] != model.step[1] # if agent and target have not interacted with such species before
-      interact!(agent, target, model)
-      # if agent was a prey, check whether it is still alive
-      if model.food_sources[target_sp, sp] > 0
-        if !haskey(model.agents, agent.id)
-          return
-        end
-      end
-    end
-  end
-end
-
 function use_energy!(agent, model)
   agent.energy -= sum(model.food_sources[agent.species, :])
 end
@@ -246,23 +225,6 @@ function consume_food!(agent::Ind, model::ABM)
   if model.food_sources[agent.species, agent.species] > 0 && model.resources[agent.pos...] > 0
     model.resources[agent.pos...] -= 1
     agent.energy += 1
-  end
-end
-
-"""
-Returns as many random ids from the agent site as the number of species.
-"""
-function target_species_ids(agent, model::ABM)
-  nspecies = model.nspecies
-  allids = collect(nearby_ids(agent, model, 0))
-  foundlen = length(allids)
-  if foundlen == 0
-    return Int[]
-  elseif foundlen < nspecies
-    return allids
-  else
-    species_ids = sample(allids, nspecies, replace=false)
-    return species_ids  
   end
 end
 
@@ -297,42 +259,3 @@ function mutate!(agent::Ind, model::ABM)
 end
 
 # coord2vertex(c, model) = c[1] + (size(model.space)[1] * (c[2]-1))
-
-function migrate!(agent::Ind, model::ABM)
-  if isnothing(model.migration_traits[agent.species])
-    return
-  elseif model.migration_thresholds[agent.species] > get_migration_trait(agent, model)  # if migration value is lower than the threshold
-    return
-  end
-
-  sites = collect(nearby_positions(agent, model, model.vision_radius[agent.species]))
-  nsites = length(sites)
-  nsites_selected = ceil(Int, model.check_fraction[agent.species] * nsites)
-  sites_checked = EvoDynamics.sample(sites, nsites_selected, replace=false)
-  # check sites and move to the best one
-  distance, site_index = pick_site(agent, sites_checked, nsites_selected, model)
-  # TODO: add migration cost. If it survives migration, then do the migration.
-  move_agent!(agent, sites_checked[site_index], model)
-  # update abiotic fitness
-  agent.W = abiotic_fitness(agent, model)
-end
-
-"Agent evaluates the site and gives it a score"
-function check_site(agent, site, model)
-  phenotype = agent.abiotic_phenotype
-  optimal = return_opt_phenotype(agent.species, model.step[1], site, model)
-  abiotic_distance(phenotype, optimal, variance)
-end
-
-function pick_site(agent, sites, nsites, model)
-  scores = Array{Float64, 1}(undef, nsites)
-  for ii in 1:nsites
-    scores[ii] = check_site(agent, sites[ii], model)
-  end
-  return findmin(scores)
-end
-
-function get_migration_trait(agent, model)
-  mtrait = agent.pleiotropyMat[model.migration_traits[agent.species], :]
-  sum(agent.epistasisMat[mtrait, :] * agent.q)
-end

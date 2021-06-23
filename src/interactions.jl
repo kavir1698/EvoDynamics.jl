@@ -108,7 +108,7 @@ function interact!(ag1::Ind, ag2::Ind, model::ABM)
   else # interaction
     ix_value = model.interactions[sp1, sp2]
     if ix_value != 0
-      if ag1.sex != ag2.sex && model.ploidy[sp1] == 2 # reproduce
+      if sp1 == sp2 && ag1.sex != ag2.sex && model.ploidy[sp1] == 2 # reproduce
         reproduce!(ag1::Ind, ag2::Ind, model::ABM)
       else # change in fitness
         inx_prob = interaction_power(ag1, ag2, model)
@@ -132,94 +132,41 @@ function eat!(ag1, ag2, model)
 end
 
 """
-Returns a bitarray for sites to be selected from the first (false) and second (true) homologous chromosome.
+Returns as many random ids from the agent site as the number of species.
 """
-function crossing_overs(nsites::Int, ncrossing_overs::Int) 
-  output = falses(nsites)
-  if ncrossing_overs == 0
-    return output
-  elseif ncrossing_overs ≥ nsites
-    output[1:2:end] .= true
-    return output
-  end
-  breaking_points = sample(1:(nsites-1), ncrossing_overs, replace=false, ordered=true)
-  last = true
-  counter = 0
-  for site in 1:nsites
-    if counter < ncrossing_overs && site == breaking_points[counter+1]
-      counter += 1
-      output[site] = last
-      last = !last 
-    else
-      output[site] = last
-    end
-  end
-  return output
-end
-
-"""
-Returns gametes for epistasisMat, pleiotropyMat, and q.
-
-A ametes includes `cross_overs` sites from one homologous chr and the rest from another.the corresponding column of the `epistasisMat` and `pleiotropyMat` matrices.
-Each gamete is half of `epistasisMat` and `pleiotropyMat` (column-wise).
-"""
-function create_gamete(agent, cross_overs, nsites, first::Bool)
-  indices1 = 1:nsites
-  indices2 = indices1 .+ nsites
-  if !first
-    indices1, indices2 = indices2, indices1
-  end
-  epistasisMat_gamete = agent.epistasisMat[:, indices1]
-  epistasisMat_gamete[:, cross_overs] .= agent.epistasisMat[:, indices2][:, cross_overs]
-
-  pleiotropyMat_gamete = agent.pleiotropyMat[:, indices1]
-  pleiotropyMat_gamete[:, cross_overs] .= agent.pleiotropyMat[:, indices2][:, cross_overs]
-
-  q_gamete = agent.q[indices1]
-  q_gamete[cross_overs] .= agent.q[indices2][cross_overs]
-  
-  return epistasisMat_gamete, pleiotropyMat_gamete, q_gamete
-end
-
-"""
-Adds new individual(s) to the model as offsprings of `ag1` and `ag2`.
-"""
-function create_one_offspring(ag1::Ind, ag2::Ind, model::ABM)
-  species = ag1.species
-  nsites = model.ngenes[species]
-
-  if model.recombination[species] == 0
-    nco1, nco2 = 0, 0
+function target_species_ids(agent, model::ABM)
+  nspecies = model.nspecies
+  allids = collect(nearby_ids(agent, model, 0))
+  foundlen = length(allids)
+  if foundlen == 0
+    return Int[]
+  elseif foundlen < nspecies
+    return allids
   else
-    nco1, nco2 = rand(model.recombination[species], 2)
+    species_ids = sample(allids, nspecies, replace=false)
+    return species_ids  
   end
-
-  cross_overs1 = crossing_overs(nsites, nco1)
-  cross_overs2 = crossing_overs(nsites, nco2)
-  gametes1 = create_gamete(ag1, cross_overs1, nsites, rand((true, false)))
-  gametes2 = create_gamete(ag2, cross_overs2, nsites, rand((true, false)))
-
-  sex = rand((true, false))
-  interaction_history = MVector{model.nspecies, Int}(fill(0, model.nspecies))
-  
-  # Merge gametes
-  nsites2 = nsites*2
-  episMat = MMatrix{nsites2, nsites2}(hcat(gametes1[1], gametes2[1]))
-  pleioMat = MMatrix{model.nphenotypes[species],nsites2}(hcat(gametes1[2], gametes2[2]))
-  q = MVector{nsites2}(vcat(gametes1[3], gametes2[3]))
-  abph = get_abiotic_phenotype(species, episMat, pleioMat, q, model) 
-  bph = get_biotic_phenotype(species, episMat, pleioMat, q, model)
-  W = abiotic_fitness(abph, species, ag1.pos, model)
-  initial_energy = model.initial_energy[species]
-
-  add_agent!(ag1.pos, model, ag1.species, bph, abph, episMat, pleioMat, q, 0, sex, interaction_history, initial_energy, W)
 end
 
-function reproduce!(ag1::Ind, ag2::Ind, model::ABM)
-  reproduction_success = 1.0 - phenotypic_distance(ag1, ag2, model)
-  growth_rate = model.growthrates[ag1.species]
-  nchildren = rand(Poisson(reproduction_success * growth_rate))
-  for c in 1:nchildren
-    create_one_offspring(ag1, ag2, model)
+"""
+    interact!(agent::Ind, model::ABM)
+
+Includes interaction with other species such as competition, cooperation, and predation. It also includes sexual reproduction (if meeting an individual from other sex) and within species competition/cooperation (if meeting an individual from the same sex).
+"""
+function interact!(agent::Ind, model::ABM)
+  sp = agent.species
+  target_ids = target_species_ids(agent, model)
+  for id in target_ids
+    target = model[id]
+    target_sp = target.species
+    if agent.interaction_history[target_sp] != model.step[1] || target.interaction_history[sp] != model.step[1] # if agent and target have not interacted with such species before
+      interact!(agent, target, model)
+      # if agent was a prey, check whether it is still alive
+      if model.food_sources[target_sp, sp] > 0
+        if !haskey(model.agents, agent.id)
+          return
+        end
+      end
+    end
   end
 end

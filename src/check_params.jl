@@ -1,5 +1,5 @@
 function check_yml_params(d, species_index, model_index)
-  species_keys = ["migration threshold", "number of genes", "number of phenotypes", "abiotic phenotypes", "biotic phenotypes", "migration phenotype", "migration threshold", "ploidy", "epistasis matrix", "pleiotropy matrix", "covariance matrix", "growth rate", "expression array", "selection coefficient", "mutation probabilities", "mutation magnitudes", "N", "vision radius", "check fraction", "environmental noise", "optimal phenotype values", "optimal phenotypes", "age", "recombination", "initial energy"]
+  species_keys = ["migration threshold", "number of genes", "number of phenotypes", "abiotic phenotypes", "biotic phenotypes", "migration phenotype", "migration threshold", "ploidy", "epistasis matrix", "pleiotropy matrix", "growth rate", "expression array", "selection coefficient", "mutation probabilities", "mutation magnitudes", "N", "vision radius", "check fraction", "environmental noise", "optimal phenotype values", "optimal phenotypes", "age", "recombination", "initial energy"]
   model_keys = ["generations", "space", "metric", "periodic", "resources", "interactions", "food sources", "seed"]
   for sp in d[species_index]["species"]
     @assert haskey(sp, "id") "Species ID field missing."
@@ -91,9 +91,7 @@ function reformat_params!(d, species_index, model_index)
       end
     end
     d[species_index]["species"][species]["optimal phenotype values"] = output
-    # 5. Reshape covariance matrix
-    nphenotypes = d[species_index]["species"][species]["number of phenotypes"]
-    d[species_index]["species"][species]["covariance matrix"] = reshape(d[species_index]["species"][species]["covariance matrix"], nphenotypes, nphenotypes)
+
   end
   
   # Metric to Symbol
