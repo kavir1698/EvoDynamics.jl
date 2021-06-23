@@ -2,7 +2,7 @@ export runmodel
 
 "Returns a tuple whose entries are the mean fitness of each species."
 function mean_fitness_per_species(model::ABM)
-  mean_fitness = Array{Float32}(undef, model.nspecies)
+  mean_fitness = Array{Float64}(undef, model.nspecies)
   for species in 1:model.nspecies
     fitness = mean([i.W for i in values(model.agents) if i.species == species])
     mean_fitness[species] = fitness
