@@ -46,6 +46,7 @@ struct Params{F<:AbstractFloat, I<:Int}
   food_sources::Matrix{F}
   interactions::Matrix{F}
   resources::Matrix{I}
+  resources_org::Matrix{I}
   recombination::Vector{Poisson{F}}
   initial_energy::Vector{F}
 end
@@ -154,7 +155,7 @@ function create_properties(dd)
   recombination = [Poisson(dd[:species][i]["recombination"]) for i in 1:nspecies]
   initial_energy = [AbstractFloat(dd[:species][i]["initial energy"]) for i in 1:nspecies]
 
-  properties = Params(ngenes, nphenotypes, growthrates, selectionCoeffs, ploidy, optvals, optinds, Mdists, Ddists, Ns, Ed, generations, nspecies, Ns, migration_traits, vision_radius, check_fraction, migration_thresholds, step, nnodes, biotic_phenotyps, abiotic_phenotyps, max_ages, ids, dd[:model]["food sources"], dd[:model]["interactions"], dd[:model]["resources"], recombination, initial_energy)
+  properties = Params(ngenes, nphenotypes, growthrates, selectionCoeffs, ploidy, optvals, optinds, Mdists, Ddists, Ns, Ed, generations, nspecies, Ns, migration_traits, vision_radius, check_fraction, migration_thresholds, step, nnodes, biotic_phenotyps, abiotic_phenotyps, max_ages, ids, dd[:model]["food sources"], dd[:model]["interactions"], dd[:model]["resources"], deepcopy(dd[:model]["resources"]), recombination, initial_energy)
   
   return properties, (epistasisMatS, pleiotropyMatS, expressionArraysS)
 end
@@ -179,6 +180,7 @@ end
 
 function model_step!(model::ABM)
   model.step[1] += 1
+  model.resources .= model.resources_org
 end
 
 function agent_step!(agent::Ind, model::ABM)
