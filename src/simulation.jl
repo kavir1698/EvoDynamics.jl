@@ -69,6 +69,7 @@ function model_initiation(param_file)
   epistasisMat, pleiotropyMat, expressionArrays = species_arrays
 
   space = dd[:model]["space"]
+
   if isnothing(space)
     fspace = GridSpace((1, 1))
   elseif typeof(space) <: Tuple
