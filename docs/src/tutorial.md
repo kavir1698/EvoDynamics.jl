@@ -2,7 +2,7 @@
 
 ## EvoDynamics.jl's basic usage
 
-First, define your model parameters in a YAML file (here, we call it `parameters.yml`). [Examples](@ref) has examples of initiation parameters. See [API](@ref) for a description of each parameter.
+First, define your model parameters in a YAML file (here, we call it `parameters.yml`). [Simple Wright-Fisher](@ref) and [Predator prey](@ref) have examples of initiation parameters. See [API](@ref) for a description of each parameter.
 
 We can the use the `runmodel` function to create a model from these parameters and run the simulation.
 
