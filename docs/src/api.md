@@ -2,68 +2,105 @@
 
 ## Parameters
 
-The parameters below are required for any simulation. They should be in a dictionary object. The dictionary keys should be the parameters names as `Symbol` (with a colon ":" before the name). See the [Tutorial](@ref) page for an example of the parameters dictionary.
+Parameters of a model should be put in a YAML file with the structure below. Note that spaces and indentations are meaningful in YAML. Indentations should be spaces not tabs.
 
-* __ploidy:__ A tuple specifying the ploidy of each species. Currently only support ploidy=1 (haploid) and ploidy=2 (diploid).
-* __phenotypes:__ A tuple specifying the number of phenotypes _p_ for each species.
-* __ngenes:__ A tuple specifying the number of genes _l_ for each species.
-* __growthrates:__ A tuple specifying growth rate for each species. Growth rates are for a logistic growth model, where $N_{t+1} = N_t + r\times N_t \times (1 - ((N_t / K))$, where N is population size, t is time, r is growth rate and K is carrying capacity. If _r=0_, population size remains constant.
-* __interactionCoeffs:__ A matrix containing competition coefficients between each pair of species. A competition coefficient $c_{ij}$ denotes the strength of competition exerted by an individual of species j on an individual of species i.
-* __interaction_equation__: either $\textrm{lotkaVoltera\_generalized}$ (if you want host-parasite or predator prey dynamics) or $\textrm{lotkaVoltera\_competition}$. Default is $\textrm{lotkaVoltera\_competition}$. The LV competition equation is as follows. It uses the Lotka-Voltera equation $Ni_{t+1} = Ni_t + r\times Ni_t \times (1 - ((Ni_t + \sum_{j=1}^{Nspecies} c_{ij}Nj_t)/Ki)$ where c is competition coefficient. When competition coefficient is positive, population j competes with population i. If negative, population j helps population i to grow. And if 0, population j does not affect population i. If $c_{ij} > 0$ and $c_{ji} > 0$, both populations are in competition, if $c_{ij} > 0$ and $c_{ji} < 0$, species i is a parasite of species j. If $c_{ij} < 0$ and $c_{ji} < 0$, the two species have a mutualistic relationship. If $c_{ij} < 0$ and $c_{ji} = 0$, they have a commensal relationship. It can also be `nothing`. The generalized Lotka-Voltera equation is $x_{t+1} = x_t + D(x_t)(r + Cx_t)$, where $x$ is an array population densities of all species ($N/K$), $r$ is an array of growth rates when growing alone, C is interaction coefficient matrix.
-* __pleiotropyMat:__ A tuple of pleiotropy matrices, one for each species. A pleitropy matrix is a binary matrix with size $p \times l$ that specifies the phenotypes that each locus affects.
-* __epistasisMat:__ A tuple of epistasis matrices, one for each species. An epistasis matrix is of size $l \times l$ and specifies the direction (positive or negative) and size of effect of one loci on the other loci. For example, if at row 1 and column 2 is a value 0.2, it means that locus 1 affects locus 2 by increasing the effect of locus 2 (because its positive) with 20% of the effect of locus 1. The effect of loci are themselves specified in the $q$ vector.
-* __expressionArrays:__ A tuple of expression arrays, one for each species. An expression array $q$ shows the effect size of a locus. It can be thought of expression level of a gene.
-* __selectionCoeffs:__ A tuple  of selection coefficients for each species.
-* __optPhenotypes:__ A tuple of arrays, where each inner array specifies optimal phenotypes θ for each species. Each inner array should be of length _p_ (number of phenotypes) of its corresponding species.
-* __covMat:__ A tuple of matrices, each of which ω represents a covariance matrix of the selection surface. Each matrix is of size $p\times p$.
-* __mutProbs:__ A tuple of arrays, one per species. Each inner array specifies the probabilities for different type of mutations. An inner array has three values with the following order: first, the probability that an individual's gene expressions (array $q$) mutate per generation. Second, the probability that an individual's pleiotropy matrix mutates per generation. Third, the probability that an individual's epistasis matrix mutates per generation. If an individual is going to receive a mutation at any of the mentioned levels, the amount of change that it receives is determined by $mutMagnitudes$.
-* __mutMagnitudes:__ A tuple of arrays, one for each species. Each inner array has three numbers specifying the amount of change per mutation in gene expression ($q$), pleiotropy matrix ($b$), and epistasis matrix $a$, respectively. The first number is the variance of a normal distribution with mean zero. If an individual's gene expression is going to mutate, random numbers from that distribution are added to the expression of each locus. The second number is a probability that any one element in the pleiotropy matrix will switch - if on, becomes off, and vice versa. The third number is again the variance of another normal distribution with mean zero. Random numbers taken from such distribution are added to each element of the epistasis matrix.
-* __N:__ A dictionary where each key is a node number and its value is a tuple for population size of each species at that node. This dictionary does not have to have a key for all the nodes, but it should have a value for all the species.
-* __K:__ A dictionary where each key is a node number and its value is tuple of carrying capacities K of the node for each species. The dictionary should have a key for all the nodes and carrying capacity for each species per node.
-* __migration_rates:__ An array of matrices, each matrix shows migration rates between each pair of nodes for a species. The rows and columns of the matrix are node numbers in order. Values are read column-wise: each column shows out-migration to all other nodes from a node. If instead of a matrix, there is `nothing`, no migration occurs for that species.
-* __E:__ A tuple  of the variance of a normal distribution ε representing environmental noise for each species.
-* __generations:__ number of generations to run the simulation.
-* __space:__ (default=`nothing`) Either a tuple of size 2 or 3 for a grid size or a `SimpleGraph` object for an arbitrary graph. If it is a tuple, a grid is built internally
-* __metric:__ (default=`:chebyshev`) Other option is `:euclidean`. How neighboring cells are identified.
-* __periodic:__ (default=`false`) If should the edges connect to the opposite side?
-* __seed:__ (default=`0`). Seed for random number generator. Only set if >0.
+See [Examples](@ref) for complete parameter file examples.
+
+```yml
+- species:
+  - id: 1
+    parameter 1: ...
+    parameter 2: ...
+    ...
+  - id: 2
+    parameter 1: ... 
+    parameter 2: ... 
+    ...
+- model:
+  model parameter 1: ...
+  model parameter 2: ...
+  ...
+```
+
+The file has two main levels: `species` and `model`. `species` stores species specific parameters as many different species as you want, starting with `id` 1. 
+
+Since we cannot write a matrix in a YAML file, any parameter that is a matrix should be converted to a vector. In Julia, you can do this by `vec(yourmatrix)`.
+
+### Species specific parameters
+
+Each species should have the following parameters. The order that you write these parameters does not matter.
+
+* __number of genes__: An _integer_ for number of genes that the species has.
+* __ploidy__: Either 1 for haploid or 2 for diploid genomes.
+* __number of phenotypes__: An _integer_ for the number of phenotypes that the species has.
+* __abiotic phenotypes__: An _array of integers_ (e.g. "[1,2]") specifying abiotic phenotypes among all phenotypes. Abiotic phenotypes determine how the species interacts with the environment.
+* __biotic phenotypes__: An _array of integers_ (e.g. "[3]") specifying biotic phenotypes among all phenotypes. Biotic phenotypes determine how the species interacts with other individuals from the same or different species.
+* __migration phenotype__: An _integer_ specifying the phenotype that determines migration trait. If the species does not migrate, put 0.
+* __vision radius__: A _number_ determining the radius of neighboring sites that the agent can see before migration.
+* __check fraction__: A _number_ between 0 and 1 showing the fraction of the visible sites to the agent that it can check and decide whether to migrate to.
+* __epistasis matrix__: An epistasis matrix is of size $l \times l$, where _l_ is the product of _number of genes_ and _ploidy_. Epistasis matrix specifies the direction (positive or negative) and size of effect of one locus on other loci. For example, if at row 1 and column 2 is a value 0.2, it means that locus 1 affects locus 2 by increasing the effect of locus 2 (because its positive) with 20% of the effect of locus 1.
+* __pleiotropy matrix__: A _binary matrix_ (0s and 1s) with size _number of phenotypes_ times _l_. The pleiotropy matrix specifies the phenotypes that each locus affects.
+* __expression array__: A _vector_ of size _l_ that represent the expression amount of each locus determining its effect size.
+* __growth rate__: Mean of a Poisson distribution for number of offsprings per reproduction. This number is the maximum mean when fitness of a haploid individual is 1, or the distance between the biotic phenotypes of two diploid individuals is 0.
+* __selection coefficient__: A number between 0 and 1 that determines the importance of fitness. 0 would be a model without selection.
+* __mutation probabilities__: A _vector of three numbers_ each of which specifies the probability for a different type of mutations: mutation probability of the _expression array_, _pleiotropy matrix_, and _epistasis matrix_, respectively. 
+* __mutation magnitudes__: A _vector of numbers_ with the same size as _mutation probabilities_ that determines the magnitude of mutation for each of the three categories. Specifically, the numbers are the variances of normal distributions with mean 0 for expression array and epistasis matrices, and probability of changing a 0 and 1 in in the pleiotropy matrix.
+* __N__: A _vector of integers_ for the initial number of individuals at each site.
+* __environmental noise__: A number for the variance of a normal distribution with mean 0 that will be added to the phenotypes.
+* __optimal phenotype values__: One or more vectors of numbers. Each vector should start with a dash and one indentation level. Each vector is the optimal phenotypes for each site for all abiotic traits. There are as many element as number of sites times number of abiotic traits. The first N elements are for the first abiotic trait, where N is the number of sites, and so on. 
+* __optimal phenotypes__: A _vector of integers_ for optimal phenotype indices for each generation, including generation zero.
+* __age__: An _integer_ for maximum age of individuals of this species.
+* __recombination__: Mean of a Poisson distributions for number of crossing overs per sexual reproduction.
+* __initial energy__: A parameter for parental care of infants. Values more than 0 indicate that newly born individuals can survive for a number of times without requiring food from the environment/other species. The consumption rate (i.e. how many generations this initial energy suffices) is determined by the sum of the corresponding rows in "food sources" model parameter.
+
+### Model parameters
+
+* __generations__: An _integer_ for the number of steps the model will run.
+* __space__: A _vector of two integers_ that determine the size of a grid for space.
+* __metric__: Either "chebyshev" or "euclidian". Determines how many neighbors a space site has. "chebyshev" metric means that the r-neighborhood of a position are all positions within the hypercube having side length of 2*floor(r) and being centered in the origin position. "euclidean" metric means that the r-neighborhood of a position are all positions whose cartesian indices have Euclidean distance ≤ r from the cartesian index of the given position.
+* __periodic__: _Boolean__ (true or false) to determine whether boundaries of the space are connected or not.
+* __resources__: A _vector of integers_ determining available resources (e.g. vegetation) per site per time step. 
+* __interactions__: A species-species interaction _matrix of numbers_ determining how individuals from different species interact. Each value  is strength of interaction (between 0 and 1). Sign (+/-) is the direction of interaction where positive means similar individuals interact more strongly and negative is dissimilar ones tend to interact more.
+* __food sources__: A species-species food _matrix of numbers_ determining what each species feeds on (consumption rate). Has priority over interactions. Non-zero diagonal means the food resource is from the environment. It will be read from rows (species order) to columns (species order). 
+* __seed__: Either an _integer_ or _Null_ for random number generator seed.
 
 ## Simulation outline
 
-Within each time-step, the following occurs:
+The simulations are fully agent-based, meaning that agents do not receive any model-level knowledge for what happens to them. The following steps happen in order to agents that are activated in a random order.
 
-1. Mutation
-2. Fitness update
-3. Migration
-4. Reproduction (only for diploids)
-5. selection
+1. Grow one step older.
+2. Migrate.
+3. Eat basic food if the species can.
+4. Consume energy.
+5. Interact with other species.
+   1. If meeting another individual of the same species but with different sex, reproduce.
+6. If haploid, reproduce.
+7. Survive if not tool old, has energy and by chance given its fitness.
 
 ### Mutation
 
-Mutation can happen at three levels: changing the expression of each gene expressionArrays, changing the pleiotropy matrix pleiotropyMat, and changing the epistatic interactions between genes. The probability that a mutation occurs at each of these levels is controlled by parameter mutProbs. And size of mutations when they occur are controlled by parameter mutMagnitudes.
+Mutation can happen at three levels: changing the expression of each gene expressionArrays, changing the pleiotropy matrix pleiotropyMat, and changing the epistasis interactions between genes. The probability that a mutation occurs at each of these levels is controlled by parameter _mutation probabilities_. And size of mutations when they occur are controlled by parameter mutation magnitudes.
 The genotype vector _y_ and pleiotropy matrix _B_ of each individual mutates.
 
-Epistatic matrix _A_ and expression vectors _Q_ mutate by adding their values to random numbers from a normal distribution with mean 0 and standard deviation given in parameter mutMagnitudes.
+Epistasis matrix _A_ and expression vectors _Q_ mutate by adding their values to random numbers from a normal distribution with mean 0 and standard deviation given in parameter mutMagnitudes.
 
 _B_ mutates by randomly switching 0s and 1s with probability given in parameter mutMagnitudes.
 
 ### Fitness update
 
-Fitness of each individual updates after mutation. Fitness is $W = exp(γ \times transpose(z - θ)\times inv(ω)\times (z - θ))$, where is the phenotype vector ($z = pleiotropyMat(Aq) + μ$), γ is selection coefficient, θ is optimum phenotypes vector, and ω is covariance matrix of selection surface. 
+TODO
 
 ### Migration
 
-Each agent moves with probabilities given in *migration_rates* to other nodes.
+TODO
 
 ### Reproduction
 
-When a species is diploid, they sexually reproduce. To that end, individuals of the same species in the same location are randomly paired. Each pair produces one offspring. Then the parents die.
+TODO
 
-To produce an offspring, each parent contributes to half of the offspring's genotype _y_ and pleiotropy matrix _B_. The genes coming from each parent are randomly assigned.
+### Survival
 
-### Selection
-
-A number of individuals _n_ are selected for the next generation via sampling with replacement weighted by individuals' fitness values. _n_ is calculated using the Lotka-Voltera model for population competition $Ni_{t+1} = Ni_t + r\times N\times (1 - ((Ni + cNj)/K)$ where N is population size, t is time, r is growth rate and K is carrying capacity, and c is competition coefficient. Briefly, each population growth with a logistic model when it is not affected by other species. Otherwise, its growth increases or decreases depending on its interactions with other species.
+TODO
 
 ## Data collection
 
