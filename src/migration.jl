@@ -21,7 +21,7 @@ function migrate!(agent::Ind, model::ABM)
   end
   # NB: add migration cost? If it survives migration, then do the migration.
   move_agent!(agent, destination, model)
-  # update abiotic fitness
+  # agent's base fitness is its abiotic fitness 
   agent.W = abiotic_fitness(agent, model)
   return
 end

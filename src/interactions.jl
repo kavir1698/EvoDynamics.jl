@@ -116,6 +116,7 @@ function interact!(ag1::Ind, ag2::Ind, model::ABM)
         abiotic2 = abiotic_fitness(ag2, model)
         ix_dir = sign(ix_value)
         
+        # update agents' fitness
         ag1.W = abiotic1 + (inx_prob * ix_dir)
         ag2.W = abiotic2 + (inx_prob * ix_dir)
       end

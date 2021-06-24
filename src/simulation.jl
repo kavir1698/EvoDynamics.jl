@@ -213,9 +213,14 @@ function survive!(agent::Ind, model::ABM)
     kill_agent!(agent, model)
   elseif agent.age ≥ model.max_ages[agent.species]
     kill_agent!(agent, model)
-  elseif rand() > agent.W
+  elseif rand() > adjusted_fitness(agent, model)
     kill_agent!(agent, model)
   end
+end
+
+function adjusted_fitness(agent, model)
+  W = agent.W < 0 ? 0.0 : agent.W
+  1.0 - ( (1.0 - W) * model.selectionCoeffs[agent.species])
 end
 
 function use_energy!(agent, model)
