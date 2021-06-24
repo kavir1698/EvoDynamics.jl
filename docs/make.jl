@@ -8,7 +8,7 @@ using Literate
 # %% Literate convertion
 indir = joinpath(@__DIR__, "..", "examples")
 outdir = joinpath(@__DIR__, "src")
-for file in ("example1.jl", "example2.jl", "host-parasite.jl")
+for file in ("example1.jl", "example2.jl")
 	Literate.markdown(joinpath(indir, file), outdir)
 end
 
@@ -25,9 +25,8 @@ pages = [
 	"Tutorial" => "tutorial.md",
 	"API" => "api.md",
 	"Examples" => [
-	  "Simplest model" => "example1.md",
-	  "Weak modular structure" => "example2.md",
-	  "Host-parasite dynamics" => "host-parasite.md",
+	  "Simple Wright-Fisher" => "example1.md",
+	  "Predator prey" => "example2.md"
 		],
     ],
 )

@@ -25,9 +25,6 @@ function check_param_shapes(d, species_index, model_index)
         @assert length(mat) == spacesize "Optimal phenotpyes per trait is not the same size as the number of sites"
       end
     end
-    # Biotic, abiotic and migration traits not overlapping
-    theintersect = intersect(dd["biotic phenotypes"], dd["abiotic phenotypes"], dd["migration phenotype"])
-    @assert length(theintersect) == 0 "There are similar traits identified as biotic and/or abiotic and/or migration"
     # Biotic and abiotic phenotypes are Array
     @assert typeof(dd["abiotic phenotypes"]) <: AbstractArray "Abiotic phenotypes should be array"
     @assert typeof(dd["biotic phenotypes"]) <: AbstractArray "Biotic phenotypes should be array"
@@ -39,6 +36,8 @@ function check_param_shapes(d, species_index, model_index)
     @assert typeof(dd["age"]) <: Int "Age of species $species should be integer."
     # id is integer
     @assert typeof(dd["id"]) <: Int "Age of species $species should be integer."
+    # Check fraction is float
+    @assert typeof(dd["check fraction"]) <: Real "Check fraction of species $species should be number."
     # recombination is Bool
     @assert typeof(dd["recombination"]) <: Real "recombination of species $species should be type numeric"
     @assert typeof(dd["initial energy"]) <: Real "Initial energy should be a number"
@@ -91,7 +90,8 @@ function reformat_params!(d, species_index, model_index)
       end
     end
     d[species_index]["species"][species]["optimal phenotype values"] = output
-
+    # Check fraction to float
+    d[species_index]["species"][species]["check fraction"] = Float64(d[species_index]["species"][species]["check fraction"])
   end
   
   # Metric to Symbol

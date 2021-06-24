@@ -1,6 +1,8 @@
 
 function migrate!(agent::Ind, model::ABM)
-  if isnothing(model.migration_traits[agent.species]) || model.migration_thresholds[agent.species] > get_migration_trait(agent, model)  # if migration value is lower than the threshold
+  if model.migration_traits[agent.species] == 0
+    return
+  elseif model.migration_thresholds[agent.species] > get_migration_trait(agent, model)  # if migration value is lower than the threshold
     return
   end
 
