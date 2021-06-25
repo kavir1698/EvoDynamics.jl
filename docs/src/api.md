@@ -111,28 +111,31 @@ EvoDynamics.jl uses [Agents.jl](https://github.com/JuliaDynamics/Agents.jl) unde
 
 There are two main objects from which you can collect data: and agent object of type `AbstractAgent` and a model object of type `ABM`. Both of these types are defined the `Agents.jl` package.
 
-Agent object has the following fields: `id`, `positions`, `species`, `epistasisMat` (epistasis matrix), `pleiotropyMat` (pleiotropy matrix), and `q` (gene expression array).
+Agent object has the following fields that are individual specific: `id`, `pos`, `species`, `epistasisMat` (epistasis matrix), `pleiotropyMat` (pleiotropy matrix), `q` (gene expression array), `biotic_phenotype`, `abiotic_phenotype`, `age`, `sex`, `energy`, `interaction_history`, and `W` (fitness).
 
-The model object has the following fields: `space` which is a `GraphSpace` or `GridSpace` object from `Agents.jl`, `agents` that is an array holding all agents, and `properties` which is a dictionary holding all the parameters passed to the model.
+The model object has the following fields that can be accessed with the `.` syntax and describe properties of species or the model: `ngenes`, `nphenotypes`, `growthrates`, `selectionCoeffs`, `ploidy`, `optvals` (optimal values), `optinds` (optval indices per generation), `mutProbs` (mutation probabilities), `mutMagnitudes` (mutation magnitudes), `N`, `E` (environmental noise), `generations`, `nspecies`, `migration_traits`, `vision_radius`, `check_fraction`, `migration_thresholds`, `step`, `biotic_phenotypes` (indices of biotic phenotypes per species), `abiotic_phenotypes`, `max_ages`, `food_sources`, `interactions`, `resources`, `recombination`, `initial_energy`.
 
-To collect data, provide a dictionary where the keys are either agent fields, or `:model`. The value of a key is an array of any number of functions.
+You can collect data from agents and/or from the model object. To collect data from agents, use the `adata` keyword argument in the `runmodel` function, and to collect data from the model, use the `mdata` keyword. A complete description of the values these keywords take are at [data collection section of the Agents.jl package](https://juliadynamics.github.io/Agents.jl/stable/tutorial/#.-Collecting-data).
 
-If a key is an agent field, all the value of the field from all agents are collected and then aggregated with the functions in the value. For example, to collect mean and median fitness of individuals which is in field `W`, your dictionary will be Dict(:W => [mean, median]).
-
-If a key is `:model`, functions in its value array should be functions that accept a single argument, the model object, and return a single number or a tuple of numbers. For example, this is the default dictionary and its function:
+For example, we use the function below to count the number of individual per species:
 
 ```jl
-collect = Dict(:model => [mean_fitness_per_species])
-
-"Returns a tuple whose entries are the mean fitness of each species."
-function mean_fitness_per_species(model::ABM)
-  nspecies = length(model.properties[:nphenotypes])
-  mean_fitness = Array{Float32}(undef, nspecies)
-  for species in 1:nspecies
-    fitness = mean([i.W for i in values(model.agents) if i.species == species])
-    mean_fitness[species] = fitness
+"Returns the size of each species."
+function species_N(model::ABM)
+  allagents = model.agents
+  if length(allagents) == 0
+    return fill(0, model.nspecies)
+  else
+    counts = countmap([a.species for a in values(model.agents)])
+    output = fill(0, model.nspecies)
+    for (k, v) in counts
+      output[k] = v
+    end
+    return output
   end
-
-  return Tuple(mean_fitness)
 end
+
+using EvoDynamics
+
+agentdata, modeldata, model = runmodel("parameters.yml", mdata=[species_N])
 ```

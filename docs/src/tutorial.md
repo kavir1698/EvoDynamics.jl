@@ -14,3 +14,5 @@ runmodel
 using EvoDynamics
 agentdata, modeldata, model = runmodel("parameters.yml")
 ```
+
+For data collection, see [API](@ref).

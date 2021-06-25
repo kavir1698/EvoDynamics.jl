@@ -8,7 +8,7 @@ function mean_fitness_per_species(model::ABM)
     mean_fitness[species] = fitness
   end
 
-  return (mean_fitness)
+  return mean_fitness
 end
 
 function species_N(model::ABM)

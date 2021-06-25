@@ -2,7 +2,7 @@
 EditURL = "<unknown>/examples/example1.jl"
 ```
 
-# Simplest model
+# Simple Wright-Fisher
 
 We can create and run simple Wright-Fisher simulations with EvoDynamics.jl. To that end, we define a single haploid species, in an unstructured space, with two single genes affecting biotic and abiotic traits, respectively.
 
@@ -52,7 +52,10 @@ A simple one-species model with no spatial structure. Model parameters are in a 
 ```
 
 ```@example example1
-agentdata, modeldata, model = runmodel("paramfile1.yml")
+param_file = "../../examples/paramfile1.yml" #hide
+agentdata, modeldata, model = runmodel(param_file);
+
+modeldata
 ```
 
 ---

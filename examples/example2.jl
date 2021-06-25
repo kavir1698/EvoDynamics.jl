@@ -1,5 +1,5 @@
 
-# # Simplest model
+# # Predator prey
 
 # Here we create a predator prey model of two species, one haploid and one diploid.
 
@@ -81,4 +81,7 @@ using EvoDynamics
 #   seed: 2
 # ```
 
-agentdata, modeldata, model = runmodel("paramfile2.yml")
+param_file = "../../examples/paramfile2.yml"
+agentdata, modeldata, model = runmodel(param_file);
+
+modeldata
