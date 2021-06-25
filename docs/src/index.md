@@ -6,8 +6,4 @@ Figure below shows different biological levels controlled by the model.
 
 ![Fig. 1. __Model structure.__](struct.png)
 
-We used the paper below as a starting point for this project. But EvoDynamics.jl goes way beyond that system by including multi-species interactions, spatial structure, and explicitly implementing epistasis and gene expression.
-
-	Melo, D., & Marroig, G. (2015). Directional selection can drive the evolution of modularity in complex traits. Proceedings of the National Academy of Sciences, 112(2), 470–475. https://doi.org/10.1073/pnas.1322632112
-
 See [Tutorial](@ref) for running the model, and [API](@ref) for a description of model parameters and simulation outline.
