@@ -129,6 +129,7 @@ end
 """
 function eat!(ag1, ag2, model)
   ag1.energy += 1
+  ag2.isalive = false
   kill_agent!(ag2, model)
 end
 
@@ -164,7 +165,7 @@ function interact!(agent::Ind, model::ABM)
       interact!(agent, target, model)
       # if agent was a prey, check whether it is still alive
       if model.food_sources[target_sp, sp] > 0
-        if !haskey(model.agents, agent.id)
+        if !agent.isalive
           return
         end
       end

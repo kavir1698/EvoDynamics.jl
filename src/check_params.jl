@@ -1,5 +1,5 @@
 function check_yml_params(d, species_index, model_index)
-  species_keys = ["migration threshold", "number of genes", "number of phenotypes", "abiotic phenotypes", "biotic phenotypes", "migration phenotype", "migration threshold", "ploidy", "epistasis matrix", "pleiotropy matrix", "growth rate", "expression array", "selection coefficient", "mutation probabilities", "mutation magnitudes", "N", "vision radius", "check fraction", "environmental noise", "optimal phenotype values", "optimal phenotypes", "age", "recombination", "initial energy"]
+  species_keys = ["migration threshold", "number of genes", "number of phenotypes", "abiotic phenotypes", "biotic phenotypes", "migration phenotype", "migration threshold", "ploidy", "epistasis matrix", "pleiotropy matrix", "growth rate", "expression array", "selection coefficient", "mutation probabilities", "mutation magnitudes", "N", "vision radius", "check fraction", "environmental noise", "optimal phenotype values", "optimal phenotypes", "age", "recombination", "initial energy", "bottleneck function", "bottleneck times"]
   model_keys = ["generations", "space", "metric", "periodic", "resources", "interactions", "food sources", "seed"]
   for sp in d[species_index]["species"]
     @assert haskey(sp, "id") "Species ID field missing."
@@ -20,10 +20,10 @@ function check_param_shapes(d, species_index, model_index)
     dd = d[species_index]["species"][species]
     # Size of optimal phenotypes
     for opt in dd["optimal phenotype values"]
-      @assert length(opt) == length(dd["abiotic phenotypes"]) "Not as many optimal phenotypes as abiotic phenotypes. Species: $species"
-      for mat in opt
-        @assert length(mat) == spacesize "Optimal phenotpyes per trait is not the same size as the number of sites"
-      end
+      @assert length(opt) == length(dd["abiotic phenotypes"]) * spacesize "Not as many optimal phenotypes as abiotic phenotypes. Species: $species"
+      # for mat in opt
+      #   @assert length(mat) == spacesize "Optimal phenotpyes per trait is not the same size as the number of sites"
+      # end
     end
     # Biotic and abiotic phenotypes are Array
     @assert typeof(dd["abiotic phenotypes"]) <: AbstractArray "Abiotic phenotypes should be array"
@@ -31,7 +31,8 @@ function check_param_shapes(d, species_index, model_index)
     # Ploidy
     @assert dd["ploidy"] < 3  "Ploidy more than 2 is not implemented"
     # epistasis matrix
-    @assert size(dd["epistasis matrix"], 2) % dd["ploidy"] == 0 "Number of columns in epistasisMat are not correct. They should a factor of ploidy"
+    # @assert size(dd["epistasis matrix"], 2) % dd["ploidy"] == 0 "Number of columns in epistasisMat are not correct. They should a factor of ploidy"
+    @assert length(dd["epistasis matrix"])  == (dd["ploidy"] * dd["number of genes"])^2 "epistasisMat does not have correct number of elements."
     # age is integer
     @assert typeof(dd["age"]) <: Int "Age of species $species should be integer."
     # id is integer
@@ -41,6 +42,12 @@ function check_param_shapes(d, species_index, model_index)
     # recombination is Bool
     @assert typeof(dd["recombination"]) <: Real "recombination of species $species should be type numeric"
     @assert typeof(dd["initial energy"]) <: Real "Initial energy should be a number"
+    # bottleneck should be nothing or array/string
+    @assert typeof(dd["bottleneck function"]) <: AbstractString || isnothing(dd["bottleneck function"])
+    if !isnothing(dd["bottleneck function"])
+      @assert isfile(dd["bottleneck function"]) "bottleneck function points to a nonexistant file"
+    end
+    @assert typeof(dd["bottleneck times"]) <: AbstractArray{Int} || isnothing(dd["bottleneck times"])
   end
   # Space should be 2D
   if !isnothing(d[model_index]["space"]) && d[model_index]["space"] != "nothing"
@@ -92,6 +99,14 @@ function reformat_params!(d, species_index, model_index)
     d[species_index]["species"][species]["optimal phenotype values"] = output
     # Check fraction to float
     d[species_index]["species"][species]["check fraction"] = Float64(d[species_index]["species"][species]["check fraction"])
+    # include bottleneck function
+    if !isnothing(d[species_index]["species"][species]["bottleneck function"])
+      include(d[species_index]["species"][species]["bottleneck function"])
+      # reshape bottleneck times
+      d[species_index]["species"][species]["bottleneck times"] = Bool.(reshape(d[species_index]["species"][species]["bottleneck times"], prod(d[model_index]["space"]), d[model_index]["generations"]))
+    else
+      d[species_index]["species"][species]["bottleneck times"] = Bool.(zeros(Int, prod(d[model_index]["space"]), d[model_index]["generations"]))
+    end
   end
   
   # Metric to Symbol

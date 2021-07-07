@@ -16,6 +16,7 @@ mutable struct Ind{B<:AbstractFloat, C<:AbstractArray, D<:AbstractArray, E<:Abst
   interaction_history::MArray{S, Int} where S # records the last interaction with all species
   energy::B  # determines whether need to feed (energy=0) or not.
   W::B  # survival probability
+  isalive::Bool
 end
 
 struct Params{F<:AbstractFloat, I<:Int}
@@ -49,6 +50,7 @@ struct Params{F<:AbstractFloat, I<:Int}
   resources_org::Matrix{I}
   recombination::Vector{Poisson{F}}
   initial_energy::Vector{F}
+  bottlenecks::Vector{BitMatrix}
 end
 
 const variance = 1.0
@@ -93,7 +95,7 @@ function model_initiation(param_file)
         end
         interaction_history = MVector{model.nspecies, Int}(fill(0, model.nspecies))
         initial_energy = model.initial_energy[sp]
-        add_agent!(model.nodes[pos], model, sp, biotic_ph, abiotic_ph, epistasisMat[sp], pleiotropyMat[sp], expressionArrays[sp], 0, sex, interaction_history, initial_energy, W)
+        add_agent!(model.nodes[pos], model, sp, biotic_ph, abiotic_ph, epistasisMat[sp], pleiotropyMat[sp], expressionArrays[sp], 0, sex, interaction_history, initial_energy, W, true)
       end      
     end
   end
@@ -155,8 +157,9 @@ function create_properties(dd)
   ids = Dict(i => dd[:species][i]["id"] for i in 1:nspecies)
   recombination = [Poisson(dd[:species][i]["recombination"]) for i in 1:nspecies]
   initial_energy = [AbstractFloat(dd[:species][i]["initial energy"]) for i in 1:nspecies]
+  bottlenecks = [dd[:species][i]["bottleneck times"] for i in 1:nspecies]
 
-  properties = Params(ngenes, nphenotypes, growthrates, selectionCoeffs, ploidy, optvals, optinds, Mdists, Ddists, Ns, Ed, generations, nspecies, Ns, migration_traits, vision_radius, check_fraction, migration_thresholds, step, nnodes, biotic_phenotyps, abiotic_phenotyps, max_ages, ids, dd[:model]["food sources"], dd[:model]["interactions"], dd[:model]["resources"], deepcopy(dd[:model]["resources"]), recombination, initial_energy)
+  properties = Params(ngenes, nphenotypes, growthrates, selectionCoeffs, ploidy, optvals, optinds, Mdists, Ddists, Ns, Ed, generations, nspecies, Ns, migration_traits, vision_radius, check_fraction, migration_thresholds, step, nnodes, biotic_phenotyps, abiotic_phenotyps, max_ages, ids, dd[:model]["food sources"], dd[:model]["interactions"], dd[:model]["resources"], deepcopy(dd[:model]["resources"]), recombination, initial_energy, bottlenecks)
   
   return properties, (epistasisMatS, pleiotropyMatS, expressionArraysS)
 end
@@ -199,6 +202,18 @@ function agent_step!(agent::Ind, model::ABM)
   reproduce!(agent, model)
   # survive
   survive!(agent, model)
+  # bottleneck
+  if agent.isalive && model.bottlenecks[agent.species][coord2vertex(agent.pos, model), model.step[1]]
+    if EvoDynamics.bottleneck(agent, model)
+      agent.isalive = false
+      kill_agent!(agent, model)
+    end
+  end
+end
+
+function bottleneck(agent, model)
+  # @info "Package bottleneck function"
+  return false
 end
 
 """
@@ -207,13 +222,16 @@ end
 Kills the agent if it has no energy, is too old, or by change given its fitness `W`
 """
 function survive!(agent::Ind, model::ABM)
-  if !haskey(model.agents, agent.id)
+  if !agent.isalive
     return
   elseif agent.energy < 0
+    agent.isalive = false
     kill_agent!(agent, model)
   elseif agent.age ≥ model.max_ages[agent.species]
+    agent.isalive = false
     kill_agent!(agent, model)
   elseif rand() > adjusted_fitness(agent, model)
+    agent.isalive = false
     kill_agent!(agent, model)
   end
 end
@@ -264,4 +282,4 @@ function mutate!(agent::Ind, model::ABM)
   end
 end
 
-# coord2vertex(c, model) = c[1] + (size(model.space)[1] * (c[2]-1))
+coord2vertex(c, model) = c[1] + (size(model.space)[1] * (c[2]-1))

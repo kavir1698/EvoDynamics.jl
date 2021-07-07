@@ -4,8 +4,8 @@ function load_parameters(yaml_file::String)
   species_index, model_index = species_model_indices(d)
 
   check_yml_params(d, species_index, model_index)
-  reformat_params!(d, species_index, model_index)
   check_param_shapes(d, species_index, model_index)
+  reformat_params!(d, species_index, model_index)
 
   outd = Dict(:species => d[species_index]["species"], :model => d[model_index])
 
