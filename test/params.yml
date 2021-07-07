@@ -28,11 +28,12 @@
     # Optimal phenotype indices for each generation, including generation zero.
     optimal phenotypes: [1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2]
     age: 5  # max age
+    reproduction start age: 1
+    reproduction end age: 5
     recombination: 1 # Mean of a Poisson distributions for number of crossing overs
     initial energy: 0 # A parameter for parental care of infants. Values more than 0 indicate that newly born individuals can survive for a number of times without requiring food from the environment/other species. The consumption rate (i.e. how many generations this initial energy suffices) is determined by the sum of the corresponding rows in "food sources"
     bottleneck function: bottleneck.jl  # A file that has a function names "bottleneck". The function has two argument: agent and model. It returns true or false for death or survival, respectively.
     bottleneck times: [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]  # Boolean matrix where rows are sites and columns are times.
-
 
   - id: 2
     number of genes: 8 
@@ -59,6 +60,8 @@
       - [0.6437641305315445, 0.9954545836033715, 2.469792530385348, 1.6158867433451882, 2.097629262577973, 1.1314248848669466, 1.490299526620522, 0.2566056477862022]
     optimal phenotypes: [1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2]
     age: 3
+    reproduction start age: 1
+    reproduction end age: 3
     recombination: 1 # Mean of a Poisson distributions for number of crossing overs
     initial energy: 0
     bottleneck function: Null

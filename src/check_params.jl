@@ -1,5 +1,5 @@
 function check_yml_params(d, species_index, model_index)
-  species_keys = ["migration threshold", "number of genes", "number of phenotypes", "abiotic phenotypes", "biotic phenotypes", "migration phenotype", "migration threshold", "ploidy", "epistasis matrix", "pleiotropy matrix", "growth rate", "expression array", "selection coefficient", "mutation probabilities", "mutation magnitudes", "N", "vision radius", "check fraction", "environmental noise", "optimal phenotype values", "optimal phenotypes", "age", "recombination", "initial energy", "bottleneck function", "bottleneck times"]
+  species_keys = ["migration threshold", "number of genes", "number of phenotypes", "abiotic phenotypes", "biotic phenotypes", "migration phenotype", "migration threshold", "ploidy", "epistasis matrix", "pleiotropy matrix", "growth rate", "expression array", "selection coefficient", "mutation probabilities", "mutation magnitudes", "N", "vision radius", "check fraction", "environmental noise", "optimal phenotype values", "optimal phenotypes", "age", "recombination", "initial energy", "bottleneck function", "bottleneck times", "reproduction start age", "reproduction end age"]
   model_keys = ["generations", "space", "metric", "periodic", "resources", "interactions", "food sources", "seed"]
   for sp in d[species_index]["species"]
     @assert haskey(sp, "id") "Species ID field missing."
@@ -35,6 +35,8 @@ function check_param_shapes(d, species_index, model_index)
     @assert length(dd["epistasis matrix"])  == (dd["ploidy"] * dd["number of genes"])^2 "epistasisMat does not have correct number of elements."
     # age is integer
     @assert typeof(dd["age"]) <: Int "Age of species $species should be integer."
+    @assert typeof(dd["reproduction start age"]) <: Int "reproduction start age of species $species should be integer."
+    @assert typeof(dd["reproduction end age"]) <: Int "reproduction end age of species $species should be integer."
     # id is integer
     @assert typeof(dd["id"]) <: Int "Age of species $species should be integer."
     # Check fraction is float

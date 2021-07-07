@@ -51,6 +51,8 @@ struct Params{F<:AbstractFloat, I<:Int}
   recombination::Vector{Poisson{F}}
   initial_energy::Vector{F}
   bottlenecks::Vector{BitMatrix}
+  repro_start::Vector{Int}
+  repro_end::Vector{Int}
 end
 
 const variance = 1.0
@@ -158,8 +160,10 @@ function create_properties(dd)
   recombination = [Poisson(dd[:species][i]["recombination"]) for i in 1:nspecies]
   initial_energy = [AbstractFloat(dd[:species][i]["initial energy"]) for i in 1:nspecies]
   bottlenecks = [dd[:species][i]["bottleneck times"] for i in 1:nspecies]
+  repro_start = [dd[:species][i]["reproduction start age"] for i in 1:nspecies]
+  repro_end = [dd[:species][i]["reproduction end age"] for i in 1:nspecies]
 
-  properties = Params(ngenes, nphenotypes, growthrates, selectionCoeffs, ploidy, optvals, optinds, Mdists, Ddists, Ns, Ed, generations, nspecies, Ns, migration_traits, vision_radius, check_fraction, migration_thresholds, step, nnodes, biotic_phenotyps, abiotic_phenotyps, max_ages, ids, dd[:model]["food sources"], dd[:model]["interactions"], dd[:model]["resources"], deepcopy(dd[:model]["resources"]), recombination, initial_energy, bottlenecks)
+  properties = Params(ngenes, nphenotypes, growthrates, selectionCoeffs, ploidy, optvals, optinds, Mdists, Ddists, Ns, Ed, generations, nspecies, Ns, migration_traits, vision_radius, check_fraction, migration_thresholds, step, nnodes, biotic_phenotyps, abiotic_phenotyps, max_ages, ids, dd[:model]["food sources"], dd[:model]["interactions"], dd[:model]["resources"], deepcopy(dd[:model]["resources"]), recombination, initial_energy, bottlenecks, repro_start, repro_end)
   
   return properties, (epistasisMatS, pleiotropyMatS, expressionArraysS)
 end
