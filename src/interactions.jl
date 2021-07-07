@@ -108,9 +108,9 @@ function interact!(ag1::Ind, ag2::Ind, model::ABM)
   else # interaction
     ix_value = model.interactions[sp1, sp2]
     if ix_value != 0
-      if sp1 == sp2 && ag1.sex != ag2.sex && model.ploidy[sp1] == 2 && in_reproduction_age(ag1, model) && in_reproduction_age(ag2, model)# reproduce
+      if sp1 == sp2 && ag1.sex != ag2.sex && model.ploidy[sp1] == 2 && in_reproduction_age(ag1, model) && in_reproduction_age(ag2, model)  # reproduce
         reproduce!(ag1::Ind, ag2::Ind, model::ABM)
-      elseif sp1 != sp2 # change in fitness
+      else  # change in fitness
         inx_prob = interaction_power(ag1, ag2, model)
         abiotic1 = abiotic_fitness(ag1, model)
         abiotic2 = abiotic_fitness(ag2, model)
