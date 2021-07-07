@@ -101,7 +101,7 @@ end
 Asexual reproduction for the haploid
 """
 function reproduce!(agent::Ind, model::ABM)
-  if model.ploidy[agent.species] == 1
+  if model.ploidy[agent.species] == 1 && in_reproduction_age(agent, model)
     growth_rate = model.growthrates[agent.species]
     W = agent.W >= 0.0 ? agent.W : 0.0
     nchildren = rand(Poisson(growth_rate * W))
@@ -113,4 +113,8 @@ function reproduce!(agent::Ind, model::ABM)
       mutate!(offspring, model)
     end
   end
+end
+
+function in_reproduction_age(agent, model)
+  agent.age >= model.repro_start[agent.species] && agent.age <= model.repro_end[agent.species]
 end
