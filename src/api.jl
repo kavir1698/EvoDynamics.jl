@@ -26,7 +26,7 @@ function species_N(model::ABM)
 end
 
 """
-    runmodel(parameters::Dict; kwargs)
+    runmodel(param_file::AbstractString; kwargs)
 
 Creates and runs a model given `parameters`. Returns a `DataFrame` of collected data, which are specified by `kwargs`.
 
@@ -38,7 +38,7 @@ Creates and runs a model given `parameters`. Returns a `DataFrame` of collected 
 * replicates::Int = 0 Number of replicates per simulation.
 * parallel::Bool = false Whether to run replicates in parallel. If `true`, you should add processors to your julia session (e.g. by `addprocs(n)`) and define your parameters and `EvoDynamics` on all workers. To do that, add `@everywhere` before them. For example, `@everywhere EvoDynamics`.
 """
-function runmodel(param_file;
+function runmodel(param_file::AbstractString;
   adata=nothing, mdata=[mean_fitness_per_species, species_N],
   when=nothing,
   replicates::Int = 0,

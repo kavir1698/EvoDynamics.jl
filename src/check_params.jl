@@ -4,7 +4,7 @@ function check_yml_params(d, species_index, model_index)
   for sp in d[species_index]["species"]
     @assert haskey(sp, "id") "Species ID field missing."
     for kk in species_keys
-      @assert haskey(sp, kk) "Species $(sp["id"]) does not have field \"kk\"."
+      @assert haskey(sp, kk) "Species $(sp["id"]) does not have field $(kk)."
     end
   end
   for kk in model_keys 
@@ -32,7 +32,7 @@ function check_param_shapes(d, species_index, model_index)
     @assert dd["ploidy"] < 3  "Ploidy more than 2 is not implemented"
     # epistasis matrix
     # @assert size(dd["epistasis matrix"], 2) % dd["ploidy"] == 0 "Number of columns in epistasisMat are not correct. They should a factor of ploidy"
-    @assert length(dd["epistasis matrix"])  == (dd["ploidy"] * dd["number of genes"])^2 "epistasisMat does not have correct number of elements."
+    @assert length(dd["epistasis matrix"])  == (dd["ploidy"] * dd["number of genes"])^2 "epistasis matrix does not have correct number of elements in species $species."
     # age is integer
     @assert typeof(dd["age"]) <: Int "Age of species $species should be integer."
     @assert typeof(dd["reproduction start age"]) <: Int "reproduction start age of species $species should be integer."
