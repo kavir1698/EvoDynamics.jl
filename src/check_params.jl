@@ -2,9 +2,9 @@ function check_yml_params(d)
   species_keys = ["migration threshold", "number of genes", "number of phenotypes", "abiotic phenotypes", "biotic phenotypes", "migration phenotype", "migration threshold", "ploidy", "epistasis matrix", "pleiotropy matrix", "growth rate", "expression array", "selection coefficient", "mutation probabilities", "mutation magnitudes", "N", "vision radius", "check fraction", "environmental noise", "optimal phenotype values", "optimal phenotypes", "age", "recombination", "initial energy", "bottleneck function", "bottleneck times", "reproduction start age", "reproduction end age"]
   model_keys = ["generations", "space", "metric", "periodic", "resources", "interactions", "food sources", "seed"]
   for (k, sp) in d["species"]
-    @assert haskey(sp, "id") "Species ID field missing."
+    @assert haskey(sp, "name") "Species name field missing."
     for kk in species_keys
-      @assert haskey(sp, kk) "Species $(sp["id"]) does not have field $(kk)."
+      @assert haskey(sp, kk) "Species $(sp["name"]) does not have field $(kk)."
     end
   end
   for kk in model_keys 
@@ -37,8 +37,6 @@ function check_param_shapes(d)
     @assert typeof(dd["age"]) <: Int "Age of species $species should be integer."
     @assert typeof(dd["reproduction start age"]) <: Int "reproduction start age of species $species should be integer."
     @assert typeof(dd["reproduction end age"]) <: Int "reproduction end age of species $species should be integer."
-    # id is integer
-    @assert typeof(dd["id"]) <: Int "Age of species $species should be integer."
     # Check fraction is float
     @assert typeof(dd["check fraction"]) <: Real "Check fraction of species $species should be number."
     # recombination is Bool

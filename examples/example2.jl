@@ -10,7 +10,7 @@ using EvoDynamics
 # ```yml
 # species:
 #   1:
-#     id: 1
+#     name: a
 #     number of genes: 7
 #     number of phenotypes: 4
 #     abiotic phenotypes: [1]
@@ -44,7 +44,7 @@ using EvoDynamics
 
 
 #   2:
-#     id: 2
+#     name: b
 #     number of genes: 8 
 #     number of phenotypes: 5
 #     abiotic phenotypes: [1,2]

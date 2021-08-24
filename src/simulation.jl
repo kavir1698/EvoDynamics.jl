@@ -19,7 +19,7 @@ mutable struct Ind{B<:AbstractFloat, C<:AbstractArray, D<:AbstractArray, E<:Abst
   isalive::Bool
 end
 
-struct Params{F<:AbstractFloat, I<:Int}
+struct Params{F<:AbstractFloat, I<:Int, N<:AbstractString}
   ngenes::Vector{I}
   nphenotypes::Vector{I}
   growthrates::Vector{F}
@@ -43,7 +43,7 @@ struct Params{F<:AbstractFloat, I<:Int}
   biotic_phenotypes::Vector{Vector{I}}
   abiotic_phenotypes::Vector{Vector{I}}
   max_ages::Vector{I}
-  ids::Dict{I, I}
+  names::Dict{I, N}
   food_sources::Matrix{F}
   interactions::Matrix{F}
   resources::Matrix{I}
@@ -156,14 +156,14 @@ function create_properties(dd)
   biotic_phenotyps = [dd[:species][i]["biotic phenotypes"] for i in 1:nspecies]
   abiotic_phenotyps = [dd[:species][i]["abiotic phenotypes"] for i in 1:nspecies]
   max_ages = [dd[:species][i]["age"] for i in 1:nspecies]
-  ids = Dict(i => dd[:species][i]["id"] for i in 1:nspecies)
+  names = Dict(i => dd[:species][i]["name"] for i in 1:nspecies)
   recombination = [Poisson(dd[:species][i]["recombination"]) for i in 1:nspecies]
   initial_energy = [AbstractFloat(dd[:species][i]["initial energy"]) for i in 1:nspecies]
   bottlenecks = [dd[:species][i]["bottleneck times"] for i in 1:nspecies]
   repro_start = [dd[:species][i]["reproduction start age"] for i in 1:nspecies]
   repro_end = [dd[:species][i]["reproduction end age"] for i in 1:nspecies]
 
-  properties = Params(ngenes, nphenotypes, growthrates, selectionCoeffs, ploidy, optvals, optinds, Mdists, Ddists, Ns, Ed, generations, nspecies, Ns, migration_traits, vision_radius, check_fraction, migration_thresholds, step, nnodes, biotic_phenotyps, abiotic_phenotyps, max_ages, ids, dd[:model]["food sources"], dd[:model]["interactions"], dd[:model]["resources"], deepcopy(dd[:model]["resources"]), recombination, initial_energy, bottlenecks, repro_start, repro_end)
+  properties = Params(ngenes, nphenotypes, growthrates, selectionCoeffs, ploidy, optvals, optinds, Mdists, Ddists, Ns, Ed, generations, nspecies, Ns, migration_traits, vision_radius, check_fraction, migration_thresholds, step, nnodes, biotic_phenotyps, abiotic_phenotyps, max_ages, names, dd[:model]["food sources"], dd[:model]["interactions"], dd[:model]["resources"], deepcopy(dd[:model]["resources"]), recombination, initial_energy, bottlenecks, repro_start, repro_end)
   
   return properties, (epistasisMatS, pleiotropyMatS, expressionArraysS)
 end
