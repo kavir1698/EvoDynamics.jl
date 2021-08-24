@@ -28,8 +28,8 @@ To define species parameters, create a dictionary whose keys are numbers startin
 
 ```julia
 species_params = Dict(
-  1=>Dict("id" => 1, "number of genes" => 2, "number of phenotypes" => 2, "abiotic phenotypes" => [1]),
-  2=>Dict("id" => 2, "number of genes" => 2, "number of phenotypes" => 2, "abiotic phenotypes" => [1])
+  1=>Dict("name" => "a", "number of genes" => 2, "number of phenotypes" => 2, "abiotic phenotypes" => [1]),
+  2=>Dict("name" => "b", "number of genes" => 2, "number of phenotypes" => 2, "abiotic phenotypes" => [1])
 )
 
 ```

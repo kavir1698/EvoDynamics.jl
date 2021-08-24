@@ -13,8 +13,9 @@ using EvoDynamics
 Model parameters are in a YAML file as follows:
 
 ```yml
-- species:
-  - id: 1
+species:
+  1:
+    name: a
     number of genes: 7
     number of phenotypes: 4
     abiotic phenotypes: [1]
@@ -46,7 +47,8 @@ Model parameters are in a YAML file as follows:
     recombination: 1 # Mean of a Poisson distributions for number of crossing overs
     initial energy: 0 # A parameter for parental care of infants. Values more than 0 indicate that newly born individuals can survive for a number of times without requiring food from the environment/other species. The consumption rate (i.e. how many generations this initial energy suffices) is determined by the sum of the corresponding rows in "food sources"
 
-  - id: 2
+  2:
+    name: b
     number of genes: 8
     number of phenotypes: 5
     abiotic phenotypes: [1,2]
@@ -74,7 +76,7 @@ Model parameters are in a YAML file as follows:
     recombination: 1 # Mean of a Poisson distributions for number of crossing overs
     initial energy: 0
 
-- model:
+model:
   generations: 14  # number of simulation steps
   space: [2, 2]
   metric: chebyshev  # how many neighbors a space site has. "chebyshev" metric means that the r-neighborhood of a position are all positions within the hypercube having side length of 2*floor(r) and being centered in the origin position. "euclidean" metric means that the r-neighborhood of a position are all positions whose cartesian indices have Euclidean distance ≤ r from the cartesian index of the given position.
