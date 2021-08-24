@@ -1,5 +1,6 @@
-- species:
-  - id: 1
+species:
+  1:
+    id: 1
     number of genes: 2
     number of phenotypes: 2
     abiotic phenotypes: [1]
@@ -25,7 +26,7 @@
     recombination: 0
     initial energy: 0 
 
-- model:
+model:
   generations: 5
   space: [1,1]
   metric: chebyshev

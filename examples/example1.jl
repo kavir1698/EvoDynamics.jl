@@ -8,8 +8,9 @@ using EvoDynamics
 # A simple one-species model with no spatial structure. Model parameters are in a YAML file as follows:
 
 # ```yml
-# - species:
-#   - id: 1
+# species:
+#   1:
+#     id: 1
 #     number of genes: 2
 #     number of phenotypes: 2
 #     abiotic phenotypes: [1]
@@ -35,7 +36,7 @@ using EvoDynamics
 #     recombination: 0
 #     initial energy: 0 
 
-# - model:
+# model:
 #   generations: 5
 #   space: [1,1]
 #   metric: chebyshev
