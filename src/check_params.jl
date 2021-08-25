@@ -33,6 +33,8 @@ function check_param_shapes(d)
     # epistasis matrix
     # @assert size(dd["epistasis matrix"], 2) % dd["ploidy"] == 0 "Number of columns in epistasisMat are not correct. They should a factor of ploidy"
     @assert length(dd["epistasis matrix"])  == (dd["ploidy"] * dd["number of genes"])^2 "epistasis matrix does not have correct number of elements in species $species."
+    # name is string
+    @assert typeof(dd["name"]) <: AbstractString "name should be a string"
     # age is integer
     @assert typeof(dd["age"]) <: Int "Age of species $species should be integer."
     @assert typeof(dd["reproduction start age"]) <: Int "reproduction start age of species $species should be integer."

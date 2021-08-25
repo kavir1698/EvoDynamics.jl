@@ -36,7 +36,7 @@ Creates and runs a model given `parameters`. Returns a `DataFrame` of collected 
 * mdata=[mean_fitness_per_species] model data to be collected. By default, collects mean population fitness per species. Each row of the output DataFrame corresponds to all agents and each column is the value function applied to a field. The functions in the array are applied to the model object.
 * when=nothing The generations from which data are collected. By default collect at all steps.
 * replicates::Int = 0 Number of replicates per simulation.
-* parallel::Bool = false Whether to run replicates in parallel. If `true`, you should add processors to your julia session (e.g. by `addprocs(n)`) and define your parameters and `EvoDynamics` on all workers. To do that, add `@everywhere` before them. For example, `@everywhere EvoDynamics`.
+* parallel::Bool = false Whether to run replicates in parallel. If `true`, you should add processors to your julia session (e.g. by `addprocs(n)`) and define your parameters and `EvoDynamics` on all workers. To do that, add `@everywhere` before them. For example, `@everywhere EvoDynamics`. TODO: use `ensemblerun!` instead of run.
 """
 function runmodel(param_file::AbstractString;
   adata=nothing, mdata=[mean_fitness_per_species, species_N],
@@ -57,7 +57,15 @@ function runmodel(param_file::AbstractString;
   # run model and collect data
   agdata, modata = run!(model, agent_step!, model_step!, model.generations, adata=adata, mdata=mdata, when=whenn, replicates=replicates, parallel=parallel, agents_first=false)
 
-  # Expand columns that have arrays (multiple values)
+  return agdata, modata, model
+end
+
+"""
+    expand_iterable_columns(agdata, modata)
+  
+Expand columns that have arrays (multiple values). Inputs are agent data and model data outputs.
+"""
+function expand_iterable_columns!(agdata, modata)
   allnames = Agents.names(agdata)
   tuple_colsa = String[]
   for nam in allnames
@@ -88,6 +96,5 @@ function runmodel(param_file::AbstractString;
     end
     Agents.select!(modata, Agents.Not(Symbol(nam)))  # remove the column with tuples
   end
-
-  return agdata, modata, model
+  return agdata, modata
 end

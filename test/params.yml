@@ -1,6 +1,6 @@
 species:
   1:
-    name: 1
+    name: a
     number of genes: 7
     number of phenotypes: 4
     abiotic phenotypes: [1]
@@ -40,7 +40,7 @@ species:
       [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]  # Boolean matrix where rows are sites and columns are times.
 
   2:
-    name: 2
+    name: b
     number of genes: 8 
     number of phenotypes: 5
     abiotic phenotypes: [1,2]
@@ -71,7 +71,6 @@ species:
     initial energy: 0
     bottleneck function: Null
     bottleneck times: Null
-
 
 model:
   generations: 14  # number of simulation steps
