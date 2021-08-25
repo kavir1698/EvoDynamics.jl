@@ -91,6 +91,7 @@ function model_initiation(param_file)
         abiotic_ph = get_abiotic_phenotype(sp, epistasisMat[sp], pleiotropyMat[sp], expressionArrays[sp], model)
         biotic_ph = get_biotic_phenotype(sp, epistasisMat[sp], pleiotropyMat[sp], expressionArrays[sp], model)
         W = abiotic_fitness(abiotic_ph, sp, pos, model)
+        W = adjust_fitness(W, sp, model)
         sex = false
         if model.ploidy[sp] == 2
           sex = rand((true, false))
@@ -197,7 +198,7 @@ function agent_step!(agent::Ind, model::ABM)
   # migrate
   migrate!(agent, model)
   # use food
-  use_energy!(agent, model)
+  burn_energy!(agent)
   # consume basic energy if agent can
   consume_food!(agent, model)
   # interact with other species
@@ -209,8 +210,7 @@ function agent_step!(agent::Ind, model::ABM)
   # bottleneck
   if agent.isalive && model.bottlenecks[agent.species][coord2vertex(agent.pos, model), model.step[1]]
     if EvoDynamics.bottleneck(agent, model)
-      agent.isalive = false
-      kill_agent!(agent, model)
+      remove_agent!(agent, model)
     end
   end
 end
@@ -218,6 +218,11 @@ end
 function bottleneck(agent, model)
   # @info "Package bottleneck function"
   return false
+end
+
+function remove_agent!(agent, model)
+  agent.isalive = false
+  kill_agent!(agent, model)
 end
 
 """
@@ -229,30 +234,34 @@ function survive!(agent::Ind, model::ABM)
   if !agent.isalive
     return
   elseif agent.energy < 0
-    agent.isalive = false
-    kill_agent!(agent, model)
+    remove_agent!(agent, model)
   elseif agent.age ≥ model.max_ages[agent.species]
-    agent.isalive = false
-    kill_agent!(agent, model)
-  elseif rand() > adjusted_fitness(agent, model)
-    agent.isalive = false
-    kill_agent!(agent, model)
+    remove_agent!(agent, model)
+  elseif rand() > agent.W 
+    remove_agent!(agent, model)
   end
 end
 
-function adjusted_fitness(agent, model)
+function adjust_fitness!(agent::Ind, model::ABM)
   W = agent.W < 0 ? 0.0 : agent.W
-  1.0 - ( (1.0 - W) * model.selectionCoeffs[agent.species])
+  newW = 1.0 - ( (1.0 - W) * model.selectionCoeffs[agent.species])
+  agent.W = newW
 end
 
-function use_energy!(agent, model)
-  agent.energy -= sum(model.food_sources[agent.species, :])
+function adjust_fitness(W, species, model::ABM)
+  W2 = W < 0 ? 0.0 : W
+  newW = 1.0 - ( (1.0 - W2) * model.selectionCoeffs[species])
+  return newW
+end
+
+function burn_energy!(agent)
+  agent.energy -= 1
 end
 
 function consume_food!(agent::Ind, model::ABM)
   if model.food_sources[agent.species, agent.species] > 0 && model.resources[agent.pos...] > 0
     model.resources[agent.pos...] -= 1
-    agent.energy += 1
+    agent.energy += model.food_sources[agent.species, agent.species]
   end
 end
 
@@ -280,6 +289,7 @@ function mutate!(agent::Ind, model::ABM)
     abiotic_phenotype = get_abiotic_phenotype(agent.species, agent.epistasisMat, agent.pleiotropyMat, agent.q, model) 
     biotic_phenotype = get_biotic_phenotype(agent.species, agent.epistasisMat, agent.pleiotropyMat, agent.q, model)
     W = abiotic_fitness(abiotic_phenotype, agent.species, agent.pos, model)
+    W = adjust_fitness(W, agent.species, model)
     agent.biotic_phenotype .= biotic_phenotype
     agent.abiotic_phenotype .= abiotic_phenotype
     agent.W = W

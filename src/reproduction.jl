@@ -78,6 +78,7 @@ function create_one_offspring(ag1::Ind, ag2::Ind, model::ABM)
   abph = get_abiotic_phenotype(species, episMat, pleioMat, q, model) 
   bph = get_biotic_phenotype(species, episMat, pleioMat, q, model)
   W = abiotic_fitness(abph, species, ag1.pos, model)
+  W = adjust_fitness(W, ag1.species, model)
   initial_energy = model.initial_energy[species]
 
   offspring = add_agent!(ag1.pos, model, ag1.species, bph, abph, episMat, pleioMat, q, 0, sex, interaction_history, initial_energy, W, true)

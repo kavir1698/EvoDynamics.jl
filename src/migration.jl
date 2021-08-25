@@ -25,6 +25,7 @@ function migrate!(agent::Ind, model::ABM)
   move_agent!(agent, destination, model)
   # agent's base fitness is its abiotic fitness 
   agent.W = abiotic_fitness(agent, model)
+  adjust_fitness!(agent, model)
   return
 end
 

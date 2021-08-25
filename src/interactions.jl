@@ -65,16 +65,15 @@ end
 
 function abiotic_fitness(abiotic_phenotype, species::Int, pos, model::ABM)
   rawW = 1.0 - abiotic_distance(abiotic_phenotype, return_opt_phenotype(species, model.step[1], pos, model), variance)
-  W = adjust_abiotic_fitness(rawW, model.selectionCoeffs[species])
-  return W
+  # W = adjust_abiotic_fitness(rawW, model.selectionCoeffs[species])
+  return rawW
 end
 
 abiotic_fitness(ag::Ind, model::ABM) = abiotic_fitness(ag.abiotic_phenotype, ag.species, ag.pos, model)
 
-adjust_abiotic_fitness(rawfitness::AbstractFloat, selection_coeff::AbstractFloat) = 1.0 - ((1.0 - rawfitness) * selection_coeff)
+# adjust_abiotic_fitness(rawfitness::AbstractFloat, selection_coeff::AbstractFloat) = 1.0 - ((1.0 - rawfitness) * selection_coeff)
 
-function interaction_power(ag1, ag2, model)
-  d = phenotypic_distance(ag1, ag2, model)
+function interaction_power(ag1, ag2, d, model)
   prob = (1.0 - d) * abs(model.interactions[ag1.species, ag2.species])
   return prob
 end
@@ -106,19 +105,25 @@ function interact!(ag1::Ind, ag2::Ind, model::ABM)
       eat!(ag2, ag1, model)
     end
   else # interaction
-    ix_value = model.interactions[sp1, sp2]
-    if ix_value != 0
-      if sp1 == sp2 && ag1.sex != ag2.sex && model.ploidy[sp1] == 2 && in_reproduction_age(ag1, model) && in_reproduction_age(ag2, model)  # reproduce
-        reproduce!(ag1::Ind, ag2::Ind, model::ABM)
-      else  # change in fitness
-        inx_prob = interaction_power(ag1, ag2, model)
+    if sp1 == sp2 && ag1.sex != ag2.sex && model.ploidy[sp1] == 2 && in_reproduction_age(ag1, model) && in_reproduction_age(ag2, model)  # reproduce
+      reproduce!(ag1::Ind, ag2::Ind, model::ABM)
+    else
+      ix_value1 = model.interactions[sp1, sp2]
+      ix_value2 = model.interactions[sp2, sp1]
+      if ix_value1 != 0 || ix_value2 != 0
+         d = phenotypic_distance(ag1, ag2, model)
+        inx_prob1 = interaction_power(ag1, ag2, d, model)
+        inx_prob2 = interaction_power(ag2, ag1, d, model)
         abiotic1 = abiotic_fitness(ag1, model)
         abiotic2 = abiotic_fitness(ag2, model)
-        ix_dir = sign(ix_value)
+        ix_dir1 = sign(ix_value1)
+        ix_dir2 = sign(ix_value2)
         
         # update agents' fitness
-        ag1.W = abiotic1 + (inx_prob * ix_dir)
-        ag2.W = abiotic2 + (inx_prob * ix_dir)
+        ag1.W = abiotic1 + (inx_prob1 * ix_dir1)
+        ag2.W = abiotic2 + (inx_prob2 * ix_dir2)
+        adjust_fitness!(ag1, model)
+        adjust_fitness!(ag2, model)
       end
     end
   end
@@ -128,9 +133,8 @@ end
 `ag1` eats `ag2`.
 """
 function eat!(ag1, ag2, model)
-  ag1.energy += 1
-  ag2.isalive = false
-  kill_agent!(ag2, model)
+  ag1.energy += model.food_sources[ag1.species, ag2.species]
+  remove_agent!(ag2, model)
 end
 
 """
