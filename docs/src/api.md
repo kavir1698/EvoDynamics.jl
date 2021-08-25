@@ -130,7 +130,7 @@ At each step, the agent may die due to several factors. First, it dies if it has
 
 #### Fitness
 
-Fitness of individuals is their abiotic fitness, i.e. their abiotic phenotypic distance to the optimal phenotypes in the environment. as such, their fitness can be different at different sites.
+Fitness of individuals is their abiotic fitness, i.e. their abiotic phenotypic distance to the optimal phenotypes in the environment. As such, their fitness can be different at different sites.
 
 #### Mutation
 
