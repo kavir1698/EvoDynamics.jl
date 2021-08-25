@@ -118,11 +118,11 @@ If the two individuals are not predator-prey, and they are from the same species
 
 ### Reproduction
 
-If an individual is haploid and is in reproduction age, it reproduces an identical offspring to itself except that the expression array, pleiotropy matrix, and the epistasis matrix of the offspring will mutate given the probabilities and magnitues in the _mutation probabilities_ and _mutation magnitudes_ matrices. The number of offsprings is a random number from a Poisson distribution with a mean equal to the species' growth rate times the fitness of the individual.
+If an individual is haploid and is in reproduction age, it reproduces an identical offspring to itself except that the expression array, pleiotropy matrix, and the epistasis matrix of the offspring will mutate given the probabilities and magnitudes in the _mutation probabilities_ and _mutation magnitudes_ matrices. The number of offsprings is a random number from a Poisson distribution with a mean equal to the species' growth rate times the fitness of the individual.
 
 If two diploid individuals are mated to reproduce, their reproduction success is proportional to their phenotypic similarity. Number of offsprings is a random number from a Poisson distribution with mean equal to the reproduction success of the two individuals times the growth rate of the species.
 
-Each offspring of diploid individuals inherits a gamete from each parent. A gamete is a half of the expression array, pleiotropy matrix, and epistasis matrix. If recombination is allowed (> 0), then the gamets undergo crossing over. The number of crossing overs is a random number from a Poission distributioin with mean equal to the _recombination_ parameter.
+Each offspring of diploid individuals inherits a gamete from each parent. A gamete is a half of the expression array, pleiotropy matrix, and epistasis matrix. If recombination is allowed (> 0), then the gametes undergo crossing over. The number of crossing overs is a random number from a Poisson distribution with mean equal to the _recombination_ parameter.
 
 #### Survival
 
