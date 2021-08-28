@@ -53,18 +53,18 @@ struct Params{F<:AbstractFloat, I<:Int, N<:AbstractString}
   bottlenecks::Vector{BitMatrix}
   repro_start::Vector{Int}
   repro_end::Vector{Int}
+  seed::Int
 end
 
 const variance = 1.0
 
 """
-    model_initiation(param_file)
+    model_initiation(dd)
 
 Innitializes the model.
 """
-function model_initiation(param_file)
-  dd = load_parameters(param_file)
-
+function model_initiation(dd)
+  
   if !isnothing(dd[:model]["seed"])
     Random.seed!(dd[:model]["seed"])
   end
@@ -164,7 +164,7 @@ function create_properties(dd)
   repro_start = [dd[:species][i]["reproduction start age"] for i in 1:nspecies]
   repro_end = [dd[:species][i]["reproduction end age"] for i in 1:nspecies]
 
-  properties = Params(ngenes, nphenotypes, growthrates, selectionCoeffs, ploidy, optvals, optinds, Mdists, Ddists, Ns, Ed, generations, nspecies, Ns, migration_traits, vision_radius, check_fraction, migration_thresholds, step, nnodes, biotic_phenotyps, abiotic_phenotyps, max_ages, names, dd[:model]["food sources"], dd[:model]["interactions"], dd[:model]["resources"], deepcopy(dd[:model]["resources"]), recombination, initial_energy, bottlenecks, repro_start, repro_end)
+  properties = Params(ngenes, nphenotypes, growthrates, selectionCoeffs, ploidy, optvals, optinds, Mdists, Ddists, Ns, Ed, generations, nspecies, Ns, migration_traits, vision_radius, check_fraction, migration_thresholds, step, nnodes, biotic_phenotyps, abiotic_phenotyps, max_ages, names, dd[:model]["food sources"], dd[:model]["interactions"], dd[:model]["resources"], deepcopy(dd[:model]["resources"]), recombination, initial_energy, bottlenecks, repro_start, repro_end, dd[:model]["seed"])
   
   return properties, (epistasisMatS, pleiotropyMatS, expressionArraysS)
 end
