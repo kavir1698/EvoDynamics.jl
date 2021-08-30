@@ -2,25 +2,39 @@
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
 
 <svg
-   xmlns:dc="http://purl.org/dc/elements/1.1/"
-   xmlns:cc="http://creativecommons.org/ns#"
-   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-   xmlns:svg="http://www.w3.org/2000/svg"
-   xmlns="http://www.w3.org/2000/svg"
-   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
-   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    width="349.26166mm"
    height="416.16428mm"
    viewBox="0 0 349.26166 416.16427"
    version="1.1"
    id="svg8"
-   inkscape:version="0.92.3 (2405546, 2018-03-11)"
+   inkscape:version="1.1 (c68e22c387, 2021-05-23)"
    sodipodi:docname="struct.svg"
-   inkscape:export-filename="D:\Libraries\Desktop\struct.png"
+   inkscape:export-filename="E:\projects\EvoDynamics\docs\src\struct.png"
    inkscape:export-xdpi="299.4809"
-   inkscape:export-ydpi="299.4809">
+   inkscape:export-ydpi="299.4809"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:dc="http://purl.org/dc/elements/1.1/">
   <defs
      id="defs2">
+    <marker
+       style="overflow:visible;"
+       id="marker7696"
+       refX="0.0"
+       refY="0.0"
+       orient="auto"
+       inkscape:stockid="Arrow1Send"
+       inkscape:isstock="true">
+      <path
+         transform="scale(0.2) rotate(180) translate(6,0)"
+         style="fill-rule:evenodd;fill:context-stroke;stroke:context-stroke;stroke-width:1.0pt;"
+         d="M 0.0,0.0 L 5.0,-5.0 L -12.5,0.0 L 5.0,5.0 L 0.0,0.0 z "
+         id="path7450" />
+    </marker>
     <marker
        inkscape:isstock="true"
        style="overflow:visible"
@@ -346,6 +360,48 @@
          style="fill:#d86121;fill-opacity:0.86666667;fill-rule:evenodd;stroke:#d86121;stroke-width:1.00000003pt;stroke-opacity:0.86666667"
          transform="matrix(0.4,0,0,0.4,2.6,0)" />
     </marker>
+    <marker
+       style="overflow:visible"
+       id="marker7696-8"
+       refX="0"
+       refY="0"
+       orient="auto"
+       inkscape:stockid="Arrow1Send"
+       inkscape:isstock="true">
+      <path
+         transform="matrix(-0.2,0,0,-0.2,-1.2,0)"
+         style="fill:context-stroke;fill-rule:evenodd;stroke:context-stroke;stroke-width:1pt"
+         d="M 0,0 5,-5 -12.5,0 5,5 Z"
+         id="path7450-3" />
+    </marker>
+    <marker
+       style="overflow:visible"
+       id="marker7696-1"
+       refX="0"
+       refY="0"
+       orient="auto"
+       inkscape:stockid="Arrow1Send"
+       inkscape:isstock="true">
+      <path
+         transform="matrix(-0.2,0,0,-0.2,-1.2,0)"
+         style="fill:context-stroke;fill-rule:evenodd;stroke:context-stroke;stroke-width:1pt"
+         d="M 0,0 5,-5 -12.5,0 5,5 Z"
+         id="path7450-7" />
+    </marker>
+    <marker
+       style="overflow:visible"
+       id="marker7696-3"
+       refX="0"
+       refY="0"
+       orient="auto"
+       inkscape:stockid="Arrow1Send"
+       inkscape:isstock="true">
+      <path
+         transform="matrix(-0.2,0,0,-0.2,-1.2,0)"
+         style="fill:context-stroke;fill-rule:evenodd;stroke:context-stroke;stroke-width:1pt"
+         d="M 0,0 5,-5 -12.5,0 5,5 Z"
+         id="path7450-1" />
+    </marker>
   </defs>
   <sodipodi:namedview
      id="base"
@@ -354,23 +410,25 @@
      borderopacity="1.0"
      inkscape:pageopacity="1"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.71539319"
-     inkscape:cx="347.1829"
-     inkscape:cy="765.48632"
+     inkscape:zoom="0.3576966"
+     inkscape:cx="-222.2554"
+     inkscape:cy="978.4829"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      showgrid="false"
-     inkscape:window-width="3022"
-     inkscape:window-height="1744"
-     inkscape:window-x="-16"
-     inkscape:window-y="-16"
+     inkscape:window-width="1920"
+     inkscape:window-height="1028"
+     inkscape:window-x="2553"
+     inkscape:window-y="-6"
      inkscape:window-maximized="1"
      showguides="true"
      inkscape:guide-bbox="true"
      fit-margin-top="0"
      fit-margin-left="0"
      fit-margin-right="0"
-     fit-margin-bottom="0" />
+     fit-margin-bottom="0"
+     inkscape:pagecheckerboard="0"
+     inkscape:snap-text-baseline="false" />
   <metadata
      id="metadata5">
     <rdf:RDF>
@@ -379,7 +437,6 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -573,7 +630,8 @@
    style="font-size:32px;line-height:24px;fill:#00b2c4;fill-opacity:1"
    id="flowSpan4638"><flowSpan
    style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-family:Georgia;-inkscape-font-specification:'Georgia Bold';fill:#00b2c4;fill-opacity:1"
-   id="flowSpan4644">Gene.</flowSpan> Size corresponds to </flowSpan>expression.</flowPara></flowRoot>    <path
+   id="flowSpan4644">Gene.</flowSpan> Size corresponds to </flowSpan>expression.</flowPara></flowRoot>
+    <path
        style="fill:none;stroke:#000000;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker-end:url(#DiamondMstart-6)"
        d="m -120.90062,209.74555 51.408197,-0.36984"
        id="path4646-9"
@@ -595,7 +653,8 @@
            style="font-size:32px;line-height:24px"
            id="flowSpan4638-1"><flowSpan
    style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-family:Georgia;-inkscape-font-specification:'Georgia Bold'"
-   id="flowSpan4644-0">Epistasis.</flowSpan> Size corresponds to effect size. Dashes show negative effect.</flowSpan></flowPara></flowRoot>    <path
+   id="flowSpan4644-0">Epistasis.</flowSpan> Size corresponds to effect size. Dashes show negative effect.</flowSpan></flowPara></flowRoot>
+    <path
        style="opacity:0.87999998;fill:none;stroke:#000000;stroke-width:4;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:4.00000011, 8.00000022;stroke-dashoffset:0;stroke-opacity:1;marker-end:url(#Arrow1Send-5)"
        d="m -123.34272,188.08116 c 0,0 -24.68703,11.28022 -40.85091,9.01335 -16.16388,-2.26686 -35.4044,-11.09181 -35.4044,-11.09181"
        id="path4555-2"
@@ -610,10 +669,10 @@
     <flowRoot
        xml:space="preserve"
        id="flowRoot4630-7"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:20px;line-height:25px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#b50c0c;fill-opacity:1;stroke:none;"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:20px;line-height:25px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#b50c0c;fill-opacity:1;stroke:none"
        transform="matrix(0.26458333,0,0,0.26458333,-26.637712,-64.438416)"><flowRegion
          id="flowRegion4632-8"
-         style="fill:#b50c0c;fill-opacity:1;"><rect
+         style="fill:#b50c0c;fill-opacity:1"><rect
            id="rect4634-7"
            width="306.68015"
            height="242.59952"
@@ -621,11 +680,12 @@
            y="671.01971"
            style="fill:#b50c0c;fill-opacity:1;" /></flowRegion><flowPara
          id="flowPara4636-7"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:32px;line-height:26px;font-family:Georgia;-inkscape-font-specification:Georgia;fill:#b50c0c;fill-opacity:1;"><flowSpan
-   style="font-size:32px;line-height:24px;fill:#b50c0c;fill-opacity:1;"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:32px;line-height:26px;font-family:Georgia;-inkscape-font-specification:Georgia;fill:#b50c0c;fill-opacity:1"><flowSpan
+   style="font-size:32px;line-height:24px;fill:#b50c0c;fill-opacity:1"
    id="flowSpan4638-3"><flowSpan
-   style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-family:Georgia;-inkscape-font-specification:'Georgia Bold';fill:#b50c0c;fill-opacity:1;"
-   id="flowSpan4644-1">Pleiotropy.</flowSpan> Phenotypes are affected by multiple genes. Size corresponds to </flowSpan>expression. Dashes show negative effect.</flowPara></flowRoot>    <path
+   style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-family:Georgia;-inkscape-font-specification:'Georgia Bold';fill:#b50c0c;fill-opacity:1"
+   id="flowSpan4644-1">Pleiotropy.</flowSpan> Phenotypes are affected by multiple genes. Size corresponds to </flowSpan>expression. Dashes show negative effect.</flowPara></flowRoot>
+    <path
        style="fill:none;stroke:#6816f6;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:0.91372549;marker-end:url(#DiamondMstart-4)"
        d="m -84.660257,97.571612 33.467923,0.01565"
        id="path4646-8"
@@ -634,10 +694,10 @@
     <flowRoot
        xml:space="preserve"
        id="flowRoot4630-9"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:20px;line-height:25px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#4e00d6;fill-opacity:0.9137255;stroke:none;"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:20px;line-height:25px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#4e00d6;fill-opacity:0.913725;stroke:none"
        transform="matrix(0.26458333,0,0,0.26458333,232.2884,-76.316139)"><flowRegion
          id="flowRegion4632-49"
-         style="fill:#4e00d6;fill-opacity:0.9137255;"><rect
+         style="fill:#4e00d6;fill-opacity:0.913725"><rect
            id="rect4634-9"
            width="265.25754"
            height="215.9857"
@@ -645,11 +705,12 @@
            y="671.01971"
            style="fill:#4e00d6;fill-opacity:0.9137255;" /></flowRegion><flowPara
          id="flowPara4636-1"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:32px;line-height:26px;font-family:Georgia;-inkscape-font-specification:Georgia;fill:#4e00d6;fill-opacity:0.9137255;"><flowSpan
-   style="font-size:32px;line-height:24px;fill:#4e00d6;fill-opacity:0.9137255;"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:32px;line-height:26px;font-family:Georgia;-inkscape-font-specification:Georgia;fill:#4e00d6;fill-opacity:0.913725"><flowSpan
+   style="font-size:32px;line-height:24px;fill:#4e00d6;fill-opacity:0.913725"
    id="flowSpan4638-9"><flowSpan
-   style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-family:Georgia;-inkscape-font-specification:'Georgia Bold';fill:#4e00d6;fill-opacity:0.9137255;"
-   id="flowSpan4644-7">Phenotype.</flowSpan> Size corresponds to phenotypic value</flowSpan>. Color darkness correspond to contribution to fitness</flowPara></flowRoot>    <path
+   style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-family:Georgia;-inkscape-font-specification:'Georgia Bold';fill:#4e00d6;fill-opacity:0.913725"
+   id="flowSpan4644-7">Phenotype.</flowSpan> Size corresponds to phenotypic value</flowSpan>. Color darkness correspond to contribution to fitness</flowPara></flowRoot>
+    <path
        sodipodi:type="star"
        style="opacity:0.86400003;fill:#d86122;fill-opacity:1;stroke:none;stroke-width:1.29999995;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;paint-order:normal"
        id="path10397"
@@ -681,10 +742,10 @@
     <flowRoot
        xml:space="preserve"
        id="flowRoot4630-62"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:20px;line-height:25px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#af4e1e;fill-opacity:0.86666667;stroke:none;"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:20px;line-height:25px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#af4e1e;fill-opacity:0.866667;stroke:none"
        transform="matrix(0.26458333,0,0,0.26458333,24.183411,-219.849)"><flowRegion
          id="flowRegion4632-0"
-         style="fill:#af4e1e;fill-opacity:0.86666667;"><rect
+         style="fill:#af4e1e;fill-opacity:0.866667"><rect
            id="rect4634-3"
            width="259.29794"
            height="162.14859"
@@ -692,11 +753,12 @@
            y="671.01971"
            style="fill:#af4e1e;fill-opacity:0.86666667;" /></flowRegion><flowPara
          id="flowPara4636-06"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:32px;line-height:26px;font-family:Georgia;-inkscape-font-specification:Georgia;fill:#af4e1e;fill-opacity:0.86666667;"><flowSpan
-   style="font-size:32px;line-height:24px;fill:#af4e1e;fill-opacity:0.86666667;"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:32px;line-height:26px;font-family:Georgia;-inkscape-font-specification:Georgia;fill:#af4e1e;fill-opacity:0.866667"><flowSpan
+   style="font-size:32px;line-height:24px;fill:#af4e1e;fill-opacity:0.866667"
    id="flowSpan4638-5"><flowSpan
-   style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-family:Georgia;-inkscape-font-specification:'Georgia Bold';fill:#af4e1e;fill-opacity:0.86666667;"
-   id="flowSpan4644-8">Individual.</flowSpan> Size corresponds to fitness</flowSpan>.</flowPara></flowRoot>    <path
+   style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-family:Georgia;-inkscape-font-specification:'Georgia Bold';fill:#af4e1e;fill-opacity:0.866667"
+   id="flowSpan4644-8">Individual.</flowSpan> Size corresponds to fitness</flowSpan>.</flowPara></flowRoot>
+    <path
        style="fill:none;stroke:#d86121;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:0.86666667;marker-end:url(#DiamondMstart-1)"
        d="m -212.29002,-23.654084 h -20.52631"
        id="path4646-3"
@@ -789,10 +851,10 @@
     <flowRoot
        xml:space="preserve"
        id="flowRoot4630-62-4"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:20px;line-height:25px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#009c6c;fill-opacity:0.79215688;stroke:none;"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:20px;line-height:25px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#009c6c;fill-opacity:0.792157;stroke:none"
        transform="matrix(0.26458333,0,0,0.26458333,112.05747,-342.1867)"><flowRegion
          id="flowRegion4632-0-9"
-         style="fill:#009c6c;fill-opacity:0.79215688;"><rect
+         style="fill:#009c6c;fill-opacity:0.792157"><rect
            id="rect4634-3-5"
            width="368.32889"
            height="162.14862"
@@ -800,11 +862,12 @@
            y="671.01971"
            style="fill:#009c6c;fill-opacity:0.79215688;" /></flowRegion><flowPara
          id="flowPara4636-06-3"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:32px;line-height:26px;font-family:Georgia;-inkscape-font-specification:Georgia;fill:#009c6c;fill-opacity:0.79215688;"><flowSpan
-           style="font-size:32px;line-height:24px;fill:#009c6c;fill-opacity:0.79215688;"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:32px;line-height:26px;font-family:Georgia;-inkscape-font-specification:Georgia;fill:#009c6c;fill-opacity:0.792157"><flowSpan
+           style="font-size:32px;line-height:24px;fill:#009c6c;fill-opacity:0.792157"
            id="flowSpan4638-5-9"><flowSpan
-   style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-family:Georgia;-inkscape-font-specification:'Georgia Bold';fill:#009c6c;fill-opacity:0.79215688;"
-   id="flowSpan4644-8-0">Other species.</flowSpan> They can have beneficial, neutral, or disadvantageous interactions.</flowSpan></flowPara></flowRoot>    <path
+   style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-family:Georgia;-inkscape-font-specification:'Georgia Bold';fill:#009c6c;fill-opacity:0.792157"
+   id="flowSpan4644-8-0">Other species.</flowSpan> They can have beneficial, neutral, or disadvantageous interactions.</flowSpan></flowPara></flowRoot>
+    <path
        style="fill:none;stroke:#00a170;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:0.79215688;marker-end:url(#DiamondMstart-1-2)"
        d="m -257.41092,-168.45168 66.35787,-0.22018"
        id="path4646-3-3"
@@ -813,10 +876,10 @@
     <flowRoot
        xml:space="preserve"
        id="flowRoot4630-62-6"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:20px;line-height:25px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#af4e1e;fill-opacity:0.86666667;stroke:none"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:20px;line-height:25px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#af4e1e;fill-opacity:0.866667;stroke:none"
        transform="matrix(0.26458333,0,0,0.26458333,229.89394,-310.05335)"><flowRegion
          id="flowRegion4632-0-1"
-         style="fill:#af4e1e;fill-opacity:0.86666667"><rect
+         style="fill:#af4e1e;fill-opacity:0.866667"><rect
            id="rect4634-3-6"
            width="305.42645"
            height="239.02942"
@@ -824,11 +887,12 @@
            y="671.01971"
            style="fill:#af4e1e;fill-opacity:0.86666667" /></flowRegion><flowPara
          id="flowPara4636-06-9"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:32px;line-height:26px;font-family:Georgia;-inkscape-font-specification:Georgia;fill:#af4e1e;fill-opacity:0.86666667"><flowSpan
-           style="font-size:32px;line-height:24px;fill:#af4e1e;fill-opacity:0.86666667"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:32px;line-height:26px;font-family:Georgia;-inkscape-font-specification:Georgia;fill:#af4e1e;fill-opacity:0.866667"><flowSpan
+           style="font-size:32px;line-height:24px;fill:#af4e1e;fill-opacity:0.866667"
            id="flowSpan4638-5-2"><flowSpan
-   style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-family:Georgia;-inkscape-font-specification:'Georgia Bold';fill:#af4e1e;fill-opacity:0.86666667"
-   id="flowSpan4644-8-1">Population.</flowSpan> Grows in accordance with its growth rate, environment, and  interaction with other species</flowSpan></flowPara></flowRoot>    <rect
+   style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-family:Georgia;-inkscape-font-specification:'Georgia Bold';fill:#af4e1e;fill-opacity:0.866667"
+   id="flowSpan4644-8-1">Population.</flowSpan> Grows in accordance with its growth rate, environment, and  interaction with other species</flowSpan></flowPara></flowRoot>
+    <rect
        style="opacity:1;fill:none;fill-opacity:0.86666667;stroke:#000000;stroke-width:1.49587476;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;paint-order:normal"
        id="rect13776"
        width="348.37946"
@@ -840,6 +904,20 @@
        d="m -102.82712,-132.19188 21.684092,-0.36951"
        id="path4646-3-6"
        inkscape:connector-curvature="0"
+       sodipodi:nodetypes="cc" />
+    <path
+       style="fill:none;stroke:#d86121;stroke-width:2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:0.866667;marker-end:url(#marker7696-3)"
+       d="m -188.9899,-82.459156 -29.72835,-13.038129"
+       id="path5879-78"
+       sodipodi:nodetypes="cc" />
+    <path
+       style="fill:none;stroke:#15f6ae;stroke-width:1.55554;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:0.792157;marker-end:url(#marker7696-8)"
+       d="m -190.944,-116.53161 42.21618,2.27361"
+       id="path5879-7" />
+    <path
+       style="fill:none;stroke:#15f6ae;stroke-width:3;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:0.792157;marker-end:url(#marker7696-1)"
+       d="m -262.89599,-89.06426 50.0771,31.182027"
+       id="path5879-6"
        sodipodi:nodetypes="cc" />
   </g>
 </svg>
