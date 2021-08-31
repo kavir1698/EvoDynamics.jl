@@ -7,3 +7,18 @@ Figure below shows different biological levels controlled by the model.
 ![Fig. 1. __Model structure.__](struct.png)
 
 See [Tutorial](@ref) for running the model, and [Model description](@ref) for a description of model parameters and simulation outline.
+
+## Features
+
+* Possibility to model complex food webs with various asymmetrical interactions.
+* Individuals interact given their phenotypes.
+* Connecting genome structure to phenotypes to populations.
+* Space is a grid on which individuals can migrate.
+* Possibility to model a complex environment with various amounts of resources at each site.
+* Allows time varying optimal phenotypic value per site.
+* Possibility of killing specific individuals at certain times and sites.
+* Can model both haploid and diploid species.
+* Includes mutation and recombination.
+* Easy data collection.
+* Runs replicates and collects data in a table automatically.
+* Can run replicated in parallel.
