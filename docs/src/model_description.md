@@ -108,9 +108,7 @@ Phenotypic distance between two species depends on the sign of the corresponding
 
 The phenotypic distance between two individuals is the average distance between all pairs of biotic phenotypes between the two individuals. To calculate the distance between two phenotypic values, we use the following formula:  
 
-$$
-| 0.5 - \text{cdf}(\text{Normal}(\text{ph1},  1), \text{ph2})|
-$$
+$ | 0.5 - \text{cdf}(\text{Normal}(\text{ph1},  1), \text{ph2})| $
 
 , where cdf is cumulative density function, Normal is a normal distribution with mean ph1 (phenotypic value 1) and variance 1, and ph2 is phenotypic value 2.
 
