@@ -36,28 +36,51 @@ Creates and runs a model given `parameters`. Returns a `DataFrame` of collected 
 * mdata=[mean_fitness_per_species] model data to be collected. By default, collects mean population fitness per species. Each row of the output DataFrame corresponds to all agents and each column is the value function applied to a field. The functions in the array are applied to the model object.
 * when=nothing The generations from which data are collected. By default collect at all steps.
 * replicates::Int = 0 Number of replicates per simulation.
-* parallel::Bool = false Whether to run replicates in parallel. If `true`, you should add processors to your julia session (e.g. by `addprocs(n)`) and define your parameters and `EvoDynamics` on all workers. To do that, add `@everywhere` before them. For example, `@everywhere EvoDynamics`. TODO: use `ensemblerun!` instead of run.
+* parallel::Bool = false Whether to run replicates in parallel. If `true`, you should add processors to your julia session (e.g. by `addprocs(n)`) and define your parameters and `EvoDynamics` on all workers. To do that, add `@everywhere` before them. For example, `@everywhere EvoDynamics`.
+* seeds = optionally, provide an array of integers as seeds for each replicate.
 """
 function runmodel(param_file::AbstractString;
   adata=nothing, mdata=[mean_fitness_per_species, species_N],
   when=nothing,
   replicates::Int = 0,
-  parallel::Bool = false
+  parallel::Bool = false,
+  seeds = nothing
   )
 
-  # create model
-  model = model_initiation(param_file)
-
+  if !isnothing(seeds) && replicates > 0
+    @assert length(seeds) == replicates "If seeds is not nothing, it has to be an array of ints as long as replicates."
+  end
+  
+  dd = load_parameters(param_file)
   if isnothing(when)
-    whenn = 0:model.generations
+    whenn = 0:dd[:model]["generations"]
   else
     whenn = when
   end
+  # create model
+  if replicates == 0
+    model = model_initiation(dd)
+  
+    # run model and collect data
+    agdata, modata = run!(model, agent_step!, model_step!, model.generations, adata=adata, mdata=mdata, when=whenn, agents_first=false)
+    return agdata, modata, [model]
+  else
+    models = [model_generator(i, seeds, param_file) for i in 1:replicates]
+    
+    agdata, modata, models = ensemblerun!(models, agent_step!, model_step!, dd[:model]["generations"], adata=adata, mdata=mdata, when=whenn, parallel=parallel, agents_first=false)
+    return agdata, modata, models
+  end
+end
 
-  # run model and collect data
-  agdata, modata = run!(model, agent_step!, model_step!, model.generations, adata=adata, mdata=mdata, when=whenn, replicates=replicates, parallel=parallel, agents_first=false)
-
-  return agdata, modata, model
+function model_generator(counter, seeds, param_file)
+  dd = load_parameters(param_file)
+  if isnothing(seeds)
+    dd[:model]["seed"] = rand(1:1000_000)
+  else
+    dd[:model]["seed"] = seeds[counter]
+  end
+  model = model_initiation(dd)
+  return model
 end
 
 """
