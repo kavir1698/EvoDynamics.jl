@@ -63,11 +63,11 @@ function runmodel(param_file::AbstractString;
   
     # run model and collect data
     agdata, modata = run!(model, agent_step!, model_step!, model.generations, adata=adata, mdata=mdata, when=whenn, agents_first=false)
-    return agdata, modata, model
+    return agdata, modata, [model]
   else
     models = [model_generator(i, seeds, param_file) for i in 1:replicates]
     
-    agdata, modata, models = ensemblerun!(models, agent_step!, model_step!, 0:dd[:model]["generations"], adata=adata, mdata=mdata, when=whenn, parallel=parallel, agents_first=false)
+    agdata, modata, models = ensemblerun!(models, agent_step!, model_step!, dd[:model]["generations"], adata=adata, mdata=mdata, when=whenn, parallel=parallel, agents_first=false)
     return agdata, modata, models
   end
 end
