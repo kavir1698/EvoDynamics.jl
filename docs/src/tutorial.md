@@ -1,6 +1,6 @@
 # Tutorial
 
-## EvoDynamics.jl's basic usage
+## Basic usage
 
 Parameters of a model should be put in a YAML file with the structure below. Note that spaces and indentations are meaningful in YAML. Indentations should be spaces not tabs.
 
@@ -81,7 +81,7 @@ YAML.write_file(f, data)
 ```
 
 
-## Data collection
+## Collecting data
 
 The interface to the model is from the `runmodel` function (see [Tutorial](@ref)).
 
