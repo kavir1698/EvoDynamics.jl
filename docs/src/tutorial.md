@@ -1,5 +1,13 @@
 # Tutorial
 
+## Installation
+
+Install using the following command in a Julia REPL.
+
+```julia
+]add EvoDynamics
+```
+
 ## Basic usage
 
 Parameters of a model should be put in a YAML file with the structure below. Note that spaces and indentations are meaningful in YAML. Indentations should be spaces not tabs.
