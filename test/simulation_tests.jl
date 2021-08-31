@@ -1,5 +1,6 @@
 @testset "Mutation" begin
-  model = EvoDynamics.model_initiation(param_file)
+  dd = EvoDynamics.load_parameters(param_file)
+  model = EvoDynamics.model_initiation(dd)
   ag1 = model.agents[1]
   ag2 = model.agents[2]
 
