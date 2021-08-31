@@ -6,4 +6,4 @@ Figure below shows different biological levels controlled by the model.
 
 ![Fig. 1. __Model structure.__](struct.png)
 
-See [Tutorial](@ref) for running the model, and [API](@ref) for a description of model parameters and simulation outline.
+See [Tutorial](@ref) for running the model, and [Model description](@ref) for a description of model parameters and simulation outline.
