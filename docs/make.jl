@@ -22,8 +22,8 @@ format = Documenter.HTML(
     ),
 pages = [
 	"Introduction" => "index.md",
+	"Model description" => "model_description.md",
 	"Tutorial" => "tutorial.md",
-	"API" => "api.md",
 	"Examples" => [
 	  "Simple Wright-Fisher" => "example1.md",
 	  "Predator prey" => "example2.md"
