@@ -2,32 +2,6 @@
 
 ## Parameters
 
-Parameters of a model should be put in a YAML file with the structure below. Note that spaces and indentations are meaningful in YAML. Indentations should be spaces not tabs.
-
-See [Simple Wright-Fisher](@ref) and [Predator prey](@ref) for complete parameter file examples.
-
-```yml
-species:
-  1:
-    name: a
-    parameter 1: ...
-    parameter 2: ...
-    ...
-  2:
-    name: b
-    parameter 1: ... 
-    parameter 2: ... 
-    ...
-model:
-  model parameter 1: ...
-  model parameter 2: ...
-  ...
-```
-
-The file has two main levels: `species` and `model`. `species` stores species specific parameters as many different species as you want.
-
-Since we cannot write a matrix in a YAML file, any parameter that is a matrix should be converted to a vector. In Julia, you can do this by `vec(yourmatrix)`.
-
 ### Species specific parameters
 
 Each species should have the following parameters. The order that you write these parameters does not matter.

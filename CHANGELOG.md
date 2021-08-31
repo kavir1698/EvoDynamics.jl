@@ -1,3 +1,11 @@
+# v0.11.0
+
+Updates the internals of the API.
+
+# v0.10.0
+
+Includes more parameters and bug fixes.
+
 # v0.5.0
 
 ## Breaking changes
