@@ -165,7 +165,7 @@ function interact!(agent::Ind, model::ABM)
   for id in target_ids
     target = model[id]
     target_sp = target.species
-    if agent.interaction_history[target_sp] != model.step[1] || target.interaction_history[sp] != model.step[1] # if agent and target have not interacted with such species before
+    if agent.interaction_history[target_sp] != model.step[1] && target.interaction_history[sp] != model.step[1] # if agent and target have not interacted with such species before
       interact!(agent, target, model)
       # if agent was a prey, check whether it is still alive
       if model.food_sources[target_sp, sp] > 0

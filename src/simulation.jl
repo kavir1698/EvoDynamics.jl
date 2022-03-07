@@ -67,6 +67,10 @@ function model_initiation(dd)
   
   if !isnothing(dd[:model]["seed"])
     Random.seed!(dd[:model]["seed"])
+  else
+    rnd = Int(rand(1:1e6))
+    dd[:model]["seed"] = rnd
+    Random.seed!(rnd)
   end
   
   properties, species_arrays = create_properties(dd)
@@ -203,6 +207,11 @@ function agent_step!(agent::Ind, model::ABM)
   consume_food!(agent, model)
   # interact with other species
   interact!(agent, model)
+  # Kill the agent if it doesn't have energy
+  if agent.energy < 0
+    remove_agent!(agent, model)
+    return
+  end
   # reproduction for the haploid
   reproduce!(agent, model)
   # survive
@@ -259,9 +268,10 @@ function burn_energy!(agent)
 end
 
 function consume_food!(agent::Ind, model::ABM)
-  if model.food_sources[agent.species, agent.species] > 0 && model.resources[agent.pos...] > 0
-    model.resources[agent.pos...] -= 1
-    agent.energy += model.food_sources[agent.species, agent.species]
+  environmental_consumption = model.food_sources[agent.species, agent.species]
+  if environmental_consumption > 0 && model.resources[agent.pos...] >= environmental_consumption
+    model.resources[agent.pos...] -= environmental_consumption
+    agent.energy += environmental_consumption
   end
 end
 
