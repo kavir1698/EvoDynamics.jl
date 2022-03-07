@@ -208,7 +208,7 @@ function agent_step!(agent::Ind, model::ABM)
   # interact with other species
   interact!(agent, model)
   # Kill the agent if it doesn't have energy
-  if agent.energy < 0
+  if agent.isalive && agent.energy < 0
     remove_agent!(agent, model)
     return
   end
