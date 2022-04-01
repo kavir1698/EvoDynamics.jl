@@ -199,8 +199,11 @@ end
 function agent_step!(agent::Ind, model::ABM)
   # update age
   agent.age += 1
-  # migrate
-  migrate!(agent, model)
+  # abiotic survive
+  abiotic_survive!(agent, model)  # the agent first survives then feeds, reproduces, and interacts.
+  if !agent.isalive
+    return
+  end
   # use food
   burn_energy!(agent)
   # consume basic energy if agent can
@@ -212,10 +215,12 @@ function agent_step!(agent::Ind, model::ABM)
     remove_agent!(agent, model)
     return
   end
-  # reproduction for the haploid
-  reproduce!(agent, model)
   # survive
   survive!(agent, model)
+  # migrate
+  migrate!(agent, model)
+  # reproduction for the haploid
+  reproduce!(agent, model)
   # bottleneck
   if agent.isalive && model.bottlenecks[agent.species][coord2vertex(agent.pos, model), model.step[1]]
     if EvoDynamics.bottleneck(agent, model)
@@ -237,7 +242,7 @@ end
 """
     survive!(agent::Ind, model::ABM)
 
-Kills the agent if it has no energy, is too old, or by change given its fitness `W`
+Kills the agent if it has no energy, or is too old.
 """
 function survive!(agent::Ind, model::ABM)
   if !agent.isalive
@@ -246,7 +251,16 @@ function survive!(agent::Ind, model::ABM)
     remove_agent!(agent, model)
   elseif agent.age ≥ model.max_ages[agent.species]
     remove_agent!(agent, model)
-  elseif rand() > agent.W 
+  # elseif rand() > agent.W 
+  #   remove_agent!(agent, model)
+  end
+end
+
+"""
+Kills the agent by chance given its fitness `W`
+"""
+function abiotic_survive!(agent::Ind, model::ABM)
+  if agent.isalive && rand() > agent.W
     remove_agent!(agent, model)
   end
 end
@@ -296,14 +310,18 @@ function mutate!(agent::Ind, model::ABM)
   end
   # update biotic and abiotic phenotypes and W
   if mutated
-    abiotic_phenotype = get_abiotic_phenotype(agent.species, agent.epistasisMat, agent.pleiotropyMat, agent.q, model) 
-    biotic_phenotype = get_biotic_phenotype(agent.species, agent.epistasisMat, agent.pleiotropyMat, agent.q, model)
-    W = abiotic_fitness(abiotic_phenotype, agent.species, agent.pos, model)
-    W = adjust_fitness(W, agent.species, model)
-    agent.biotic_phenotype .= biotic_phenotype
-    agent.abiotic_phenotype .= abiotic_phenotype
-    agent.W = W
+    update_fitness!(agent, model)
   end
 end
 
 coord2vertex(c, model) = c[1] + (size(model.space)[1] * (c[2]-1))
+
+function update_fitness!(agent::Ind, model::ABM)
+  abiotic_phenotype = get_abiotic_phenotype(agent, model) 
+  biotic_phenotype = get_biotic_phenotype(agent, model)
+  W = abiotic_fitness(abiotic_phenotype, agent.species, agent.pos, model)
+  W = adjust_fitness(W, agent.species, model)
+  agent.biotic_phenotype .= biotic_phenotype
+  agent.abiotic_phenotype .= abiotic_phenotype
+  agent.W = W
+end

@@ -13,7 +13,12 @@ function get_abiotic_phenotype(species, epistasisMat, pleiotropyMat, expressionA
   abp = model.abiotic_phenotypes[species]
   x = pleiotropyMat[abp, abp] * (epistasisMat[abp, abp] * expressionArray[abp])  # phenotypic values
   d = model.E[species]
-  z = x .+ rand(d)
+  if d.σ == 0 && d.μ == 0
+    randd = 0.0
+  else
+    randd = rand(d)
+  end
+  z = x .+ randd
   return z
 end
 
@@ -111,7 +116,7 @@ function interact!(ag1::Ind, ag2::Ind, model::ABM)
       ix_value1 = model.interactions[sp1, sp2]
       ix_value2 = model.interactions[sp2, sp1]
       if ix_value1 != 0 || ix_value2 != 0
-         d = phenotypic_distance(ag1, ag2, model)
+        d = phenotypic_distance(ag1, ag2, model)
         inx_prob1 = interaction_power(ag1, ag2, d, model)
         inx_prob2 = interaction_power(ag2, ag1, d, model)
         abiotic1 = abiotic_fitness(ag1, model)

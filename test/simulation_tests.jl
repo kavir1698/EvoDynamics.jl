@@ -12,6 +12,12 @@
   ag1.species = 1
   ag2.species = 2
   @test ag1.species != ag2.species
+
+  Worg = copy(ag1.W)
+  ag1.q .+= 0.5
+  EvoDynamics.update_fitness!(ag1, model)
+  @test ag1.W != Worg
+
 end
 
 # #TODO
