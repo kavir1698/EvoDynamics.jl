@@ -1,5 +1,5 @@
 function check_yml_params(d)
-  species_keys = ["migration threshold", "number of genes", "number of phenotypes", "abiotic phenotypes", "biotic phenotypes", "migration phenotype", "migration threshold", "ploidy", "epistasis matrix", "pleiotropy matrix", "growth rate", "expression array", "selection coefficient", "mutation probabilities", "mutation magnitudes", "N", "vision radius", "check fraction", "environmental noise", "optimal phenotype values", "optimal phenotypes", "age", "recombination", "initial energy", "bottleneck function", "bottleneck times", "reproduction start age", "reproduction end age", "functions file"]
+  species_keys = ["migration threshold", "number of genes", "number of phenotypes", "abiotic phenotypes", "biotic phenotypes", "migration phenotype", "migration threshold", "ploidy", "epistasis matrix", "pleiotropy matrix", "growth rate", "expression array", "selection coefficient", "mutation probabilities", "mutation magnitudes", "N", "vision radius", "check fraction", "environmental noise", "optimal phenotypes", "age", "recombination", "initial energy", "bottleneck function", "reproduction start age", "reproduction end age", "functions file"]
   model_keys = ["generations", "space", "metric", "periodic", "resources", "interactions", "food sources", "seed"]
   for (k, sp) in d["species"]
     @assert haskey(sp, "name") "Species name field missing."
@@ -18,21 +18,26 @@ function check_param_shapes(d)
   for species in 1:nspecies
     spacesize = prod(d["model"]["space"])
     dd = d["species"][species]
+    # Load the function file
+    @assert isfile(dd["functions file"]) "_functions file_ is nonexistant"
+    include(dd["functions file"])
     # Size of optimal phenotypes
-    for opt in dd["optimal phenotype values"]
-      @assert length(opt) == length(dd["abiotic phenotypes"]) * spacesize "Not as many optimal phenotypes as abiotic phenotypes. Species: $species"
-      # for mat in opt
-      #   @assert length(mat) == spacesize "Optimal phenotpyes per trait is not the same size as the number of sites"
-      # end
+    try
+      optphenotype_function = eval(Symbol(dd["optimal phenotypes"]))
+    catch
+      @error "Unavailable function for _optimal phenotypes_ in species $species"
     end
+    # for opt in dd["optimal phenotype values"]
+    #   @assert length(opt) == length(dd["abiotic phenotypes"]) * spacesize "Not as many optimal phenotypes as abiotic phenotypes. Species: $species"
+    # end
     # Biotic and abiotic phenotypes are Array
     @assert typeof(dd["abiotic phenotypes"]) <: AbstractArray "Abiotic phenotypes should be array"
     @assert typeof(dd["biotic phenotypes"]) <: AbstractArray "Biotic phenotypes should be array"
     # Ploidy
-    @assert dd["ploidy"] < 3  "Ploidy more than 2 is not implemented"
+    @assert dd["ploidy"] < 3 "Ploidy more than 2 is not implemented"
     # epistasis matrix
     # @assert size(dd["epistasis matrix"], 2) % dd["ploidy"] == 0 "Number of columns in epistasisMat are not correct. They should a factor of ploidy"
-    @assert length(dd["epistasis matrix"])  == (dd["ploidy"] * dd["number of genes"])^2 "epistasis matrix does not have correct number of elements in species $species."
+    @assert length(dd["epistasis matrix"]) == (dd["ploidy"] * dd["number of genes"])^2 "epistasis matrix does not have correct number of elements in species $species."
     # name is string
     @assert typeof(dd["name"]) <: AbstractString "name should be a string"
     # age is integer
@@ -47,9 +52,12 @@ function check_param_shapes(d)
     # bottleneck should be nothing or array/string
     @assert typeof(dd["bottleneck function"]) <: AbstractString || isnothing(dd["bottleneck function"])
     if !isnothing(dd["bottleneck function"])
-      @assert isfile(dd["bottleneck function"]) "bottleneck function points to a nonexistant file"
+      try
+        bottleneck_function = eval(Symbol(dd["bottleneck function"]))
+      catch
+        @error "Unavailable function for _bottleneck_function_ in species $species"
+      end
     end
-    @assert typeof(dd["bottleneck times"]) <: AbstractArray{Int} || isnothing(dd["bottleneck times"])
   end
   # Space should be 2D
   if !isnothing(d["model"]["space"]) && d["model"]["space"] != "nothing"
@@ -77,6 +85,7 @@ function reformat_params!(d)
 
   # Fix formats and shapes
   for species in 1:nspecies
+    include(d["species"][species]["functions file"])
     # 1. Reshape and convert pleiotropy matrix
     pmat = d["species"][species]["pleiotropy matrix"]
     ntraits = d["species"][species]["number of phenotypes"]
@@ -86,26 +95,15 @@ function reformat_params!(d)
     d["species"][species]["epistasis matrix"] = reshape(d["species"][species]["epistasis matrix"], ngenes, ngenes)
     # 3. add key ngenes
     d["species"][species]["ngenes"] = ngenes
-    # 4. reshape optimal phenotype values
-    spacesize = prod(d["model"]["space"])
-    optphens = d["species"][species]["optimal phenotype values"]
-    output = [Array{Float64, 2}[] for i in  1:length(optphens)]
-    for optind in 1:length(optphens)
-      start = -spacesize + 1
-      for phen in 1:length(d["species"][species]["abiotic phenotypes"])
-        first = start + (phen * spacesize)
-        last = first + spacesize - 1
-        push!(output[optind], reshape(optphens[optind][first:last], Tuple(d["model"]["space"])...))
-      end
-    end
-    d["species"][species]["optimal phenotype values"] = output
+
+    d["species"][species]["optimal phenotypes"] = eval(Symbol(d["species"][species]["optimal phenotypes"]))
     # Check fraction to float
     d["species"][species]["check fraction"] = Float64(d["species"][species]["check fraction"])
     # include bottleneck function
     if !isnothing(d["species"][species]["bottleneck function"])
-      include(d["species"][species]["bottleneck function"])
+      bottleneck_function = eval(Symbol(d["species"][species]["bottleneck function"]))
       # reshape bottleneck times
-      d["species"][species]["bottleneck times"] = Bool.(reshape(d["species"][species]["bottleneck times"], prod(d["model"]["space"]), d["model"]["generations"]))
+      d["species"][species]["bottleneck function"] = bottleneck_function
     else
       d["species"][species]["bottleneck times"] = Bool.(zeros(Int, prod(d["model"]["space"]), d["model"]["generations"]))
     end

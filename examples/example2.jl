@@ -32,17 +32,14 @@ using EvoDynamics
 #     mutation magnitudes: [0.05, 0.0, 0.01]  # same as above
 #     N: [1000, 0, 0, 0]  # number of individuals per site at time 0
 #     environmental noise: 0.01  # variance of a normal distribution with mean 0
-#     # each row is the optimal phenotypes for each site for all abiotic traits. There are as many element as number of sites times number of abiotic traits. The first N elements are for the first abiotic trait, where N is the number of sites, and so on.
-#     optimal phenotype values:
-#       - [2.8184972630154848, 1.2669190502061671, 1.7947315210311097, 0.5627451656026976]
-#       - [2.3186137078797455, 0.7146284070374198, 1.7331797945458374, 1.6353360768904688]
-#     # Optimal phenotype indices for each generation, including generation zero.
-#     optimal phenotypes: [1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2]
+#     optimal phenotypes: optphens2
+#     bottleneck function: bn
+#     functions file: runfuncs.jl
 #     age: 5  # max age
 #     recombination: 1 # Mean of a Poisson distributions for number of crossing overs
 #     initial energy: 0 # A parameter for parental care of infants. Values more than 0 indicate that newly born individuals can survive for a number of times without requiring food from the environment/other species. The consumption rate (i.e. how many generations this initial energy suffices) is determined by the sum of the corresponding rows in "food sources"
-
-
+# 
+# 
 #   2:
 #     name: b
 #     number of genes: 8 
@@ -64,23 +61,52 @@ using EvoDynamics
 #     mutation magnitudes: [0.05, 0.0, 0.01]
 #     N: [1000, 0, 0, 0]
 #     environmental noise: 0.01
-#     optimal phenotype values:
-#       - [0.7614758101208934, 2.2091361414343313, 0.7920974352892358, 2.587205421882114, 2.3911353663016586, 1.7858661540288683, 0.7630236717263839, 2.311211631439866]
-#       - [0.6437641305315445, 0.9954545836033715, 2.469792530385348, 1.6158867433451882, 2.097629262577973, 1.1314248848669466, 1.490299526620522, 0.2566056477862022]
-#     optimal phenotypes: [1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2]
+#     optimal phenotypes: optphens3
+#     bottleneck function: bn
+#     functions file: runfuncs.jl
 #     age: 3
 #     recombination: 1 # Mean of a Poisson distributions for number of crossing overs
 #     initial energy: 0
-
+# 
 # model:
 #   generations: 14  # number of simulation steps
 #   space: [2, 2]
 #   metric: chebyshev  # how many neighbors a space site has. "chebyshev" metric means that the r-neighborhood of a position are all positions within the hypercube having side length of 2*floor(r) and being centered in the origin position. "euclidean" metric means that the r-neighborhood of a position are all positions whose cartesian indices have Euclidean distance ≤ r from the cartesian index of the given position.
 #   periodic: false  # whether boundaries of the space are connected
-#   resources: [200, 158, 183, 190]  # available resources per site
+#   resources: [200, 158, 183, 190]  # available resources per site per time
 #   interactions: [0.1, 0.0, 0.0, -1.0]  # How individuals from different species interact. value  is strength of interaction (between 0 and 1). Sign is the direction of interaction where positive means similar individuals interact more strongly and negative is dissimilar ones tend to interact more. 
 #   food sources: [1.0, 0.5, 0.0, 0.0]  # What each species feeds on (consumption rate). Has priority over interactions. Non-zero diagonal means the food resource is from the environment. It will be read from rows (species order) to columns (species order).
-#   seed: 2
+#   seed: Null  # random number generator seed. Put a number for replicable results
+# ```
+
+# and the contents of `runfuncs.jl` is:
+
+# ```
+# function bn(agent::AbstractAgent, model::ABM)
+#  return false
+# end
+# 
+# function optphens2(site::Tuple{Int,Int}, model::ABM)
+#   opt1 = [0.8214794136627462, 0.49335401288317304, 0.3435556249656141, 0.25050033180075226]
+#   opt2 = opt1 .+ 0.1
+#   ss = EvoDynamics.coord2vertex(site, model)
+#   if model.step[1] > 6
+#     return [opt1[ss]]
+#   else
+#     return [opt2[ss]]
+#   end
+# end
+# 
+# function optphens3(site::Tuple{Int,Int}, model::ABM)
+#   phenotypic_values = [[0.7614758101208934 2.3911353663016586; 2.2091361414343313 1.7858661540288683; 0.7920974352892358 0.7630236717263839; 2.587205421882114 2.311211631439866],
+#     [0.6437641305315445 2.097629262577973; 0.9954545836033715 1.1314248848669466; 2.469792530385348 1.490299526620522; 1.6158867433451882 0.2566056477862022]]
+#   agent_site = (site[2] - 1) * size(model.space)[2] + (site[1])
+#   if model.step[1] > 7
+#     return phenotypic_values[1][agent_site, :]
+#   else
+#     return phenotypic_values[2][agent_site, :]
+#   end
+# end
 # ```
 
 param_file = "../../examples/paramfile2.yml"

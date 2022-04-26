@@ -69,7 +69,7 @@ function abiotic_distance(phenotype, optimal, variance)
 end
 
 function abiotic_fitness(abiotic_phenotype, species::Int, pos, model::ABM)
-  rawW = 1.0 - abiotic_distance(abiotic_phenotype, return_opt_phenotype(species, model.step[1], pos, model), variance)
+  rawW = 1.0 - abiotic_distance(abiotic_phenotype, return_opt_phenotype(species, pos, model), variance)
   # W = adjust_abiotic_fitness(rawW, model.selectionCoeffs[species])
   return rawW
 end

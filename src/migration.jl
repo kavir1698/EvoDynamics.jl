@@ -32,7 +32,7 @@ end
 "Agent evaluates the site and gives it a score"
 function check_site(agent, site, model)
   phenotype = agent.abiotic_phenotype
-  optimal = return_opt_phenotype(agent.species, model.step[1], site, model)
+  optimal = return_opt_phenotype(agent.species, site, model)
   abiotic_distance(phenotype, optimal, variance)
 end
 

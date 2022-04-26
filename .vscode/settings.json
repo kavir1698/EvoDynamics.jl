@@ -3,5 +3,6 @@
   "editor.wordWrapColumn": 100,
   "cSpell.words": [
     "ploidy"
-  ]
+  ],
+  "workbench.colorTheme": "Default Light+"
 }

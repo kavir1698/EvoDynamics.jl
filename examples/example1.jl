@@ -29,13 +29,13 @@ using EvoDynamics
 #     mutation magnitudes: [0.05, 0.0, 0.0]
 #     N: [100]
 #     environmental noise: 0.01
-#     optimal phenotype values:
-#       - [1.76]
-#     optimal phenotypes: [1, 1, 1, 1, 1, 1]
+#     optimal phenotypes: optphens
+#     bottleneck function: bn
+#     functions file: runfuncs.jl
 #     age: 2
 #     recombination: 0
 #     initial energy: 0 
-
+# 
 # model:
 #   generations: 5
 #   space: [1,1]
@@ -45,6 +45,18 @@ using EvoDynamics
 #   interactions: [-0.1] 
 #   food sources: [1.0]
 #   seed: Null
+# ```
+
+# and the contents of `runfuncs.jl` is:
+
+# ```
+# function bn(agent::AbstractAgent, model::ABM)
+#   return false
+# end
+# 
+# function optphens(site::Tuple{Int,Int}, model::ABM)
+#   return [1.5]
+# end
 # ```
 
 param_file = "../../examples/paramfile1.yml" #hide

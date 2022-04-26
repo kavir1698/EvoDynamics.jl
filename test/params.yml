@@ -25,19 +25,14 @@ species:
     N: [1000, 0, 0, 0]  # number of individuals per site at time 0
     environmental noise: 0.01  # variance of a normal distribution with mean 0
     # each row is the optimal phenotypes for each site for all abiotic traits. There are as many element as number of sites times number of abiotic traits. The first N elements are for the first abiotic trait, where N is the number of sites, and so on.
-    optimal phenotype values:
-      - [2.8184972630154848, 1.2669190502061671, 1.7947315210311097, 0.5627451656026976]
-      - [2.3186137078797455, 0.7146284070374198, 1.7331797945458374, 1.6353360768904688]
-    # Optimal phenotype indices for each generation, including generation zero.
-    optimal phenotypes: [1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2]
+    optimal phenotypes: optphens1
     age: 5  # max age
     reproduction start age: 1
     reproduction end age: 5
     recombination: 1 # Mean of a Poisson distributions for number of crossing overs
     initial energy: 0 # A parameter for parental care of infants. Values more than 0 indicate that newly born individuals can survive for a number of times without requiring food from the environment/other species. The consumption rate (i.e. how many generations this initial energy suffices) is determined by the sum of the corresponding rows in "food sources"
-    bottleneck function: bottleneck.jl  # A file that has a function names "bottleneck". The function has two argument: agent and model. It returns true or false for death or survival, respectively.
-    bottleneck times:
-      [0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]  # Boolean matrix where rows are sites and columns are times.
+    bottleneck function: bn1  # A file that has a function names "bottleneck". The function has two argument: agent and model. It returns true or false for death or survival, respectively.
+    functions file: runfuncs.jl
 
   2:
     name: b
@@ -60,17 +55,14 @@ species:
     mutation magnitudes: [0.05, 0.0, 0.01]
     N: [1000, 0, 0, 0]
     environmental noise: 0.01
-    optimal phenotype values:
-      - [0.7614758101208934, 2.2091361414343313, 0.7920974352892358, 2.587205421882114, 2.3911353663016586, 1.7858661540288683, 0.7630236717263839, 2.311211631439866]
-      - [0.6437641305315445, 0.9954545836033715, 2.469792530385348, 1.6158867433451882, 2.097629262577973, 1.1314248848669466, 1.490299526620522, 0.2566056477862022]
-    optimal phenotypes: [1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2]
+    optimal phenotypes: optphens2 # a function that returns the optimal phenotype for the species according to the model step and agent's location. The function has two arguments, agent and the model and returns a vector of floating number as along as there are abiotic traits.
     age: 3
     reproduction start age: 1
     reproduction end age: 3
     recombination: 1 # Mean of a Poisson distributions for number of crossing overs
     initial energy: 0
-    bottleneck function: Null
-    bottleneck times: Null
+    bottleneck function: bn # a function that some kills agents at specific times. User defined. The function has two argument: agent and model. It returns true or false for death or survival, respectively. To disable, use Null or give a function that always returns false.
+    functions file: runfuncs.jl
 
 model:
   generations: 14  # number of simulation steps

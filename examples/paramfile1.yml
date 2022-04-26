@@ -19,9 +19,9 @@ species:
     mutation magnitudes: [0.05, 0.0, 0.0]
     N: [100]
     environmental noise: 0.01
-    optimal phenotype values:
-      - [1.76]
-    optimal phenotypes: [1, 1, 1, 1, 1, 1]
+    optimal phenotypes: optphens
+    bottleneck function: bn
+    functions file: runfuncs.jl
     age: 2
     recombination: 0
     initial energy: 0 

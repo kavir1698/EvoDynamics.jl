@@ -25,15 +25,14 @@ Each species should have the following parameters. The order that you write thes
 * __mutation magnitudes__: A _vector of numbers_ with the same size as _mutation probabilities_ that determines the magnitude of mutation for each of the three categories. Specifically, the numbers are the variances of normal distributions with mean 0 for expression array and epistasis matrices, and probability of changing a 0 and 1 in in the pleiotropy matrix.
 * __N__: A _vector of integers_ for the initial number of individuals at each site.
 * __environmental noise__: A number for the variance of a normal distribution with mean 0 that will be added to the phenotypes.
-* __optimal phenotype values__: One or more vectors of numbers. Each vector should start with a dash and one indentation level. Each vector is the optimal phenotypes for each site for all abiotic traits. There are as many element as number of sites times number of abiotic traits. The first N elements are for the first abiotic trait, where N is the number of sites, and so on.
-* __optimal phenotypes__: A _vector of integers_ for optimal phenotype indices for each generation, including generation zero.
+* __optimal phenotypes__: Name of a function that returns a _vector of integers_ for optimal phenotypes of the species at a specific site.  The vector should be as long as there are `abiotic phenotypes`. The function should have two arguments: `site `of type `Tuple{Int, Int}`and `model `of type `ABM `from the `Agents.jl `package. The definition of the function should be in a file referred to in the `functions file` parameter (see blow). This function can be time dependent.
 * __age__: An _integer_ for maximum age of individuals of this species.
 * __reproduction start age__: The age at which individuals can reproduce.
 * __reproduction end age__: The age after which individuals cannot reproduce.
 * __recombination__: Mean of a Poisson distributions for number of crossing overs per sexual reproduction.
 * __initial energy__: A parameter for parental care of infants. Values more than 0 indicate that newly born individuals can survive for a number of times without requiring food from the environment/other species. The consumption rate (i.e. how many generations this initial energy suffices) is determined by the sum of the corresponding rows in "food sources" model parameter.
-* __bottleneck function__: Forcefully kill specific agents. Path to a file that has a function named "bottleneck". The function accepts two arguments: agent and model. It returns true or false for death or survival of the individual, respectively.
-* __bottleneck times__: A boolean matrix (zeros and ones) turned into a vector where rows are sites and columns are time steps.  Determines time steps at which the bottleneck function should be activated.
+* __bottleneck function__: Name of a function in `functions file` that accepts two arguments: `agent` and `model`. It returns true or false, where true means the agent is killed. This function models killing agents due to a process above the dynamics of the model, for example, hunting or environmental disaster. Since it accepts both the agent and the model, there are information about the position of the agent, its properties, and the time step of the simulation to take into account.
+* __functions file__: Name of a file that contains `bottleneck function` and `optimal phenotypes`. If the file is in the same directory as this parameters file, writing its name is enough. Otherwise, a path should be given.
 
 ### Model parameters
 
@@ -43,7 +42,7 @@ Each species should have the following parameters. The order that you write thes
 * __periodic__: _Boolean__ (true or false) to determine whether boundaries of the space are connected or not.
 * __resources__: A _vector of integers_ determining available resources (e.g. vegetation) per site per time step.
 * __interactions__: A species-species interaction _matrix of numbers_ determining how individuals from different species interact. Each value  is strength of interaction (between 0 and 1). Sign (+/-) is the direction of interaction where positive means similar individuals interact more strongly and negative is dissimilar ones tend to interact more.
-* __food sources__: A species-species food _matrix of numbers_ determining what each species feeds on (consumption rate). Non-zero diagonal means the food resource is from the environment. Non-diagonals mean an species (in the rows) feeds on another species (in the columns). Numbers can be zero or any positive number. The magnitude of the number determines how many generations can an individual live off of given one unit of the food source. For example, if a diagonal is 2, it means that the species will eat one unit of the environmental resources and that is enough for it to live two steps.
+* __food sources__: A species-species food _matrix of numbers_ determining what each species feeds on (consumption rate). Non-zero diagonal means the food resource is from the environment. Off-diagonals mean an species (in the rows) feeds on another species (in the columns). Numbers can be zero or any positive number. The magnitude of the number determines how many generations can an individual live off of given one unit of the food source. For example, if a diagonal is 2, it means that the species will eat one unit of the environmental resources and that is enough for it to live two steps.
 * __seed__: Either an _integer_ or _Null_ for random number generator seed.
 
 ## Simulation outline
@@ -80,7 +79,7 @@ For each pair of interacting individuals, we first check whether one individual 
 
 Phenotypic distance between two species depends on the sign of the corresponding element in _interactions_ matrix. If it is negative, then the hunt is more successful if the average phenotype of the two individuals is more different.
 
-The phenotypic distance between two individuals is the average distance between all pairs of biotic phenotypes between the two individuals. To calculate the distance between two phenotypic values, we use the following formula:  
+The phenotypic distance between two individuals is the average distance between all pairs of biotic phenotypes between the two individuals. To calculate the distance between two phenotypic values, we use the following formula:
 
 $ | 0.5 - \text{cdf}(\text{Normal}(\text{ph1},  1), \text{ph2})| $
 
