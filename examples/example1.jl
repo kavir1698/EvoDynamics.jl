@@ -41,7 +41,8 @@ using EvoDynamics
 #   space: [1,1]
 #   metric: chebyshev
 #   periodic: false 
-#   resources: [200]
+#   resources: env_resources
+#   functions file: runfuncs.jl
 #   interactions: [-0.1] 
 #   food sources: [1.0]
 #   seed: Null
@@ -57,6 +58,8 @@ using EvoDynamics
 # function optphens(site::Tuple{Int,Int}, model::ABM)
 #   return [1.5]
 # end
+# 
+# env_resources(time::Int) = [200]
 # ```
 
 param_file = "../../examples/paramfile1.yml" #hide

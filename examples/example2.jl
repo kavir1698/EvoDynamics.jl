@@ -73,7 +73,8 @@ using EvoDynamics
 #   space: [2, 2]
 #   metric: chebyshev  # how many neighbors a space site has. "chebyshev" metric means that the r-neighborhood of a position are all positions within the hypercube having side length of 2*floor(r) and being centered in the origin position. "euclidean" metric means that the r-neighborhood of a position are all positions whose cartesian indices have Euclidean distance ≤ r from the cartesian index of the given position.
 #   periodic: false  # whether boundaries of the space are connected
-#   resources: [200, 158, 183, 190]  # available resources per site per time
+#   resources: env_resources2  # a function returning the available resources per site per time
+#   functions file: runfuncs.jl # file containing the above function
 #   interactions: [0.1, 0.0, 0.0, -1.0]  # How individuals from different species interact. value  is strength of interaction (between 0 and 1). Sign is the direction of interaction where positive means similar individuals interact more strongly and negative is dissimilar ones tend to interact more. 
 #   food sources: [1.0, 0.5, 0.0, 0.0]  # What each species feeds on (consumption rate). Has priority over interactions. Non-zero diagonal means the food resource is from the environment. It will be read from rows (species order) to columns (species order).
 #   seed: Null  # random number generator seed. Put a number for replicable results
@@ -107,6 +108,8 @@ using EvoDynamics
 #     return phenotypic_values[2][agent_site, :]
 #   end
 # end
+# 
+# env_resources2(time::Int) = [200, 220, 183, 190]
 # ```
 
 param_file = "../../examples/paramfile2.yml"

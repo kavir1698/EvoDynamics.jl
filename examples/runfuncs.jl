@@ -27,3 +27,6 @@ function optphens3(site::Tuple{Int,Int}, model::ABM)
     return phenotypic_values[2][agent_site, :]
   end
 end
+
+env_resources(time::Int) = [200]
+env_resources2(time::Int) = [200, 220, 183, 190]

@@ -46,7 +46,7 @@ struct Params{F<:AbstractFloat,I<:Int,N<:AbstractString,X<:Function}
   food_sources::Matrix{F}
   interactions::Matrix{F}
   resources::Matrix{I}
-  resources_org::Matrix{I}
+  resources_org::X
   recombination::Vector{Poisson{F}}
   initial_energy::Vector{F}
   bottlenecks::Vector{X}
@@ -166,7 +166,10 @@ function create_properties(dd)
   repro_start = [dd[:species][i]["reproduction start age"] for i in 1:nspecies]
   repro_end = [dd[:species][i]["reproduction end age"] for i in 1:nspecies]
 
-  properties = Params(ngenes, nphenotypes, growthrates, selectionCoeffs, ploidy, optvals, Mdists, Ddists, Ns, Ed, generations, nspecies, Ns, migration_traits, vision_radius, check_fraction, migration_thresholds, step, nnodes, biotic_phenotyps, abiotic_phenotyps, max_ages, names, dd[:model]["food sources"], dd[:model]["interactions"], dd[:model]["resources"], deepcopy(dd[:model]["resources"]), recombination, initial_energy, bottlenecks, repro_start, repro_end, dd[:model]["seed"])
+  resources_func = eval(Symbol(dd[:model]["resources"]))
+  resources = reshape(resources_func(0), dd[:model]["space"]...)
+
+  properties = Params(ngenes, nphenotypes, growthrates, selectionCoeffs, ploidy, optvals, Mdists, Ddists, Ns, Ed, generations, nspecies, Ns, migration_traits, vision_radius, check_fraction, migration_thresholds, step, nnodes, biotic_phenotyps, abiotic_phenotyps, max_ages, names, dd[:model]["food sources"], dd[:model]["interactions"], resources, resources_func, recombination, initial_energy, bottlenecks, repro_start, repro_end, dd[:model]["seed"])
 
   return properties, (epistasisMatS, pleiotropyMatS, expressionArraysS)
 end
@@ -182,7 +185,7 @@ end
 
 function model_step!(model::ABM)
   model.step[1] += 1
-  model.resources .= model.resources_org
+  model.resources .= reshape(model.resources_org(model.step[1]), size(model.space)...)
 end
 
 function agent_step!(agent::Ind, model::ABM)

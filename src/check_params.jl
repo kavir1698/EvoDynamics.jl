@@ -64,8 +64,10 @@ function check_param_shapes(d)
     @assert length(d["model"]["space"]) == 2 "Space should be only 2D"
   end
   # Resources
-  @assert typeof(d["model"]["resources"]) <: AbstractArray{Int} "Resources should be array of Integers"
-  @assert length(d["model"]["resources"]) == prod(d["model"]["space"]) "Resources should be as long as number of sites"
+  @assert isfile(d["model"]["functions file"]) "_functions file_ is nonexistant"
+  include(d["model"]["functions file"])
+  @assert typeof(eval(Symbol(d["model"]["resources"]))) <: Function "Resources function not defined"
+  # resources_func = eval(Symbol(d["model"]["resources"]))
   # # Area
   # @assert typeof(d["model"]["area"]) <: AbstractArray "Area should be array"
   # @assert eltype(d["model"]["area"]) <: Real "Area elements should be numbers"
@@ -73,11 +75,11 @@ function check_param_shapes(d)
   # Interactions
   @assert typeof(d["model"]["interactions"]) <: AbstractArray "Interactions should be an array"
   @assert eltype(d["model"]["interactions"]) <: AbstractFloat "Elements of interactions should be floating numbers"
-  @assert length(d["model"]["interactions"]) == nspecies*nspecies "Interactions should be as many as number of species times number of species"
+  @assert length(d["model"]["interactions"]) == nspecies * nspecies "Interactions should be as many as number of species times number of species"
   # Food sources
   @assert typeof(d["model"]["food sources"]) <: AbstractArray "Food sources should be array"
   @assert eltype(d["model"]["food sources"]) <: AbstractFloat "Elements of food sources should be floating numbers"
-  @assert length(d["model"]["food sources"]) == nspecies*nspecies "Food sources should be as many as number of species times number of species"
+  @assert length(d["model"]["food sources"]) == nspecies * nspecies "Food sources should be as many as number of species times number of species"
 end
 
 function reformat_params!(d)
@@ -126,7 +128,7 @@ function reformat_params!(d)
   end
 
   # reshape and convert resources
-  d["model"]["resources"] = reshape(d["model"]["resources"], d["model"]["space"]...)
+  # d["model"]["resources"] = reshape(d["model"]["resources"], d["model"]["space"]...)
   # # reshape and convert area
   # d["model"]["area"] = reshape(d["model"]["area"], d["model"]["space"]...)
   # reshape and convert interactions

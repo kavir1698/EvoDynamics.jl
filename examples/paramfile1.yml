@@ -31,7 +31,8 @@ model:
   space: [1,1]
   metric: chebyshev
   periodic: false 
-  resources: [200]
+  resources: env_resources
+  functions file: runfuncs.jl
   interactions: [-0.1] 
   food sources: [1.0]
   seed: Null
