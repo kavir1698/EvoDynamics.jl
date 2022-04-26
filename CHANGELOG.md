@@ -1,3 +1,8 @@
+
+# v0.13.0
+
+Breaking. Users now give functions for optimal phenotypes instead of a list of times and values. This is more flexible and concise. Same is true for bottlenecks.
+
 # v0.11.0
 
 Updates the internals of the API.
