@@ -1,6 +1,9 @@
 function load_parameters(yaml_file::String)
   d = YAML.load_file(yaml_file)
-  
+
+  @assert isfile(d["model"]["functions file"]) "_functions file_ does not exist!"
+  include(d["model"]["functions file"])
+
   check_yml_params(d)
   check_param_shapes(d)
   reformat_params!(d)

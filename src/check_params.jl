@@ -1,5 +1,5 @@
 function check_yml_params(d)
-  species_keys = ["migration threshold", "number of genes", "number of phenotypes", "abiotic phenotypes", "biotic phenotypes", "migration phenotype", "migration threshold", "ploidy", "epistasis matrix", "pleiotropy matrix", "growth rate", "expression array", "selection coefficient", "mutation probabilities", "mutation magnitudes", "N", "vision radius", "check fraction", "environmental noise", "optimal phenotypes", "age", "recombination", "initial energy", "bottleneck function", "reproduction start age", "reproduction end age", "functions file"]
+  species_keys = ["migration threshold", "number of genes", "number of phenotypes", "abiotic phenotypes", "biotic phenotypes", "migration phenotype", "migration threshold", "ploidy", "epistasis matrix", "pleiotropy matrix", "growth rate", "expression array", "selection coefficient", "mutation probabilities", "mutation magnitudes", "N", "vision radius", "check fraction", "environmental noise", "optimal phenotypes", "age", "recombination", "initial energy", "bottleneck function", "reproduction start age", "reproduction end age"]
   model_keys = ["generations", "space", "metric", "periodic", "resources", "interactions", "food sources", "seed"]
   for (k, sp) in d["species"]
     @assert haskey(sp, "name") "Species name field missing."
@@ -7,20 +7,26 @@ function check_yml_params(d)
       @assert haskey(sp, kk) "Species $(sp["name"]) does not have field $(kk)."
     end
   end
-  for kk in model_keys 
+  for kk in model_keys
     @assert haskey(d["model"], kk) "Model parameter $kk is missing."
   end
+  # # TODO: include does not work here. Use a macro instead.
+  # try
+  #   include(d["model"]["functions file"])
+  # catch
+  #   @error "functions file does not exist!"
+  # end 
 end
 
 function check_param_shapes(d)
   nspecies = length(d["species"])
+  # Load the function file
+  # @assert isfile(d["model"]["functions file"]) "_functions file_ is nonexistant"
+  # include(d["model"]["functions file"])
 
   for species in 1:nspecies
     spacesize = prod(d["model"]["space"])
     dd = d["species"][species]
-    # Load the function file
-    @assert isfile(dd["functions file"]) "_functions file_ is nonexistant"
-    include(dd["functions file"])
     # Size of optimal phenotypes
     try
       optphenotype_function = eval(Symbol(dd["optimal phenotypes"]))
@@ -65,7 +71,7 @@ function check_param_shapes(d)
   end
   # Resources
   @assert isfile(d["model"]["functions file"]) "_functions file_ is nonexistant"
-  include(d["model"]["functions file"])
+  
   @assert typeof(eval(Symbol(d["model"]["resources"]))) <: Function "Resources function not defined"
   # resources_func = eval(Symbol(d["model"]["resources"]))
   # # Area
@@ -85,9 +91,10 @@ end
 function reformat_params!(d)
   nspecies = length(d["species"])
 
+  # include(d["model"]["functions file"])
+
   # Fix formats and shapes
   for species in 1:nspecies
-    include(d["species"][species]["functions file"])
     # 1. Reshape and convert pleiotropy matrix
     pmat = d["species"][species]["pleiotropy matrix"]
     ntraits = d["species"][species]["number of phenotypes"]
@@ -110,7 +117,7 @@ function reformat_params!(d)
       d["species"][species]["bottleneck times"] = Bool.(zeros(Int, prod(d["model"]["space"]), d["model"]["generations"]))
     end
   end
-  
+
   # Metric to Symbol
   d["model"]["metric"] = Symbol(d["model"]["metric"])
 
@@ -127,8 +134,8 @@ function reformat_params!(d)
     d["model"]["space"] = Tuple(d["model"]["space"])
   end
 
-  # reshape and convert resources
-  # d["model"]["resources"] = reshape(d["model"]["resources"], d["model"]["space"]...)
+  # convert resources
+  d["model"]["resources"] = eval(Symbol(d["model"]["resources"]))
   # # reshape and convert area
   # d["model"]["area"] = reshape(d["model"]["area"], d["model"]["space"]...)
   # reshape and convert interactions

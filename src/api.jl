@@ -42,31 +42,36 @@ Creates and runs a model given `parameters`. Returns a `DataFrame` of collected 
 function runmodel(param_file::AbstractString;
   adata=nothing, mdata=[mean_fitness_per_species, species_N],
   when=nothing,
-  replicates::Int = 0,
-  parallel::Bool = false,
-  seeds = nothing
-  )
+  replicates::Int=0,
+  parallel::Bool=false,
+  seeds=nothing
+)
 
   if !isnothing(seeds) && replicates > 0
     @assert length(seeds) == replicates "If seeds is not nothing, it has to be an array of ints as long as replicates."
   end
-  
+
+  @info "Loading the parameters..."
   dd = load_parameters(param_file)
+
+  include(dd[:model]["functions file"])
+
   if isnothing(when)
     whenn = 0:dd[:model]["generations"]
   else
     whenn = when
   end
   # create model
+  @info "Running the model..."
   if replicates == 0
     model = model_initiation(dd)
-  
+
     # run model and collect data
     agdata, modata = run!(model, agent_step!, model_step!, model.generations, adata=adata, mdata=mdata, when=whenn, agents_first=false)
     return agdata, modata, [model]
   else
     models = [model_generator(i, seeds, param_file) for i in 1:replicates]
-    
+
     agdata, modata, models = ensemblerun!(models, agent_step!, model_step!, dd[:model]["generations"], adata=adata, mdata=mdata, when=whenn, parallel=parallel, agents_first=false)
     return agdata, modata, models
   end

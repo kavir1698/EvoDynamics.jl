@@ -31,8 +31,7 @@ species:
     reproduction end age: 5
     recombination: 1 # Mean of a Poisson distributions for number of crossing overs
     initial energy: 0 # A parameter for parental care of infants. Values more than 0 indicate that newly born individuals can survive for a number of times without requiring food from the environment/other species. The consumption rate (i.e. how many generations this initial energy suffices) is determined by the sum of the corresponding rows in "food sources"
-    bottleneck function: bn1  # A file that has a function names "bottleneck". The function has two argument: agent and model. It returns true or false for death or survival, respectively.
-    functions file: runfuncs.jl
+    bottleneck function: bn1  # The function has two argument: agent and model. It returns true or false for death or survival, respectively.
 
   2:
     name: b
@@ -55,14 +54,13 @@ species:
     mutation magnitudes: [0.05, 0.0, 0.01]
     N: [1000, 0, 0, 0]
     environmental noise: 0.01
-    optimal phenotypes: optphens2 # a function that returns the optimal phenotype for the species according to the model step and agent's location. The function has two arguments, agent and the model and returns a vector of floating number as along as there are abiotic traits.
+    optimal phenotypes: optphens2 # a function that returns the optimal phenotype for the species according to the model step and agent's location. The function has two arguments, site::Tuple{Int, Int} and the model and returns a vector of floating number as along as there are abiotic traits.
     age: 3
     reproduction start age: 1
     reproduction end age: 3
     recombination: 1 # Mean of a Poisson distributions for number of crossing overs
     initial energy: 0
     bottleneck function: bn # a function that some kills agents at specific times. User defined. The function has two argument: agent and model. It returns true or false for death or survival, respectively. To disable, use Null or give a function that always returns false.
-    functions file: runfuncs.jl
 
 model:
   generations: 14  # number of simulation steps

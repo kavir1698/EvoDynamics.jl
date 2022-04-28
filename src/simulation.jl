@@ -19,7 +19,7 @@ mutable struct Ind{B<:AbstractFloat,C<:AbstractArray,D<:AbstractArray,E<:Abstrac
   isalive::Bool
 end
 
-struct Params{F<:AbstractFloat,I<:Int,N<:AbstractString,X<:Function}
+struct Params{F<:AbstractFloat,I<:Int,N<:AbstractString,X<:Function, Fun, FunVec}
   ngenes::Vector{I}
   nphenotypes::Vector{I}
   growthrates::Vector{F}
@@ -46,10 +46,10 @@ struct Params{F<:AbstractFloat,I<:Int,N<:AbstractString,X<:Function}
   food_sources::Matrix{F}
   interactions::Matrix{F}
   resources::Matrix{I}
-  resources_org::X
+  resources_org::Fun
   recombination::Vector{Poisson{F}}
   initial_energy::Vector{F}
-  bottlenecks::Vector{X}
+  bottlenecks::FunVec
   repro_start::Vector{Int}
   repro_end::Vector{Int}
   seed::Int
@@ -166,26 +166,27 @@ function create_properties(dd)
   repro_start = [dd[:species][i]["reproduction start age"] for i in 1:nspecies]
   repro_end = [dd[:species][i]["reproduction end age"] for i in 1:nspecies]
 
-  resources_func = eval(Symbol(dd[:model]["resources"]))
-  resources = reshape(resources_func(0), dd[:model]["space"]...)
+  # resources_func = dd[:model]["resources"]
+  mat = Base.invokelatest(dd[:model]["resources"], 0)
+  resources = reshape(mat, dd[:model]["space"]...)
 
-  properties = Params(ngenes, nphenotypes, growthrates, selectionCoeffs, ploidy, optvals, Mdists, Ddists, Ns, Ed, generations, nspecies, Ns, migration_traits, vision_radius, check_fraction, migration_thresholds, step, nnodes, biotic_phenotyps, abiotic_phenotyps, max_ages, names, dd[:model]["food sources"], dd[:model]["interactions"], resources, resources_func, recombination, initial_energy, bottlenecks, repro_start, repro_end, dd[:model]["seed"])
+  properties = Params(ngenes, nphenotypes, growthrates, selectionCoeffs, ploidy, optvals, Mdists, Ddists, Ns, Ed, generations, nspecies, Ns, migration_traits, vision_radius, check_fraction, migration_thresholds, step, nnodes, biotic_phenotyps, abiotic_phenotyps, max_ages, names, dd[:model]["food sources"], dd[:model]["interactions"], resources, dd[:model]["resources"], recombination, initial_energy, bottlenecks, repro_start, repro_end, dd[:model]["seed"])
 
   return properties, (epistasisMatS, pleiotropyMatS, expressionArraysS)
 end
 
 function return_opt_phenotype(species::Int, site::Int, model::ABM)
   ss = vertex2coord(site, model)
-  model.optvals[species](ss, model)
+  Base.invokelatest(model.optvals[species], ss, model)
 end
 
 function return_opt_phenotype(species::Int, site::Tuple{Int,Int}, model::ABM)
-  model.optvals[species](site, model)
+  Base.invokelatest(model.optvals[species], site, model)
 end
 
 function model_step!(model::ABM)
   model.step[1] += 1
-  model.resources .= reshape(model.resources_org(model.step[1]), size(model.space)...)
+  model.resources .= reshape(Base.invokelatest(model.resources_org, model.step[1]), size(model.space)...)
 end
 
 function agent_step!(agent::Ind, model::ABM)
