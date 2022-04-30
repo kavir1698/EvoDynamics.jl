@@ -208,8 +208,7 @@ function agent_step!(agent::Ind, model::ABM)
     remove_agent!(agent, model)
     return
   end
-  # survive
-  survive!(agent, model)
+  # survive!(agent, model)
   if !agent.isalive
     return
   end
@@ -217,6 +216,10 @@ function agent_step!(agent::Ind, model::ABM)
   migrate!(agent, model)
   # reproduction for the haploid
   reproduce!(agent, model)
+  
+  if agent.isalive && agent.age ≥ model.max_ages[agent.species]
+    remove_agent!(agent, model)
+  end
   # bottleneck
   if agent.isalive && model.bottlenecks[agent.species](agent, model)
     if EvoDynamics.bottleneck(agent, model)
