@@ -7,6 +7,7 @@ using StatsBase
 using LinearAlgebra
 using StaticArrays
 using YAML
+using RandomNumbers
 
 include("simulation.jl")
 include("interactions.jl")

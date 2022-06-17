@@ -52,7 +52,6 @@ struct Params{F<:AbstractFloat,I<:Int,N<:AbstractString,X<:Function, Fun, FunVec
   bottlenecks::FunVec
   repro_start::Vector{Int}
   repro_end::Vector{Int}
-  seed::Int
 end
 
 const variance = 1.0
@@ -64,12 +63,10 @@ Innitializes the model.
 """
 function model_initiation(dd)
 
-  if !isnothing(dd[:model]["seed"])
-    Random.seed!(dd[:model]["seed"])
+  if isnothing(dd[:model]["seed"])
+    mrng = RandomNumbers.Xorshifts.Xoroshiro128Plus()
   else
-    rnd = Int(rand(1:1e6))
-    dd[:model]["seed"] = rnd
-    Random.seed!(rnd)
+    mrng = RandomNumbers.Xorshifts.Xoroshiro128Plus(dd[:model]["seed"])
   end
 
   properties, species_arrays = create_properties(dd)
@@ -85,7 +82,7 @@ function model_initiation(dd)
 
   indtype = EvoDynamics.Ind{typeof(0.1),eltype(epistasisMat),eltype(pleiotropyMat),eltype(expressionArrays)}
 
-  model = ABM(indtype, fspace, properties=properties, scheduler=Schedulers.randomly)
+  model = ABM(indtype, fspace, properties=properties, scheduler=Schedulers.randomly, rng=mrng)
 
   # create and add agents
   for sp in 1:model.nspecies
@@ -170,7 +167,7 @@ function create_properties(dd)
   mat = Base.invokelatest(dd[:model]["resources"], 0)
   resources = reshape(mat, dd[:model]["space"]...)
 
-  properties = Params(ngenes, nphenotypes, growthrates, selectionCoeffs, ploidy, optvals, Mdists, Ddists, Ns, Ed, generations, nspecies, Ns, migration_traits, vision_radius, check_fraction, migration_thresholds, step, nnodes, biotic_phenotyps, abiotic_phenotyps, max_ages, names, dd[:model]["food sources"], dd[:model]["interactions"], resources, dd[:model]["resources"], recombination, initial_energy, bottlenecks, repro_start, repro_end, dd[:model]["seed"])
+  properties = Params(ngenes, nphenotypes, growthrates, selectionCoeffs, ploidy, optvals, Mdists, Ddists, Ns, Ed, generations, nspecies, Ns, migration_traits, vision_radius, check_fraction, migration_thresholds, step, nnodes, biotic_phenotyps, abiotic_phenotyps, max_ages, names, dd[:model]["food sources"], dd[:model]["interactions"], resources, dd[:model]["resources"], recombination, initial_energy, bottlenecks, repro_start, repro_end)
 
   return properties, (epistasisMatS, pleiotropyMatS, expressionArraysS)
 end

@@ -80,7 +80,7 @@ end
 function model_generator(counter, seeds, param_file)
   dd = load_parameters(param_file)
   if isnothing(seeds)
-    dd[:model]["seed"] = rand(1:1000_000)
+    dd[:model]["seed"] = nothing
   else
     dd[:model]["seed"] = seeds[counter]
   end
