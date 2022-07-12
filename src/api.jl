@@ -67,7 +67,7 @@ function runmodel(param_file::AbstractString;
     model = model_initiation(dd)
 
     # run model and collect data
-    agdata, modata = run!(model, agent_step!, model_step!, model.generations, adata=adata, mdata=mdata, when=whenn, agents_first=false)
+    agdata, modata = run!(model, agent_step!, model_step!, model.generations, adata=adata, mdata=mdata, when=whenn, agents_first=false, showprogress=true)
     return agdata, modata, [model]
   else
     models = [model_generator(i, seeds, param_file) for i in 1:replicates]
