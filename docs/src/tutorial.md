@@ -10,33 +10,30 @@ Install using the following command in a Julia REPL.
 
 ## Basic usage
 
-Parameters of a model should be put in a YAML file with the structure below. Note that spaces and indentations are meaningful in YAML. Indentations should be spaces not tabs.
+Parameters of a model should be put in a julia file (.jl format) with the structure below.
 
 See [Simple Wright-Fisher](@ref) and [Predator prey](@ref) for complete examples of parameter files.
 
-```yml
-species:
-  1:
-    name: a
-    parameter 1: ...
-    parameter 2: ...
-    ...
-  2:
-    name: b
-    parameter 1: ... 
-    parameter 2: ... 
-    ...
-model:
-  model parameter 1: ...
-  model parameter 2: ...
-  ...
+```jl
+## 1. Functions
+...
+
+## 2. Species parameters. A dictionary for each species
+
+## 3. Model parameters as a dictionary.
+
 ```
 
-The file has two main levels: `species` and `model`. `species` stores species specific parameters as many different species as you want.
+The order of these sections is important because each section uses objects from its preceding sections. 
 
-Since we cannot write a matrix in a YAML file, any parameter that is a matrix should be converted to a vector. In Julia, you can do this by `vec(yourmatrix)`.
+Functions are used to create parameters that may change temporally and spatially. The following parameters are functions: bottleneck function which kills certain agents at certain times and spaces, optimal phenotype values which returns the optimal phenotype for a species at a given time and space, and environmental resources that may change over time.
 
-First, define your model parameters in a YAML file (here, we call it `parameters.yml`). [Simple Wright-Fisher](@ref) and [Predator prey](@ref) have examples of initiation parameters. See [Model description](@ref) for a description of each parameter.
+
+You may create as many species as you want. Parameters of each species is a dictionary.
+
+Model parameters is one dictionary that stores general parameters of the model, such as number of generations, space size, and species interaction parameters.
+
+First, define your model parameters (here, we call it `parameters.jl`). [Simple Wright-Fisher](@ref) and [Predator prey](@ref) have examples of initiation parameters. See [Model description](@ref) for a description of each parameter.
 
 We can the use the `runmodel` function to create a model from these parameters and run the simulation.
 
@@ -46,48 +43,12 @@ runmodel
 
 ```@example
 using EvoDynamics
-agentdata, modeldata, model = runmodel("parameters.yml")
+agentdata, modeldata, model = runmodel("parameters.jl")
 ```
 
 ## Creating simulation parameter files
 
-EvoDynamics.jl reads simulation parameters ([Model description](@ref)) from a human-readable [YAML](https://github.com/JuliaData/YAML.jl) file. This file can be populated manually using a text editor or from within a Julia session.
-
-To create parameters from within a Julia session and write them to a YAML file, you can follow the example below.
-
-To define species parameters, create a dictionary whose keys are numbers starting from 1 for the number of species you have, and values are dictionaries themselves with the species parameter names and values. In the example below, for brevity, I only add a few parameters for each species (see [Model description](@ref) for the complete list of parameters).
-
-
-```julia
-species_params = Dict(
-  1=>Dict("name" => "a", "number of genes" => 2, "number of phenotypes" => 2, "abiotic phenotypes" => [1]),
-  2=>Dict("name" => "b", "number of genes" => 2, "number of phenotypes" => 2, "abiotic phenotypes" => [1])
-)
-
-```
-
-To define model parameters, create a new dictionary whose keys are the parameter names and values the parameter values. Here, again I only define a few parameters for brevity.
-
-```julia
-
-model_params = Dict("generations"=> 100, "space"=> [6,10], "food sources" => [1.0, 0.7, 0.0, 0.0])
-
-```
-
-Finally, create a dictionary mixing the two dictionaries before with keys "species" and "model". 
-
-```julia
-data = Dict("species"=> species_params, "model"=> model_params)
-```
-
-This dictionary can be written as a YAML file in the correct format.
-
-```julia
-using YAML
-f = "params.yml"
-YAML.write_file(f, data)
-```
-
+EvoDynamics.jl reads simulation parameters ([Model description](@ref)) from a julia file containing dictionaries and functions. This file can be populated manually using a text editor or from within a Julia session.
 
 ## Collecting data
 
@@ -124,4 +85,17 @@ end
 using EvoDynamics
 
 agentdata, modeldata, model = runmodel("parameters.yml", mdata=[species_N])
+```
+
+## Running simulations in parallel
+
+You can run replicate simulation in parallel. To that end, you need to add processors, and import EvoDynamics.jl and your parameters files on all cores:
+
+```julia
+using Distributed
+addprocs(4)
+@everywhere using EvoDynamics
+@everywhere param_file = "params.jl"
+@everywhere EvoDynamics.load_parameters(param_file)
+adata, mdata, models = runmodel(param_file, replicates=10, parallel=true)
 ```

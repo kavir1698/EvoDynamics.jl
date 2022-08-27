@@ -7,31 +7,31 @@
 Each species should have the following parameters. The order that you write these parameters does not matter.
 
 * __name__: a name for the species.
-* __number of genes__: An _integer_ for number of genes that the species has.
+* __number\_of\_genes__: An _integer_ for number of genes that the species has.
 * __ploidy__: Either 1 for haploid or 2 for diploid genomes. Diploids can have recombination.
-* __number of phenotypes__: An _integer_ for the number of phenotypes that the species has.
-* __abiotic phenotypes__: An _array of integers_ (e.g. "[1,2]") specifying abiotic phenotypes among all phenotypes. Abiotic phenotypes determine how the species interacts with the environment.
-* __biotic phenotypes__: An _array of integers_ (e.g. "[3]") specifying biotic phenotypes among all phenotypes. Biotic phenotypes determine how the species interacts with other individuals from the same or different species.
-* __migration phenotype__: An _integer_ specifying the phenotype that determines migration trait. If the species does not migrate, put 0.
-* __migration threshold__: The phenotypic value of the migration phenotype after which an individual can migrate.
-* __vision radius__: A _number_ determining the radius of neighboring sites that the agent can see before migration.
-* __check fraction__: A _number_ between 0 and 1 showing the fraction of the visible sites to the agent that it can check and decide whether to migrate to.
-* __epistasis matrix__: An epistasis matrix is of size $l \times l$, where _l_ is the product of _number of genes_ and _ploidy_. Epistasis matrix specifies the direction (positive or negative) and size of effect of one locus on other loci. For example, if at row 1 and column 2 is a value 0.2, it means that locus 1 affects locus 2 by increasing the effect of locus 2 (because its positive) with 20% of the effect of locus 1.
-* __pleiotropy matrix__: A _binary matrix_ (0s and 1s) with size _number of phenotypes_ times _l_. The pleiotropy matrix specifies the phenotypes that each locus affects.
-* __expression array__: A _vector_ of size _l_ that represent the expression amount of each locus determining its effect size.
-* __growth rate__: Mean of a Poisson distribution for number of offsprings per reproduction. This number is the maximum mean when fitness of a haploid individual is 1, or the distance between the biotic phenotypes of two diploid individuals is 0.
-* __selection coefficient__: A number between 0 and 1 that determines the importance of fitness. 0 would be a model without selection.
-* __mutation probabilities__: A _vector of three numbers_ each of which specifies the probability for a different type of mutations: mutation probability of the _expression array_, _pleiotropy matrix_, and _epistasis matrix_, respectively.
-* __mutation magnitudes__: A _vector of numbers_ with the same size as _mutation probabilities_ that determines the magnitude of mutation for each of the three categories. Specifically, the numbers are the variances of normal distributions with mean 0 for expression array and epistasis matrices, and probability of changing a 0 and 1 in in the pleiotropy matrix.
+* __number\_of\_phenotypes__: An _integer_ for the number of phenotypes that the species has.
+* __abiotic\_phenotypes__: An _array of integers_ (e.g. "[1,2]") specifying abiotic phenotypes among all phenotypes. Abiotic phenotypes determine how the species interacts with the environment.
+* __biotic\_phenotypes__: An _array of integers_ (e.g. "[3]") specifying biotic phenotypes among all phenotypes. Biotic phenotypes determine how the species interacts with other individuals from the same or different species.
+* __migration\_phenotype__: An _integer_ specifying the phenotype that determines migration trait. If the species does not migrate, put 0.
+* __migration\_threshold__: The phenotypic value of the migration phenotype after which an individual can migrate.
+* __vision\_radius__: A _number_ determining the radius of neighboring sites that the agent can see before migration.
+* __check\_fraction__: A _number_ between 0 and 1 showing the fraction of the visible sites to the agent that it can check and decide whether to migrate to.
+* __epistasis\_matrix__: An epistasis matrix is of size $l \times l$, where _l_ is the product of _number of genes_ and _ploidy_. Epistasis matrix specifies the direction (positive or negative) and size of effect of one locus on other loci. For example, if at row 1 and column 2 is a value 0.2, it means that locus 1 affects locus 2 by increasing the effect of locus 2 (because its positive) with 20% of the effect of locus 1.
+* __pleiotropy\_matrix__: A _binary matrix_ (0s and 1s) with size _number of phenotypes_ times _l_. The pleiotropy matrix specifies the phenotypes that each locus affects.
+* __expression\_array__: A _vector_ of size _l_ that represent the expression amount of each locus determining its effect size.
+* __growth\_rate__: Mean of a Poisson distribution for number of offsprings per reproduction. This number is the maximum mean when fitness of a haploid individual is 1, or the distance between the biotic phenotypes of two diploid individuals is 0.
+* __selection\_coefficient__: A number between 0 and 1 that determines the importance of fitness. 0 would be a model without selection.
+* __mutation\_probabilities__: A _vector of three numbers_ each of which specifies the probability for a different type of mutations: mutation probability of the _expression array_, _pleiotropy matrix_, and _epistasis matrix_, respectively.
+* __mutation\_magnitudes__: A _vector of numbers_ with the same size as _mutation probabilities_ that determines the magnitude of mutation for each of the three categories. Specifically, the numbers are the variances of normal distributions with mean 0 for expression array and epistasis matrices, and probability of changing a 0 and 1 in in the pleiotropy matrix.
 * __N__: A _vector of integers_ for the initial number of individuals at each site.
-* __environmental noise__: A number for the variance of a normal distribution with mean 0 that will be added to the phenotypes.
-* __optimal phenotypes__: Name of a function that returns a _vector of integers_ for optimal phenotypes of the species at a specific site.  The vector should be as long as there are `abiotic phenotypes`. The function should have two arguments: `site `of type `Tuple{Int, Int}`and `model `of type `ABM `from the `Agents.jl `package. The definition of the function should be in a file referred to in the `functions file` parameter (see blow). This function can be time dependent.
+* __environmental\_noise__: A number for the variance of a normal distribution with mean 0 that will be added to the phenotypes.
+* __optimal\_phenotypes__: Name of a function that returns a _vector of integers_ for optimal phenotypes of the species at a specific site.  The vector should be as long as there are `abiotic phenotypes`. The function should have two arguments: `site `of type `Tuple{Int, Int}`and `model `of type `ABM `from the `Agents.jl `package. The definition of the function should be in a file referred to in the `functions file` parameter (see blow). This function can be time dependent.
 * __age__: An _integer_ for maximum age of individuals of this species.
-* __reproduction start age__: The age at which individuals can reproduce.
-* __reproduction end age__: The age after which individuals cannot reproduce.
+* __reproduction\_start\_age__: The age at which individuals can reproduce.
+* __reproduction\_end\_age__: The age after which individuals cannot reproduce.
 * __recombination__: Mean of a Poisson distributions for number of crossing overs per sexual reproduction.
-* __initial energy__: A parameter for parental care of infants. Values more than 0 indicate that newly born individuals can survive for a number of times without requiring food from the environment/other species. The consumption rate (i.e. how many generations this initial energy suffices) is determined by the sum of the corresponding rows in "food sources" model parameter.
-* __bottleneck function__: Name of a function in `functions file` that accepts two arguments: `agent` and `model`. It returns true or false, where true means the agent is killed. This function models killing agents due to a process above the dynamics of the model, for example, hunting or environmental disaster. Since it accepts both the agent and the model, there are information about the position of the agent, its properties, and the time step of the simulation to take into account.
+* __initial\_energy__: A parameter for parental care of infants. Values more than 0 indicate that newly born individuals can survive for a number of times without requiring food from the environment/other species. The consumption rate (i.e. how many generations this initial energy suffices) is determined by the sum of the corresponding rows in "food sources" model parameter.
+* __bottleneck\_function__: Name of a function in `functions file` that accepts two arguments: `agent` and `model`. It returns true or false, where true means the agent is killed. This function models killing agents due to a process above the dynamics of the model, for example, hunting or environmental disaster. Since it accepts both the agent and the model, there are information about the position of the agent, its properties, and the time step of the simulation to take into account.
 
 ### Model parameters
 
@@ -40,9 +40,8 @@ Each species should have the following parameters. The order that you write thes
 * __metric__: Either "chebyshev" or "euclidian". Determines how many neighbors a space site has. "chebyshev" metric means that the r-neighborhood of a position are all positions within the hypercube having side length of 2*floor(r) and being centered in the origin position. "euclidean" metric means that the r-neighborhood of a position are all positions whose cartesian indices have Euclidean distance ≤ r from the cartesian index of the given position.
 * __periodic__: _Boolean__ (true or false) to determine whether boundaries of the space are connected or not.
 * __resources__: A function that returns a _vector of integers_ determining available resources (e.g. vegetation) per site. The function takes the `time_step` as its only argument. The function is defined in the functions file (parameter blow).
-* __functions file__: Name of a file that contains the functions referred to in the `resources`, `bottleneck function` and `optimal phenotypes` parameters. If the file is in the same directory as this parameters file, writing its name is enough. Otherwise, a path should be given.
 * __interactions__: A species-species interaction _matrix of numbers_ determining how individuals from different species interact. Each value  is strength of interaction (between 0 and 1). Sign (+/-) is the direction of interaction where positive means similar individuals interact more strongly and negative is dissimilar ones tend to interact more.
-* __food sources__: A species-species food _matrix of numbers_ determining what each species feeds on (consumption rate). Non-zero diagonal means the food resource is from the environment. Off-diagonals mean an species (in the rows) feeds on another species (in the columns). Numbers can be zero or any positive number. The magnitude of the number determines how many generations can an individual live off of given one unit of the food source. For example, if a diagonal is 2, it means that the species will eat one unit of the environmental resources and that is enough for it to live two steps.
+* __food\_sources__: A species-species food _matrix of numbers_ determining what each species feeds on (consumption rate). Non-zero diagonal means the food resource is from the environment. Off-diagonals mean an species (in the rows) feeds on another species (in the columns). Numbers can be zero or any positive number. The magnitude of the number determines how many generations can an individual live off of given one unit of the food source. For example, if a diagonal is 2, it means that the species will eat one unit of the environmental resources and that is enough for it to live two steps.
 * __seed__: Either an _integer_ or _Null_ for random number generator seed.
 
 ## Simulation outline

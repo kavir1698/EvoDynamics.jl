@@ -54,10 +54,8 @@ function runmodel(param_file::AbstractString;
   @info "Loading the parameters..."
   dd = load_parameters(param_file)
 
-  include(dd[:model]["functions file"])
-
   if isnothing(when)
-    whenn = 0:dd[:model]["generations"]
+    whenn = 0:dd[:generations]
   else
     whenn = when
   end
@@ -72,7 +70,7 @@ function runmodel(param_file::AbstractString;
   else
     models = [model_generator(i, seeds, param_file) for i in 1:replicates]
 
-    agdata, modata, models = ensemblerun!(models, agent_step!, model_step!, dd[:model]["generations"], adata=adata, mdata=mdata, when=whenn, parallel=parallel, agents_first=false)
+    agdata, modata, models = ensemblerun!(models, agent_step!, model_step!, dd[:generations], adata=adata, mdata=mdata, when=whenn, parallel=parallel, agents_first=false)
     return agdata, modata, models
   end
 end
@@ -80,9 +78,9 @@ end
 function model_generator(counter, seeds, param_file)
   dd = load_parameters(param_file)
   if isnothing(seeds)
-    dd[:model]["seed"] = nothing
+    dd[:seed] = nothing
   else
-    dd[:model]["seed"] = seeds[counter]
+    dd[:seed] = seeds[counter]
   end
   model = model_initiation(dd)
   return model

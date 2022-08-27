@@ -1,14 +1,6 @@
-function load_parameters(yaml_file::String)
-  d = YAML.load_file(yaml_file)
-
-  @assert isfile(d["model"]["functions file"]) "_functions file_ does not exist!"
-  include(d["model"]["functions file"])
-
-  check_yml_params(d)
-  check_param_shapes(d)
-  reformat_params!(d)
-
-  outd = Dict(:species => d["species"], :model => d["model"])
-
-  return outd
+function load_parameters(paramfile::String)
+  include(paramfile)
+  check_yml_params(model_parameters)
+  check_param_shapes(model_parameters)
+  return model_parameters
 end
