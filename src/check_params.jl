@@ -1,145 +1,65 @@
 function check_yml_params(d)
-  species_keys = ["migration threshold", "number of genes", "number of phenotypes", "abiotic phenotypes", "biotic phenotypes", "migration phenotype", "migration threshold", "ploidy", "epistasis matrix", "pleiotropy matrix", "growth rate", "expression array", "selection coefficient", "mutation probabilities", "mutation magnitudes", "N", "vision radius", "check fraction", "environmental noise", "optimal phenotypes", "age", "recombination", "initial energy", "bottleneck function", "reproduction start age", "reproduction end age"]
-  model_keys = ["generations", "space", "metric", "periodic", "resources", "interactions", "food sources", "seed"]
-  for (k, sp) in d["species"]
-    @assert haskey(sp, "name") "Species name field missing."
+  species_keys = [:name, :number_of_genes, :number_of_phenotypes, :abiotic_phenotypes, :biotic_phenotypes, :migration_phenotype, :migration_threshold, :ploidy, :epistasis_matrix, :pleiotropy_matrix, :growth_rate, :expression_array, :selection_coefficient, :mutation_probabilities, :mutation_magnitudes, :N, :vision_radius, :check_fraction, :environmental_noise, :optimal_phenotypes, :age, :recombination, :initial_energy, :bottleneck_function, :reproduction_start_age, :reproduction_end_age]
+  model_keys = [:species, :generations, :space, :metric, :periodic, :resources, :interactions, :food_sources, :seed]
+  species = d[:species]
+  for sp in species
+    spfields = collect(keys(sp))
+    @assert in(:name, spfields) "Species struct has no field `name` "
+    spname = sp[:name]
+    @assert length(sp) == length(species_keys)  "Incorrect number of keys for species $spname"
     for kk in species_keys
-      @assert haskey(sp, kk) "Species $(sp["name"]) does not have field $(kk)."
+      @assert in(kk, spfields) "Species $spname does not have field $(kk)."
     end
   end
+  mfields = collect(keys(d))
   for kk in model_keys
-    @assert haskey(d["model"], kk) "Model parameter $kk is missing."
+    @assert in(kk, model_keys) "Model parameter $kk is missing."
   end
-  # # TODO: include does not work here. Use a macro instead.
-  # try
-  #   include(d["model"]["functions file"])
-  # catch
-  #   @error "functions file does not exist!"
-  # end 
+  
 end
 
 function check_param_shapes(d)
-  nspecies = length(d["species"])
-  # Load the function file
-  # @assert isfile(d["model"]["functions file"]) "_functions file_ is nonexistant"
-  # include(d["model"]["functions file"])
+  allspecies = d[:species]
+  nspecies = length(allspecies)
 
-  for species in 1:nspecies
-    spacesize = prod(d["model"]["space"])
-    dd = d["species"][species]
-    # Size of optimal phenotypes
-    try
-      optphenotype_function = eval(Symbol(dd["optimal phenotypes"]))
-    catch
-      @error "Unavailable function for _optimal phenotypes_ in species $species"
-    end
-    # for opt in dd["optimal phenotype values"]
-    #   @assert length(opt) == length(dd["abiotic phenotypes"]) * spacesize "Not as many optimal phenotypes as abiotic phenotypes. Species: $species"
-    # end
-    # Biotic and abiotic phenotypes are Array
-    @assert typeof(dd["abiotic phenotypes"]) <: AbstractArray "Abiotic phenotypes should be array"
-    @assert typeof(dd["biotic phenotypes"]) <: AbstractArray "Biotic phenotypes should be array"
+  for dd in allspecies
+    spname = dd[:name]
+    @assert typeof(dd[:name]) <: AbstractString "name should be a string"
+    @assert typeof(dd[:abiotic_phenotypes]) <: AbstractArray "Abiotic phenotypes should be array"
+    @assert typeof(dd[:biotic_phenotypes]) <: AbstractArray "Biotic phenotypes should be array"
+    @assert eltype(dd[:pleiotropy_matrix]) <: Bool "pleiotropy matrix should contain boolean values in species $spname"
     # Ploidy
-    @assert dd["ploidy"] < 3 "Ploidy more than 2 is not implemented"
+    @assert dd[:ploidy] < 3 "Ploidy more than 2 is not implemented"
     # epistasis matrix
-    # @assert size(dd["epistasis matrix"], 2) % dd["ploidy"] == 0 "Number of columns in epistasisMat are not correct. They should a factor of ploidy"
-    @assert length(dd["epistasis matrix"]) == (dd["ploidy"] * dd["number of genes"])^2 "epistasis matrix does not have correct number of elements in species $species."
-    # name is string
-    @assert typeof(dd["name"]) <: AbstractString "name should be a string"
-    # age is integer
-    @assert typeof(dd["age"]) <: Int "Age of species $species should be integer."
-    @assert typeof(dd["reproduction start age"]) <: Int "reproduction start age of species $species should be integer."
-    @assert typeof(dd["reproduction end age"]) <: Int "reproduction end age of species $species should be integer."
-    # Check fraction is float
-    @assert typeof(dd["check fraction"]) <: Real "Check fraction of species $species should be number."
+    nloci = dd[:ploidy] * dd[:number_of_genes]
+    @assert size(dd[:epistasis_matrix]) == (nloci, nloci) "epistasis matrix does not have correct size in species $spname. It should be (nloci, nloci) where nloci is ploidy * number of genes"
+    @assert typeof(dd[:age]) <: Int "Age of species $spname should be integer."
+    @assert typeof(dd[:reproduction_start_age]) <: Int "reproduction start age of species $spname should be integer."
+    @assert typeof(dd[:reproduction_end_age]) <: Int "reproduction end age of species $spname should be integer."
+    @assert typeof(dd[:check_fraction]) <: AbstractFloat "Check fraction of species $spname should be floating point number."
     # recombination is Bool
-    @assert typeof(dd["recombination"]) <: Real "recombination of species $species should be type numeric"
-    @assert typeof(dd["initial energy"]) <: Real "Initial energy should be a number"
+    @assert typeof(dd[:recombination]) <: Real "recombination of species $spname should be type numeric"
+    @assert typeof(dd[:initial_energy]) <: Real "Initial energy should be a number"
     # bottleneck should be nothing or array/string
-    @assert typeof(dd["bottleneck function"]) <: AbstractString || isnothing(dd["bottleneck function"])
-    if !isnothing(dd["bottleneck function"])
-      try
-        bottleneck_function = eval(Symbol(dd["bottleneck function"]))
-      catch
-        @error "Unavailable function for _bottleneck_function_ in species $species"
-      end
-    end
+    @assert typeof(dd[:bottleneck_function]) <: Function || isnothing(dd[:bottleneck_function]) "bottleneck function for species $spname is not a function or `nothing`"
+    @assert typeof(dd[:selection_coefficient]) <: AbstractFloat "selection coefficient of species $spname should be floating point number"
+    @assert typeof(dd[:migration_threshold]) <: AbstractFloat "migration_threshold of species $spname should be floating point number"
   end
   # Space should be 2D
-  if !isnothing(d["model"]["space"]) && d["model"]["space"] != "nothing"
-    @assert length(d["model"]["space"]) == 2 "Space should be only 2D"
+  if !isnothing(d[:space])
+    @assert length(d[:space]) == 2 "Space should be only 2D"
   end
+  @assert typeof(d[:space]) <: Tuple "Space should be either a tuple or `nothing`"
   # Resources
-  @assert isfile(d["model"]["functions file"]) "_functions file_ is nonexistant"
   
-  @assert typeof(eval(Symbol(d["model"]["resources"]))) <: Function "Resources function not defined"
-  # resources_func = eval(Symbol(d["model"]["resources"]))
-  # # Area
-  # @assert typeof(d["model"]["area"]) <: AbstractArray "Area should be array"
-  # @assert eltype(d["model"]["area"]) <: Real "Area elements should be numbers"
-  # @assert length(d["model"]["area"]) == prod(d["model"]["space"]) "Area should be as long as number of sites"
+  @assert typeof(d[:resources]) <: Function "Resources function not defined"
+
   # Interactions
-  @assert typeof(d["model"]["interactions"]) <: AbstractArray "Interactions should be an array"
-  @assert eltype(d["model"]["interactions"]) <: AbstractFloat "Elements of interactions should be floating numbers"
-  @assert length(d["model"]["interactions"]) == nspecies * nspecies "Interactions should be as many as number of species times number of species"
+  @assert typeof(d[:interactions]) <: AbstractArray "Interactions should be an array(matrix)"
+  @assert eltype(d[:interactions]) <: AbstractFloat "Elements of interactions should be floating numbers"
+  @assert length(d[:interactions]) == nspecies * nspecies "Interactions should be as many as number of species times number of species"
   # Food sources
-  @assert typeof(d["model"]["food sources"]) <: AbstractArray "Food sources should be array"
-  @assert eltype(d["model"]["food sources"]) <: AbstractFloat "Elements of food sources should be floating numbers"
-  @assert length(d["model"]["food sources"]) == nspecies * nspecies "Food sources should be as many as number of species times number of species"
-end
-
-function reformat_params!(d)
-  nspecies = length(d["species"])
-
-  # include(d["model"]["functions file"])
-
-  # Fix formats and shapes
-  for species in 1:nspecies
-    # 1. Reshape and convert pleiotropy matrix
-    pmat = d["species"][species]["pleiotropy matrix"]
-    ntraits = d["species"][species]["number of phenotypes"]
-    ngenes = d["species"][species]["number of genes"] * d["species"][species]["ploidy"]
-    d["species"][species]["pleiotropy matrix"] = Bool.(reshape(pmat, ntraits, ngenes))
-    # 2. Reshape epistasis matrix
-    d["species"][species]["epistasis matrix"] = reshape(d["species"][species]["epistasis matrix"], ngenes, ngenes)
-    # 3. add key ngenes
-    d["species"][species]["ngenes"] = ngenes
-
-    d["species"][species]["optimal phenotypes"] = eval(Symbol(d["species"][species]["optimal phenotypes"]))
-    # Check fraction to float
-    d["species"][species]["check fraction"] = Float64(d["species"][species]["check fraction"])
-    # include bottleneck function
-    if !isnothing(d["species"][species]["bottleneck function"])
-      bottleneck_function = eval(Symbol(d["species"][species]["bottleneck function"]))
-      # reshape bottleneck times
-      d["species"][species]["bottleneck function"] = bottleneck_function
-    else
-      d["species"][species]["bottleneck times"] = Bool.(zeros(Int, prod(d["model"]["space"]), d["model"]["generations"]))
-    end
-  end
-
-  # Metric to Symbol
-  d["model"]["metric"] = Symbol(d["model"]["metric"])
-
-  # "nothing" to nothing for seed and space
-  if d["model"]["seed"] == "nothing"
-    d["model"]["seed"] = nothing
-  end
-  if d["model"]["space"] == "nothing"
-    d["model"]["space"] = nothing
-  end
-
-  # space to tuple
-  if !isnothing(d["model"]["space"])
-    d["model"]["space"] = Tuple(d["model"]["space"])
-  end
-
-  # convert resources
-  d["model"]["resources"] = eval(Symbol(d["model"]["resources"]))
-  # # reshape and convert area
-  # d["model"]["area"] = reshape(d["model"]["area"], d["model"]["space"]...)
-  # reshape and convert interactions
-  d["model"]["interactions"] = reshape(d["model"]["interactions"], nspecies, nspecies)
-  # reshape and convert food sources
-  d["model"]["food sources"] = reshape(d["model"]["food sources"], nspecies, nspecies)
+  @assert typeof(d[:food_sources]) <: AbstractArray "Food sources should be array"
+  @assert eltype(d[:food_sources]) <: AbstractFloat "Elements of food sources should be floating numbers"
+  @assert length(d[:food_sources]) == nspecies * nspecies "Food sources should be as many as number of species times number of species"
 end

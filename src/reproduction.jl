@@ -28,7 +28,7 @@ end
 """
 Returns gametes for epistasisMat, pleiotropyMat, and q.
 
-A ametes includes `cross_overs` sites from one homologous chr and the rest from another.the corresponding column of the `epistasisMat` and `pleiotropyMat` matrices.
+A gametes includes `cross_overs` sites from one homologous chr and the rest from another corresponding column of the `epistasisMat` and `pleiotropyMat` matrices.
 Each gamete is half of `epistasisMat` and `pleiotropyMat` (column-wise).
 """
 function create_gamete(agent, cross_overs, nsites, first::Bool)

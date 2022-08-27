@@ -63,21 +63,21 @@ Innitializes the model.
 """
 function model_initiation(dd)
 
-  if isnothing(dd[:model]["seed"])
+  if isnothing(dd[:seed])
     mrng = RandomNumbers.Xorshifts.Xoroshiro128Plus()
   else
-    mrng = RandomNumbers.Xorshifts.Xoroshiro128Plus(dd[:model]["seed"])
+    mrng = RandomNumbers.Xorshifts.Xoroshiro128Plus(dd[:seed])
   end
 
   properties, species_arrays = create_properties(dd)
   epistasisMat, pleiotropyMat, expressionArrays = species_arrays
 
-  space = dd[:model]["space"]
+  space = dd[:space]
 
   if isnothing(space)
     fspace = GridSpace((1, 1))
   elseif typeof(space) <: Tuple
-    fspace = GridSpace(space, periodic=dd[:model]["periodic"], metric=dd[:model]["metric"])
+    fspace = GridSpace(space, periodic=dd[:periodic], metric=Symbol(dd[:metric]))
   end
 
   indtype = EvoDynamics.Ind{typeof(0.1),eltype(epistasisMat),eltype(pleiotropyMat),eltype(expressionArrays)}
@@ -111,79 +111,76 @@ nnodes(x::ABM) = nnodes(x.space)
 
 function create_properties(dd)
   nspecies = length(dd[:species])
-
-  Ed = [Normal(0.0, dd[:species][i]["environmental noise"]) for i in 1:nspecies]
-  Mdists = [[DiscreteNonParametric([true, false], [i, 1 - i]) for i in dd[:species][arr]["mutation probabilities"]] for arr in 1:nspecies]  # μ (probability of change)
-  Ddists = [[Normal(0, dd[:species][ar]["mutation magnitudes"][1]), DiscreteNonParametric([true, false], [dd[:species][ar]["mutation magnitudes"][2], 1 - dd[:species][ar]["mutation magnitudes"][2]]), Normal(0, dd[:species][ar]["mutation magnitudes"][3])] for ar in 1:nspecies]  # amount of change in case of mutation
+  allspecies = dd[:species]
+  Ed = [Normal(0.0, allspecies[i][:environmental_noise]) for i in 1:nspecies]
+  Mdists = [[DiscreteNonParametric([true, false], [i, 1 - i]) for i in allspecies[arr][:mutation_probabilities]] for arr in 1:nspecies]  # μ (probability of change)
+  Ddists = [[Normal(0, allspecies[ar][:mutation_magnitudes][1]), DiscreteNonParametric([true, false], [allspecies[ar][:mutation_magnitudes][2], 1 - allspecies[ar][:mutation_magnitudes][2]]), Normal(0, allspecies[ar][:mutation_magnitudes][3])] for ar in 1:nspecies]  # amount of change in case of mutation
 
   # make single-element arrays 2D so that linAlg functions will work
   newA = Array{Array{Float64}}(undef, nspecies)
   newQ = Array{Array{Float64}}(undef, nspecies)
   for i in 1:nspecies
-    if length(dd[:species][i]["epistasis matrix"]) == 1
-      newA[i] = reshape(dd[:species][i]["epistasis matrix"], 1, 1)
-      newQ[i] = reshape(dd[:species][i]["expression array"], 1, 1)
+    if length(allspecies[i][:epistasis_matrix]) == 1
+      newA[i] = reshape(allspecies[i][:epistasis_matrix], 1, 1)
+      newQ[i] = reshape(allspecies[i][:expression_array], 1, 1)
     else
-      newA[i] = dd[:species][i]["epistasis matrix"]
-      newQ[i] = dd[:species][i]["expression array"]
+      newA[i] = allspecies[i][:epistasis_matrix]
+      newQ[i] = allspecies[i][:expression_array]
     end
   end
 
   epistasisMatS = [MArray{Tuple{size(newA[i])...}}(newA[i]) for i in eachindex(newA)]
-  pleiotropyMatS = [MArray{Tuple{size(dd[:species][i]["pleiotropy matrix"])...}}(dd[:species][i]["pleiotropy matrix"]) for i in 1:nspecies]
+  pleiotropyMatS = [MArray{Tuple{size(allspecies[i][:pleiotropy_matrix])...}}(Bool.(allspecies[i][:pleiotropy_matrix])) for i in 1:nspecies]
   expressionArraysS = [MArray{Tuple{size(newQ[i])...}}(newQ[i]) for i in eachindex(newQ)]
 
-  ngenes = [dd[:species][i]["number of genes"] for i in 1:nspecies]
-  nphenotypes = [dd[:species][i]["number of phenotypes"] for i in 1:nspecies]
-  growthrates = [dd[:species][i]["growth rate"] for i in 1:nspecies]
-  selectionCoeffs = [dd[:species][i]["selection coefficient"] for i in 1:nspecies]
-  ploidy = [dd[:species][i]["ploidy"] for i in 1:nspecies]
-  optvals = [dd[:species][i]["optimal phenotypes"] for i in 1:nspecies]
-  Ns = [dd[:species][i]["N"] for i in 1:nspecies]
-  migration_traits = [dd[:species][i]["migration phenotype"] for i in 1:nspecies]
-  vision_radius = [dd[:species][i]["vision radius"] for i in 1:nspecies]
-  check_fraction = [dd[:species][i]["check fraction"] for i in 1:nspecies]
-  migration_thresholds = [dd[:species][i]["migration threshold"] for i in 1:nspecies]
-  generations = dd[:model]["generations"]
+  ngenes = [allspecies[i][:number_of_genes] for i in 1:nspecies]
+  nphenotypes = [allspecies[i][:number_of_phenotypes] for i in 1:nspecies]
+  growthrates = [allspecies[i][:growth_rate] for i in 1:nspecies]
+  selectionCoeffs = [allspecies[i][:selection_coefficient] for i in 1:nspecies]
+  ploidy = [allspecies[i][:ploidy] for i in 1:nspecies]
+  optvals = [allspecies[i][:optimal_phenotypes] for i in 1:nspecies]
+  Ns = [allspecies[i][:N] for i in 1:nspecies]
+  migration_traits = [allspecies[i][:migration_phenotype] for i in 1:nspecies]
+  vision_radius = [allspecies[i][:vision_radius] for i in 1:nspecies]
+  check_fraction = [allspecies[i][:check_fraction] for i in 1:nspecies]
+  migration_thresholds = [allspecies[i][:migration_threshold] for i in 1:nspecies]
+  generations = dd[:generations]
   step = MVector{1,Int}(undef)
   step[1] = 0
-  nnodes = Matrix{Tuple{Int,Int}}(undef, dd[:model]["space"]...)
+  nnodes = Matrix{Tuple{Int,Int}}(undef, dd[:space]...)
   for col in 1:size(nnodes, 2)
     for row in 1:size(nnodes, 1)
       nnodes[row, col] = (row, col)
     end
   end
-  biotic_phenotyps = [dd[:species][i]["biotic phenotypes"] for i in 1:nspecies]
-  abiotic_phenotyps = [dd[:species][i]["abiotic phenotypes"] for i in 1:nspecies]
-  max_ages = [dd[:species][i]["age"] for i in 1:nspecies]
-  names = Dict(i => dd[:species][i]["name"] for i in 1:nspecies)
-  recombination = [Poisson(dd[:species][i]["recombination"]) for i in 1:nspecies]
-  initial_energy = [AbstractFloat(dd[:species][i]["initial energy"]) for i in 1:nspecies]
-  bottlenecks = [dd[:species][i]["bottleneck function"] for i in 1:nspecies]
-  repro_start = [dd[:species][i]["reproduction start age"] for i in 1:nspecies]
-  repro_end = [dd[:species][i]["reproduction end age"] for i in 1:nspecies]
+  biotic_phenotyps = [allspecies[i][:biotic_phenotypes] for i in 1:nspecies]
+  abiotic_phenotyps = [allspecies[i][:abiotic_phenotypes] for i in 1:nspecies]
+  max_ages = [allspecies[i][:age] for i in 1:nspecies]
+  names = Dict(i => allspecies[i][:name] for i in 1:nspecies)
+  recombination = [Poisson(allspecies[i][:recombination]) for i in 1:nspecies]
+  initial_energy = [AbstractFloat(allspecies[i][:initial_energy]) for i in 1:nspecies]
+  bottlenecks = [allspecies[i][:bottleneck_function] for i in 1:nspecies]
+  repro_start = [allspecies[i][:reproduction_start_age] for i in 1:nspecies]
+  repro_end = [allspecies[i][:reproduction_end_age] for i in 1:nspecies]
+  resources = dd[:resources](0)
 
-  # resources_func = dd[:model]["resources"]
-  mat = Base.invokelatest(dd[:model]["resources"], 0)
-  resources = reshape(mat, dd[:model]["space"]...)
-
-  properties = Params(ngenes, nphenotypes, growthrates, selectionCoeffs, ploidy, optvals, Mdists, Ddists, Ns, Ed, generations, nspecies, Ns, migration_traits, vision_radius, check_fraction, migration_thresholds, step, nnodes, biotic_phenotyps, abiotic_phenotyps, max_ages, names, dd[:model]["food sources"], dd[:model]["interactions"], resources, dd[:model]["resources"], recombination, initial_energy, bottlenecks, repro_start, repro_end)
+  properties = Params(ngenes, nphenotypes, growthrates, selectionCoeffs, ploidy, optvals, Mdists, Ddists, Ns, Ed, generations, nspecies, Ns, migration_traits, vision_radius, check_fraction, migration_thresholds, step, nnodes, biotic_phenotyps, abiotic_phenotyps, max_ages, names, dd[:food_sources], dd[:interactions], resources, dd[:resources], recombination, initial_energy, bottlenecks, repro_start, repro_end)
 
   return properties, (epistasisMatS, pleiotropyMatS, expressionArraysS)
 end
 
 function return_opt_phenotype(species::Int, site::Int, model::ABM)
   ss = vertex2coord(site, model)
-  Base.invokelatest(model.optvals[species], ss, model)
+  model.optvals[species](ss, model)
 end
 
 function return_opt_phenotype(species::Int, site::Tuple{Int,Int}, model::ABM)
-  Base.invokelatest(model.optvals[species], site, model)
+  model.optvals[species]( site, model)
 end
 
 function model_step!(model::ABM)
   model.step[1] += 1
-  model.resources .= reshape(Base.invokelatest(model.resources_org, model.step[1]), size(model.space)...)
+  model.resources .= model.resources_org(model.step[1])
 end
 
 function agent_step!(agent::Ind, model::ABM)
