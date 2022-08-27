@@ -69,6 +69,10 @@ function model_initiation(dd)
     mrng = RandomNumbers.Xorshifts.Xoroshiro128Plus(dd[:seed])
   end
 
+  if isnothing(dd[:space])
+    dd[:space] = (1, 1)
+  end
+
   properties, species_arrays = create_properties(dd)
   epistasisMat, pleiotropyMat, expressionArrays = species_arrays
 
@@ -163,6 +167,13 @@ function create_properties(dd)
   repro_start = [allspecies[i][:reproduction_start_age] for i in 1:nspecies]
   repro_end = [allspecies[i][:reproduction_end_age] for i in 1:nspecies]
   resources = dd[:resources](0)
+
+  # reshape single value matrices to (1,1)
+  if length(resources) == 1
+    resources = reshape(resources, 1,1)
+    dd[:food_sources] = reshape(dd[:food_sources], 1, 1)
+    dd[:interactions] = reshape(dd[:interactions], 1, 1)
+  end
 
   properties = Params(ngenes, nphenotypes, growthrates, selectionCoeffs, ploidy, optvals, Mdists, Ddists, Ns, Ed, generations, nspecies, Ns, migration_traits, vision_radius, check_fraction, migration_thresholds, step, nnodes, biotic_phenotyps, abiotic_phenotyps, max_ages, names, dd[:food_sources], dd[:interactions], resources, dd[:resources], recombination, initial_energy, bottlenecks, repro_start, repro_end)
 

@@ -49,7 +49,7 @@ function check_param_shapes(d)
   if !isnothing(d[:space])
     @assert length(d[:space]) == 2 "Space should be only 2D"
   end
-  @assert typeof(d[:space]) <: Tuple "Space should be either a tuple or `nothing`"
+  @assert typeof(d[:space]) <: Tuple || isnothing(d[:space]) "Space should be either a tuple or `nothing`"
   # Resources
   
   @assert typeof(d[:resources]) <: Function "Resources function not defined"
