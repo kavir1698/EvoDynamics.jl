@@ -1,75 +1,8 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Predator prey · EvoDynamics.jl</title><script data-outdated-warner src="../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.045/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.13.24/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../">EvoDynamics.jl</a></span></div><form class="docs-search" action="../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../">Introduction</a></li><li><a class="tocitem" href="../model_description/">Model description</a></li><li><a class="tocitem" href="../tutorial/">Tutorial</a></li><li><span class="tocitem">Examples</span><ul><li><a class="tocitem" href="../example1/">Simple Wright-Fisher</a></li><li class="is-active"><a class="tocitem" href>Predator prey</a></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Examples</a></li><li class="is-active"><a href>Predator prey</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Predator prey</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/kavir1698/EvoDynamics.jl/blob/master/examples/example2.jl" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="Predator-prey"><a class="docs-heading-anchor" href="#Predator-prey">Predator prey</a><a id="Predator-prey-1"></a><a class="docs-heading-anchor-permalink" href="#Predator-prey" title="Permalink"></a></h1><p>Here we create a predator prey model of two species, one haploid and one diploid.</p><pre><code class="language-julia hljs">using EvoDynamics</code></pre><p>Model parameters are in a YAML file as follows:</p><pre><code class="language-yml hljs">species:
-  1:
-    name: a
-    number of genes: 7
-    number of phenotypes: 4
-    abiotic phenotypes: [1]
-    biotic phenotypes: [2, 3]
-    migration phenotype: 4  # can be 0 for no migration
-    migration threshold: 3.5  # phenotypic threshold after which migration is possible
-    vision radius: 1  # the radius of neighboring sites that the agent can see
-    check fraction: 0.5  # the fraction of the observable sites that the agent checks
-    ploidy: 2
-    # A random epistasis matrix where the diagonal is 1.0, meaning that each locus affects itself 100%.
-    # ngenes x (ngenes x ploidy)
-    epistasis matrix: [1.0, 0.34, 0.05, -0.12, 0.25, -0.47, 0.37, -0.32, 0.02, 0.41, 0.03, 0.0, 0.46, -0.22, 0.43, 1.0, 0.27, 0.33, 0.25, 0.19, 0.09, 0.15, -0.16, -0.18, 0.25, 0.44, -0.1, 0.21, -0.41, -0.19, 1.0, -0.48, -0.14, -0.24, -0.11, 0.4, 0.33, -0.16, 0.14, -0.34, 0.14, 0.46, 0.38, -0.36, 0.04, 1.0, 0.49, 0.41, 0.4, -0.24, 0.48, -0.4, -0.36, -0.42, -0.22, -0.01, 0.48, 0.38, 0.01, -0.4, 1.0, 0.08, 0.42, -0.21, -0.42, 0.01, 0.28, 0.37, -0.26, -0.35, -0.43, -0.28, -0.14, -0.48, 0.28, 1.0, 0.45, 0.5, 0.39, 0.04, -0.18, -0.04, 0.13, -0.11, -0.1, 0.24, 0.3, -0.22, -0.34, 0.11, 1.0, 0.22, 0.2, 0.07, 0.09, 0.43, -0.5, 0.25, -0.08, -0.22, -0.28, -0.36, -0.49, 0.03, -0.01, 1.0, -0.11, 0.2, -0.2, -0.25, -0.41, -0.03, -0.09, 0.12, 0.43, -0.24, 0.45, 0.15, -0.47, -0.33, 1.0, -0.37, 0.46, 0.21, -0.31, 0.18, -0.5, 0.12, -0.13, -0.07, -0.14, 0.49, 0.07, 0.48, 0.46, 1.0, -0.48, 0.19, 0.0, -0.38, 0.41, -0.12, 0.2, -0.12, 0.26, 0.04, 0.5, -0.49, -0.06, -0.33, 1.0, 0.29, -0.15, -0.4, 0.44, -0.39, -0.02, -0.49, -0.13, 0.41, 0.44, 0.07, 0.22, 0.49, -0.21, 1.0, 0.29, -0.28, -0.21, 0.21, 0.25, -0.37, -0.44, -0.19, -0.18, 0.5, -0.3, 0.05, 0.41, -0.02, 1.0, 0.05, -0.12, 0.26, -0.39, 0.27, -0.17, 0.13, -0.2, -0.07, 0.31, -0.42, -0.46, 0.06, 0.17, 1.0]
-    # nphenotype x (ngenes x ploidy)
-    pleiotropy matrix: [1, 1, 1, 0, 1, 0, 0, 0, 0, 1, 1, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0, 1, 0, 1, 0, 1, 1, 0, 0, 1, 0, 0, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0]
-    growth rate: 0.8  # max number of offsprings per mating mean of a Poisson
-    expression array: [0.28878032859775615, 0.4629421231828499, 0.26092147517051467, 0.952859489607121, 0.9638502824424, 0.05038142018016245, 0.05930756376654234, 0.033459292878885716, 0.32421526342800044, 0.9029235877297073, 0.7670060809312949, 0.12766808941531993, 0.8656895869985795, 0.342191940658253]  # ngenes x ploidy long
-    selection coefficient: 0.5
-    mutation probabilities: [0.9, 0.0, 0.0]  # for gene expression array, pleiotropy matrix and epistasis matrix, respectively
-    mutation magnitudes: [0.05, 0.0, 0.01]  # same as above
-    N: [1000, 0, 0, 0]  # number of individuals per site at time 0
-    environmental noise: 0.01  # variance of a normal distribution with mean 0
-    optimal phenotypes: optphens2
-    bottleneck function: bn
-    functions file: runfuncs.jl
-    age: 5  # max age
-    recombination: 1 # Mean of a Poisson distributions for number of crossing overs
-    initial energy: 0 # A parameter for parental care of infants. Values more than 0 indicate that newly born individuals can survive for a number of times without requiring food from the environment/other species. The consumption rate (i.e. how many generations this initial energy suffices) is determined by the sum of the corresponding rows in &quot;food sources&quot;
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Predator prey · EvoDynamics.jl</title><script data-outdated-warner src="../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.045/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.13.24/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../">EvoDynamics.jl</a></span></div><form class="docs-search" action="../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../">Introduction</a></li><li><a class="tocitem" href="../model_description/">Model description</a></li><li><a class="tocitem" href="../tutorial/">Tutorial</a></li><li><span class="tocitem">Examples</span><ul><li><a class="tocitem" href="../example1/">Simple Wright-Fisher</a></li><li class="is-active"><a class="tocitem" href>Predator prey</a></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Examples</a></li><li class="is-active"><a href>Predator prey</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Predator prey</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/kavir1698/EvoDynamics.jl/blob/master/examples/example2.jl" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="Predator-prey"><a class="docs-heading-anchor" href="#Predator-prey">Predator prey</a><a id="Predator-prey-1"></a><a class="docs-heading-anchor-permalink" href="#Predator-prey" title="Permalink"></a></h1><p>Here we create a predator prey model of two species, one haploid and one diploid.</p><pre><code class="language-julia hljs">using EvoDynamics</code></pre><p>Model parameters are in a .jl file as follows:</p><pre><code class="language-julia hljs">## 1. Functions
 
-
-  2:
-    name: b
-    number of genes: 8
-    number of phenotypes: 5
-    abiotic phenotypes: [1,2]
-    biotic phenotypes: [3, 4]
-    migration phenotype: 5
-    migration threshold: 3.4
-    vision radius: 1
-    check fraction: 0.5
-    ploidy: 1
-    epistasis matrix: [1.0, 0.28, 0.0, 0.0, 0.31, -0.19, -0.43, 0.26, -0.01, 1.0, 0.28, -0.42, 0.47, 0.29, 0.38, 0.27, -0.01, -0.21, 1.0, 0.05, -0.42, -0.33, -0.06, -0.44, -0.34, -0.11, 0.1, 1.0, -0.34, -0.49, 0.39, -0.08, -0.42, 0.12, 0.09, -0.11, 1.0, 0.17, 0.21, 0.47, 0.18, -0.46, 0.3, -0.07, -0.4, 1.0, -0.5, -0.27, -0.09, 0.21, 0.1, -0.27, 0.16, -0.1, 1.0, -0.27, 0.13, -0.39, 0.17, 0.43, 0.11, -0.28, -0.08, 1.0]
-    pleiotropy matrix: [1, 1, 0, 1, 1, 0, 0, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 1, 1]
-    covariance matrix: [0.11035, 0.2686, 0.6074, 0.6914, 0.8604, 0.2686, 0.6807, 0.1738, 0.619, 0.1465, 0.6074, 0.1738, 0.6494, 0.7646, 0.75, 0.6914, 0.619, 0.7646, 0.4658, 0.549, 0.8604, 0.1465, 0.75, 0.549, 0.6465]
-    growth rate: 1.2
-    expression array: [0.24923147816626035, 0.7155732641738595, 0.9655184311211502, 0.8638149724268844, 0.5075272565823061, 0.9189652626508431, 0.7897640036022151, 0.17091233765481717]
-    selection coefficient: 0.5
-    mutation probabilities: [0.9, 0.0, 0.0]
-    mutation magnitudes: [0.05, 0.0, 0.01]
-    N: [1000, 0, 0, 0]
-    environmental noise: 0.01
-    optimal phenotypes: optphens3
-    bottleneck function: bn
-    functions file: runfuncs.jl
-    age: 3
-    recombination: 1 # Mean of a Poisson distributions for number of crossing overs
-    initial energy: 0
-
-model:
-  generations: 14  # number of simulation steps
-  space: [2, 2]
-  metric: chebyshev  # how many neighbors a space site has. &quot;chebyshev&quot; metric means that the r-neighborhood of a position are all positions within the hypercube having side length of 2*floor(r) and being centered in the origin position. &quot;euclidean&quot; metric means that the r-neighborhood of a position are all positions whose cartesian indices have Euclidean distance ≤ r from the cartesian index of the given position.
-  periodic: false  # whether boundaries of the space are connected
-  resources: env_resources2  # a function returning the available resources per site per time
-  functions file: runfuncs.jl # file containing the above function
-  interactions: [0.1, 0.0, 0.0, -1.0]  # How individuals from different species interact. value  is strength of interaction (between 0 and 1). Sign is the direction of interaction where positive means similar individuals interact more strongly and negative is dissimilar ones tend to interact more.
-  food sources: [1.0, 0.5, 0.0, 0.0]  # What each species feeds on (consumption rate). Has priority over interactions. Non-zero diagonal means the food resource is from the environment. It will be read from rows (species order) to columns (species order).
-  seed: Null  # random number generator seed. Put a number for replicable results</code></pre><p>and the contents of <code>runfuncs.jl</code> is:</p><pre><code class="nohighlight hljs">function bn(agent::AbstractAgent, model::ABM)
- return false
+function bn(agent::AbstractAgent, model::ABM)
+  return false
 end
 
 function optphens2(site::Tuple{Int,Int}, model::ABM)
@@ -94,7 +27,82 @@ function optphens3(site::Tuple{Int,Int}, model::ABM)
   end
 end
 
-env_resources2(time::Int) = [200, 220, 183, 190]</code></pre><pre><code class="language- hljs">param_file = &quot;../../examples/paramfile2.yml&quot;
+env_resources2(time::Int) = [200 220; 183 190]
+
+## 2. Species parameters
+
+species1 = Dict(
+  :name =&gt; &quot;a&quot;,
+  :number_of_genes =&gt; 7,
+  :number_of_phenotypes =&gt; 4,
+  :abiotic_phenotypes =&gt; [1],
+  :biotic_phenotypes =&gt; [2, 3],
+  :migration_phenotype =&gt; 4,
+  :migration_threshold =&gt; 3.5,
+  :vision_radius =&gt; 1,
+  :check_fraction =&gt; 0.5,
+  :ploidy =&gt; 2,
+  :epistasis_matrix =&gt; [1.0 0.43 -0.41 0.38 0.48 -0.43 -0.1 -0.08 -0.09 -0.5 0.41 0.44 -0.21 -0.12; 0.34 1.0 -0.19 -0.36 0.38 -0.28 0.24 -0.22 0.12 0.12 -0.12 -0.39 0.21 0.26; 0.05 0.27 1.0 0.04 0.01 -0.14 0.3 -0.28 0.43 -0.13 0.2 -0.02 0.25 -0.39; -0.12 0.33 -0.48 1.0 -0.4 -0.48 -0.22 -0.36 -0.24 -0.07 -0.12 -0.49 -0.37 0.27; 0.25 0.25 -0.14 0.49 1.0 0.28 -0.34 -0.49 0.45 -0.14 0.26 -0.13 -0.44 -0.17; -0.47 0.19 -0.24 0.41 0.08 1.0 0.11 0.03 0.15 0.49 0.04 0.41 -0.19 0.13; 0.37 0.09 -0.11 0.4 0.42 0.45 1.0 -0.01 -0.47 0.07 0.5 0.44 -0.18 -0.2; -0.32 0.15 0.4 -0.24 -0.21 0.5 0.22 1.0 -0.33 0.48 -0.49 0.07 0.5 -0.07; 0.02 -0.16 0.33 0.48 -0.42 0.39 0.2 -0.11 1.0 0.46 -0.06 0.22 -0.3 0.31; 0.41 -0.18 -0.16 -0.4 0.01 0.04 0.07 0.2 -0.37 1.0 -0.33 0.49 0.05 -0.42; 0.03 0.25 0.14 -0.36 0.28 -0.18 0.09 -0.2 0.46 -0.48 1.0 -0.21 0.41 -0.46; 0.0 0.44 -0.34 -0.42 0.37 -0.04 0.43 -0.25 0.21 0.19 0.29 1.0 -0.02 0.06; 0.46 -0.1 0.14 -0.22 -0.26 0.13 -0.5 -0.41 -0.31 0.0 -0.15 0.29 1.0 0.17; -0.22 0.21 0.46 -0.01 -0.35 -0.11 0.25 -0.03 0.18 -0.38 -0.4 -0.28 0.05 1.0],
+  :pleiotropy_matrix =&gt; Bool[1 1 0 0 0 0 0 1 0 1 0 1 0 1; 1 0 1 1 1 0 1 1 1 0 0 1 1 0; 1 0 1 0 1 0 0 0 0 0 1 0 1 0; 0 0 0 0 1 0 0 1 1 1 1 0 1 0],
+  :growth_rate =&gt; 0.8,
+  :expression_array =&gt; [0.28878032859775615, 0.4629421231828499, 0.26092147517051467, 0.952859489607121, 0.9638502824424, 0.05038142018016245, 0.05930756376654234, 0.033459292878885716, 0.32421526342800044, 0.9029235877297073, 0.7670060809312949, 0.12766808941531993, 0.8656895869985795, 0.342191940658253],
+  :selection_coefficient =&gt; 0.5,
+  :mutation_probabilities =&gt; [0.9, 0.0, 0.0],
+  :mutation_magnitudes =&gt; [0.05, 0.0, 0.01],
+  :N =&gt; [1000, 0, 0, 0],
+  :environmental_noise =&gt; 0.01,
+  :optimal_phenotypes =&gt; optphens2,
+  :bottleneck_function =&gt; bn,
+  :age =&gt; 5,
+  :recombination =&gt; 1,
+  :initial_energy =&gt; 0,
+  :reproduction_start_age =&gt; 1,
+  :reproduction_end_age =&gt; 5,
+)
+
+species2 = Dict(
+  :name =&gt; &quot;b&quot;,
+  :number_of_genes =&gt; 8,
+  :number_of_phenotypes =&gt; 5,
+  :abiotic_phenotypes =&gt; [1, 2],
+  :biotic_phenotypes =&gt; [3, 4],
+  :migration_phenotype =&gt; 5,
+  :migration_threshold =&gt; 3.4,
+  :vision_radius =&gt; 1,
+  :check_fraction =&gt; 0.5,
+  :ploidy =&gt; 1,
+  :epistasis_matrix =&gt; [1.0 -0.01 -0.01 -0.34 -0.42 0.18 -0.09 0.13; 0.28 1.0 -0.21 -0.11 0.12 -0.46 0.21 -0.39; 0.0 0.28 1.0 0.1 0.09 0.3 0.1 0.17; 0.0 -0.42 0.05 1.0 -0.11 -0.07 -0.27 0.43; 0.31 0.47 -0.42 -0.34 1.0 -0.4 0.16 0.11; -0.19 0.29 -0.33 -0.49 0.17 1.0 -0.1 -0.28; -0.43 0.38 -0.06 0.39 0.21 -0.5 1.0 -0.08; 0.26 0.27 -0.44 -0.08 0.47 -0.27 -0.27 1.0],
+  :pleiotropy_matrix =&gt; Bool[1 0 0 0 1 1 0 0; 1 0 0 1 1 0 1 1; 0 1 1 1 1 1 0 1; 1 0 1 0 0 1 0 1; 1 1 0 1 1 1 1 1],
+  :growth_rate =&gt; 1.2,
+  :expression_array =&gt; [0.24923147816626035, 0.7155732641738595, 0.9655184311211502, 0.8638149724268844, 0.5075272565823061, 0.9189652626508431, 0.7897640036022151, 0.17091233765481717],
+  :selection_coefficient =&gt; 0.5,
+  :mutation_probabilities =&gt; [0.9, 0.0, 0.0],
+  :mutation_magnitudes =&gt; [0.05, 0.0, 0.01],
+  :N =&gt; [1000, 0, 0, 0],
+  :environmental_noise =&gt; 0.01,
+  :optimal_phenotypes =&gt; optphens3,
+  :bottleneck_function =&gt; bn,
+  :age =&gt; 3,
+  :recombination =&gt; 1,
+  :initial_energy =&gt; 0,
+  :reproduction_start_age =&gt; 1,
+  :reproduction_end_age =&gt; 3,
+)
+
+## 3. Model parameters
+
+#NB this dict should be called model_parameters
+model_parameters = Dict(
+  :species =&gt; [species1, species2],
+  :generations =&gt; 14,
+  :space =&gt; (2, 2),
+  :metric =&gt; &quot;chebyshev&quot;,
+  :periodic =&gt; false,
+  :resources =&gt; env_resources2,
+  :interactions =&gt; [0.1 0.0; 0.0 -1.0],
+  :food_sources =&gt; [1.0 0.5; 0.0 0.0],
+  :seed =&gt; nothing
+)</code></pre><pre><code class="language- hljs">param_file = &quot;../../examples/paramfile2.jl&quot;  #hide
 agentdata, modeldata, model = runmodel(param_file);
 
-modeldata</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../example1/">« Simple Wright-Fisher</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.20 on <span class="colophon-date" title="Tuesday 12 July 2022 12:39">Tuesday 12 July 2022</span>. Using Julia version 1.7.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+modeldata</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../example1/">« Simple Wright-Fisher</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.23 on <span class="colophon-date" title="Saturday 27 August 2022 22:50">Saturday 27 August 2022</span>. Using Julia version 1.8.0.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
