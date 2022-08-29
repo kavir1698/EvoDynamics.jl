@@ -103,7 +103,7 @@ function model_initiation(dd)
         end
         interaction_history = MVector{model.nspecies,Int}(fill(-1, model.nspecies))
         initial_energy = model.initial_energy[sp]
-        add_agent!(model.nodes[pos], model, sp, biotic_ph, abiotic_ph, epistasisMat[sp], pleiotropyMat[sp], expressionArrays[sp], 0, sex, interaction_history, initial_energy, W, true)
+        add_agent!(model.nodes[pos], model, sp, biotic_ph, abiotic_ph, epistasisMat[sp], pleiotropyMat[sp], expressionArrays[sp], 1, sex, interaction_history, initial_energy, W, true)
       end
     end
   end
@@ -199,8 +199,6 @@ function model_step!(model::ABM)
 end
 
 function agent_step!(agent::Ind, model::ABM)
-  # update age
-  agent.age += 1
   # abiotic survive
   abiotic_survive!(agent, model)  # the agent first survives then feeds, reproduces, and interacts.
   if !agent.isalive
@@ -236,6 +234,8 @@ function agent_step!(agent::Ind, model::ABM)
       remove_agent!(agent, model)
     end
   end
+  # update age
+  agent.age += 1
 end
 
 function remove_agent!(agent, model)
