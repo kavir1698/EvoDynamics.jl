@@ -28,7 +28,7 @@ get_abiotic_phenotype(ag::Ind, model::ABM) = get_abiotic_phenotype(ag.species, a
 """
 Calculates the average distance between two sets of phenotypes.
 
-Distance is a probability and is calculated by the number of standard deviation that phenotype 2 is different from phenotype 1.
+Distance is a probability and is calculated by the number of standard deviations that phenotype 2 is different from phenotype 1.
 
 Variance can stand for selection coefficient, with a larger variance, less sever the difference.
 """
@@ -50,7 +50,7 @@ function phenotypic_distance(phenotype1, phenotype2, interaction_coeff, variance
   return distance
 end
 
-phenotypic_distance(ag1::Ind, ag2::Ind, model) = phenotypic_distance(ag1.biotic_phenotype, ag2.biotic_phenotype, model.interactions[ag1.species, ag2.species], variance)
+phenotypic_distance(ag1::Ind, ag2::Ind, model) = phenotypic_distance(ag1.biotic_phenotype, ag2.biotic_phenotype, model.interactions[ag1.species, ag2.species], model.biotic_variances[ag1.species])
 
 """
 Abiotic distance to the optimal values
@@ -69,7 +69,7 @@ function abiotic_distance(phenotype, optimal, variance)
 end
 
 function abiotic_fitness(abiotic_phenotype, species::Int, pos, model::ABM)
-  rawW = 1.0 - abiotic_distance(abiotic_phenotype, return_opt_phenotype(species, pos, model), variance)
+  rawW = 1.0 - abiotic_distance(abiotic_phenotype, return_opt_phenotype(species, pos, model), model.abiotic_variances[species])
   # W = adjust_abiotic_fitness(rawW, model.selectionCoeffs[species])
   return rawW
 end
@@ -101,12 +101,14 @@ function interact!(ag1::Ind, ag2::Ind, model::ABM)
 
   if sp1 != sp2 && model.food_sources[sp1, sp2] > 0  # predation
     d = phenotypic_distance(ag1, ag2, model)
-    if rand() < d
+    prob = interaction_power(ag1, ag2, d, model)
+    if rand() < prob
       eat!(ag1, ag2, model)
     end
   elseif sp1 != sp2 && model.food_sources[sp2, sp1] > 0 # predation
     d = phenotypic_distance(ag1, ag2, model)
-    if rand() < d
+    prob = interaction_power(ag1, ag2, d, model)
+    if rand() < prob
       eat!(ag2, ag1, model)
     end
   else # interaction

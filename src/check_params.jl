@@ -1,5 +1,5 @@
 function check_param_names(d)
-  species_keys = [:name, :number_of_genes, :number_of_phenotypes, :abiotic_phenotypes, :biotic_phenotypes, :migration_phenotype, :migration_threshold, :ploidy, :epistasis_matrix, :pleiotropy_matrix, :growth_rate, :expression_array, :selection_coefficient, :mutation_probabilities, :mutation_magnitudes, :N, :vision_radius, :check_fraction, :environmental_noise, :optimal_phenotypes, :age, :recombination, :initial_energy, :bottleneck_function, :reproduction_start_age, :reproduction_end_age]
+  species_keys = [:name, :number_of_genes, :number_of_phenotypes, :abiotic_phenotypes, :biotic_phenotypes, :migration_phenotype, :migration_threshold, :ploidy, :epistasis_matrix, :pleiotropy_matrix, :growth_rate, :expression_array, :selection_coefficient, :mutation_probabilities, :mutation_magnitudes, :N, :vision_radius, :check_fraction, :environmental_noise, :optimal_phenotypes, :age, :recombination, :initial_energy, :bottleneck_function, :reproduction_start_age, :reproduction_end_age, :abiotic_variance, :biotic_variance, :mating_scheme]
   model_keys = [:species, :generations, :space, :metric, :periodic, :resources, :interactions, :food_sources, :seed]
   species = d[:species]
   for sp in species
@@ -44,10 +44,15 @@ function check_param_shapes(d)
     @assert typeof(dd[:bottleneck_function]) <: AbstractArray || isnothing(dd[:bottleneck_function]) "bottleneck function for species $spname is not an `Array` or `nothing`"
     @assert typeof(dd[:selection_coefficient]) <: AbstractFloat "selection coefficient of species $spname should be floating point number"
     @assert typeof(dd[:migration_threshold]) <: AbstractFloat "migration_threshold of species $spname should be floating point number"
+    @assert typeof(dd[:abiotic_variance]) <: AbstractFloat "Species $spname: abiotic variance should be a floating number"
+    @assert typeof(dd[:biotic_variance]) <: AbstractFloat "Species $spname: biotic variance should be a floating number"
     # Checking the dimensions of optimal phenotypes
     @assert length(dd[:optimal_phenotypes]) == (d[:generations] + 1) "Species $spname: optimal phenotypes should be defined for every generation including step 0 (generations + 1)."
     @assert length(dd[:optimal_phenotypes][1]) == prod(d[:space]) "Species $spname: at each generation, optimal phenotypes should be defined for all sites."
     @assert length(dd[:optimal_phenotypes][1][1]) == length(dd[:abiotic_phenotypes]) "Species $spname : optimal phenotypes at each site should be defined for all abiotic phenotypes. If there is only one abiotic phenotype, define the optimal phenotype in a vector (vector of length 1)."
+    # mating scheme
+    @assert typeof(dd[:mating_scheme]) <: Int "Species $spname: mating scheme should be an integer." 
+    @assert in(dd[:mating_scheme], [-1, 0, 1]) "Species $spname: mating scheme should be one of the following values: -1, 0, 1."
   end
   # Space should be 2D
   if !isnothing(d[:space])

@@ -87,11 +87,15 @@ end
 
 """
 Sexual reproduction for diploid individuals.
-
-# TODO: Currently this is assortative mating. Add a parameter to allow nonassortative, and disassortative mating.
+Whether it is assortative or dissortative depends on the sign of the corresponding element in the interaction matrix. 
 """
 function reproduce!(ag1::Ind, ag2::Ind, model::ABM)
-  reproduction_success = 1.0 - phenotypic_distance(ag1, ag2, model)
+  if model.mating_schemes[ag1.species] == 0.0
+    reproduction_success = 1.0
+  else
+    d = phenotypic_distance(ag1.biotic_phenotype, ag2.biotic_phenotype, model.mating_schemes[ag1.species], model.biotic_variances[ag1.species])
+    reproduction_success = interaction_power(ag1, ag2, d, model)
+  end
   growth_rate = model.growthrates[ag1.species]
   nchildren = rand(Poisson(reproduction_success * growth_rate))
   for c in 1:nchildren

@@ -1,11 +1,11 @@
-generations = 14
+generations = 24
 space = (2, 2)
 
 function env_resources(time::Int)
   if time < 7
-    return [200 158; 183 190]
+    return [2000 1580; 1830 1900]
   else
-    return [200 158; 183 190] .- 50
+    return [2000 1580; 1830 1900] .- 50
   end
 end
 
@@ -29,7 +29,9 @@ species1 = Dict(
   :pleiotropy_matrix => Bool[1 1 0 0 0 0 0 1 0 1 0 1 0 1; 1 0 1 1 1 0 1 1 1 0 0 1 1 0; 1 0 1 0 1 0 0 0 0 0 1 0 1 0; 0 0 0 0 1 0 0 1 1 1 1 0 1 0],
   :growth_rate => 0.8 , # max number of offsprings per mating mean of a Poisson
   :expression_array => [0.28878032859775615, 0.4629421231828499, 0.26092147517051467, 0.952859489607121, 0.9638502824424, 0.05038142018016245, 0.05930756376654234, 0.033459292878885716, 0.32421526342800044, 0.9029235877297073, 0.7670060809312949, 0.12766808941531993, 0.8656895869985795, 0.342191940658253],  # ngenes x ploidy long
-  :selection_coefficient => 0.2,
+  :selection_coefficient => 0.02,
+  :abiotic_variance => 1.0, # variance of a normal distribution used in determining the phenotypic distance of agents to the optimal environmental phenotypes. The larger the variance, the less important is the distance.
+  :biotic_variance => 10.0, # same as above but for determining the biotic phenotypic distance between two individuals (used in any kind of interaction). Larger values mean that all pairs are equally likely to interact, regardless of their phenotype difference. 
   :mutation_probabilities => [0.9, 0.0, 0.0],  # for gene expression array, pleiotropy matrix and epistasis matrix, respectively
   :mutation_magnitudes => [0.05, 0.0, 0.01], # same as above
   :N => [1000, 0, 0, 0],  # number of individuals per site at time 0
@@ -39,6 +41,7 @@ species1 = Dict(
   :age => 5,  # max age
   :reproduction_start_age => 1,
   :reproduction_end_age => 5,
+  :mating_scheme => 0, # 0 means number of children between a pair is independent of the phenotype of the pair. 1 means the more similar they are, the more children they will have (assortative mating). -1 means the more dissimilar they are, the more children they will have (dissortative mating).
   :recombination => 1, # Mean of a Poisson distributions for number of crossing overs
   :initial_energy => 0, # A parameter for parental care of infants. Values more than 0 indicate that newly born individuals can survive for a number of times without requiring food from the environment/other species. The consumption rate (i.e. how many generations this initial energy suffices) is determined by the sum of the corresponding rows in "food sources"
   :bottleneck_function => [fill(0.0, space...) for t in 0:generations]  # an array of arrays with probablity of external death at each site and generation.
@@ -59,7 +62,9 @@ species2 = Dict(
   :pleiotropy_matrix => Bool[1 0 0 0 1 1 0 0; 1 0 0 1 1 0 1 1; 0 1 1 1 1 1 0 1; 1 0 1 0 0 1 0 1; 1 1 0 1 1 1 1 1],
   :growth_rate => 1.2,
   :expression_array => [0.24923147816626035, 0.7155732641738595, 0.9655184311211502, 0.8638149724268844, 0.5075272565823061, 0.9189652626508431, 0.7897640036022151, 0.17091233765481717],
-  :selection_coefficient => 0.5,
+  :selection_coefficient => 0.05,
+  :abiotic_variance => 1.0,
+  :biotic_variance => 10.0,
   :mutation_probabilities => [0.9, 0.0, 0.0],
   :mutation_magnitudes => [0.05, 0.0, 0.01],
   :N => [1000, 0, 0, 0],
@@ -68,6 +73,7 @@ species2 = Dict(
   :age => 3,
   :reproduction_start_age => 1,
   :reproduction_end_age => 3,
+  :mating_scheme => 0,
   :recombination => 1,
   :initial_energy => 0,
   :bottleneck_function => [fill(0.0, space...) for t in 0:generations]
@@ -85,7 +91,7 @@ model_parameters = Dict(
   :metric => "chebyshev",  # how many neighbors a space site has. "chebyshev" metric means that the r-neighborhood of a position are all positions within the hypercube having side length of 2*floor(r) and being centered in the origin position. "euclidean" metric means that the r-neighborhood of a position are all positions whose cartesian indices have Euclidean distance ≤ r from the cartesian index of the given position.
   :periodic => false,  # whether boundaries of the space are connected
   :resources => [env_resources(x) for x in 0:generations],  # a function that returns a vector of integers for the available resources per site at a given time. It accepts only the model object as the input.
-  :interactions => [0.1 0.0; 0.0 -1.0],  # How individuals from different species interact. value  is strength of interaction (between 0 and 1). Sign is the direction of interaction where positive means similar individuals interact more strongly and negative is dissimilar ones tend to interact more. 
-  :food_sources => [1.0 0.0; 0.5 0.0],  # What each species feeds on (consumption rate). Has priority over interactions. Non-zero diagonal means the food resource is from the environment. It will be read from rows (species order) to columns (species order).
+  :interactions => [0.1 1.0; 1.0 -1.0],  # How individuals from different species interact. value  is probability of interaction (between 0 and 1). Sign is the direction of interaction where positive means similar individuals interact more strongly and negative is dissimilar ones tend to interact more. If you want full interaction, use 1 or -1 for nondiagonals. Diagonals are only used for reproduction (in case of diploids) and competition/cooperation (in case of same sexes in diploids, and and interaction between haploids of the same species).
+  :food_sources => [1.0 0.0; 1.5 0.0],  # What each species feeds on (consumption rate). Non-zero diagonal means the food resource is from the environment. It will be read from rows (species order) to columns (species order).
   :seed => 3
 )

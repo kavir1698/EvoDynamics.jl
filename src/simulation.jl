@@ -52,9 +52,10 @@ struct Params{F<:AbstractFloat,I<:Int,N<:AbstractString}
   bottlenecks::Vector{Vector{Matrix{F}}}
   repro_start::Vector{Int}
   repro_end::Vector{Int}
+  biotic_variances::Vector{F}
+  abiotic_variances::Vector{F}
+  mating_schemes::Vector{Int}
 end
-
-const variance = 1.0
 
 """
     model_initiation(dd)
@@ -100,7 +101,7 @@ function model_initiation(dd)
         if model.ploidy[sp] == 2
           sex = rand((true, false))
         end
-        interaction_history = MVector{model.nspecies,Int}(fill(0, model.nspecies))
+        interaction_history = MVector{model.nspecies,Int}(fill(-1, model.nspecies))
         initial_energy = model.initial_energy[sp]
         add_agent!(model.nodes[pos], model, sp, biotic_ph, abiotic_ph, epistasisMat[sp], pleiotropyMat[sp], expressionArrays[sp], 0, sex, interaction_history, initial_energy, W, true)
       end
@@ -167,6 +168,9 @@ function create_properties(dd)
   repro_start = [allspecies[i][:reproduction_start_age] for i in 1:nspecies]
   repro_end = [allspecies[i][:reproduction_end_age] for i in 1:nspecies]
   resources = dd[:resources][1]
+  biotic_variances = [allspecies[i][:biotic_variance] for i in 1:nspecies]
+  abiotic_variances = [allspecies[i][:abiotic_variance] for i in 1:nspecies]
+  mating_schemes = [allspecies[i][:mating_scheme] for i in 1:nspecies]
 
   # reshape single value matrices to (1,1)
   if length(resources) == 1
@@ -175,7 +179,7 @@ function create_properties(dd)
     dd[:interactions] = reshape(dd[:interactions], 1, 1)
   end
 
-  properties = Params(ngenes, nphenotypes, growthrates, selectionCoeffs, ploidy, optvals, Mdists, Ddists, Ns, Ed, generations, nspecies, Ns, migration_traits, vision_radius, check_fraction, migration_thresholds, step, nnodes, biotic_phenotyps, abiotic_phenotyps, max_ages, names, dd[:food_sources], dd[:interactions], resources, dd[:resources], recombination, initial_energy, bottlenecks, repro_start, repro_end)
+  properties = Params(ngenes, nphenotypes, growthrates, selectionCoeffs, ploidy, optvals, Mdists, Ddists, Ns, Ed, generations, nspecies, Ns, migration_traits, vision_radius, check_fraction, migration_thresholds, step, nnodes, biotic_phenotyps, abiotic_phenotyps, max_ages, names, dd[:food_sources], dd[:interactions], resources, dd[:resources], recombination, initial_energy, bottlenecks, repro_start, repro_end, biotic_variances, abiotic_variances, mating_schemes)
 
   return properties, (epistasisMatS, pleiotropyMatS, expressionArraysS)
 end
@@ -206,13 +210,13 @@ function agent_step!(agent::Ind, model::ABM)
   burn_energy!(agent)
   # consume basic energy if agent can
   consume_food!(agent, model)
+  # interact with other species
+  interact!(agent, model)
   # Kill the agent if it doesn't have energy
   if agent.isalive && agent.energy < 0
     remove_agent!(agent, model)
     return
   end
-  # interact with other species
-  interact!(agent, model)
   # survive!(agent, model)
   if !agent.isalive
     return
@@ -257,7 +261,7 @@ function survive!(agent::Ind, model::ABM)
 end
 
 """
-Kills the agent by chance given its fitness `W`
+Kills the agent by chance given its fitness `W`.
 """
 function abiotic_survive!(agent::Ind, model::ABM)
   if agent.isalive && rand() > agent.W
