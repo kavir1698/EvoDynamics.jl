@@ -2,7 +2,7 @@
 """
 Returns a bitarray for sites to be selected from the first (false) and second (true) homologous chromosome.
 """
-function crossing_overs(nsites::Int, ncrossing_overs::Int) 
+function crossing_overs(nsites::Int, ncrossing_overs::Int)
   output = falses(nsites)
   if ncrossing_overs == 0
     return output
@@ -17,7 +17,7 @@ function crossing_overs(nsites::Int, ncrossing_overs::Int)
     if counter < ncrossing_overs && site == breaking_points[counter+1]
       counter += 1
       output[site] = last
-      last = !last 
+      last = !last
     else
       output[site] = last
     end
@@ -45,7 +45,7 @@ function create_gamete(agent, cross_overs, nsites, first::Bool)
 
   q_gamete = agent.q[indices1]
   q_gamete[cross_overs] .= agent.q[indices2][cross_overs]
-  
+
   return epistasisMat_gamete, pleiotropyMat_gamete, q_gamete
 end
 
@@ -68,14 +68,14 @@ function create_one_offspring(ag1::Ind, ag2::Ind, model::ABM)
   gametes2 = create_gamete(ag2, cross_overs2, nsites, rand((true, false)))
 
   sex = rand((true, false))
-  interaction_history = MVector{model.nspecies, Int}(fill(0, model.nspecies))
-  
+  interaction_history = MVector{model.nspecies,Int}(fill(0, model.nspecies))
+
   # Merge gametes
-  nsites2 = nsites*2
-  episMat = MMatrix{nsites2, nsites2}(hcat(gametes1[1], gametes2[1]))
+  nsites2 = nsites * 2
+  episMat = MMatrix{nsites2,nsites2}(hcat(gametes1[1], gametes2[1]))
   pleioMat = MMatrix{model.nphenotypes[species],nsites2}(hcat(gametes1[2], gametes2[2]))
   q = MVector{nsites2}(vcat(gametes1[3], gametes2[3]))
-  abph = get_abiotic_phenotype(species, episMat, pleioMat, q, model) 
+  abph = get_abiotic_phenotype(species, episMat, pleioMat, q, model)
   bph = get_biotic_phenotype(species, episMat, pleioMat, q, model)
   W = abiotic_fitness(abph, species, ag1.pos, model)
   W = adjust_fitness(W, ag1.species, model)
@@ -86,7 +86,9 @@ function create_one_offspring(ag1::Ind, ag2::Ind, model::ABM)
 end
 
 """
-Sexual reproduction for diploid individuals
+Sexual reproduction for diploid individuals.
+
+# TODO: Currently this is assortative mating. Add a parameter to allow nonassortative, and disassortative mating.
 """
 function reproduce!(ag1::Ind, ag2::Ind, model::ABM)
   reproduction_success = 1.0 - phenotypic_distance(ag1, ag2, model)

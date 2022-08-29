@@ -1,30 +1,5 @@
-# NB keep the order of sections 1, 2, and 3.
-
-### 1. functions
-##----------------------------------------------------------------
-
-function bn(agent::AbstractAgent, model::ABM)
-  return false
-end
-
-function bn1(agent::AbstractAgent, model::ABM)
-  return false
-end
-
-function optphens1(site::Tuple{Int,Int}, model::ABM)
-  return [1.5]
-end
-
-function optphens2(site::Tuple{Int,Int}, model::ABM)
-  phenotypic_values = [[0.7614758101208934 2.3911353663016586; 2.2091361414343313 1.7858661540288683; 0.7920974352892358 0.7630236717263839; 2.587205421882114 2.311211631439866],
-    [0.6437641305315445 2.097629262577973; 0.9954545836033715 1.1314248848669466; 2.469792530385348 1.490299526620522; 1.6158867433451882 0.2566056477862022]]
-  agent_site = (site[2] - 1) * size(model.space)[2] + (site[1])
-  if model.step[1] > 7
-    return phenotypic_values[1][agent_site, :]
-  else
-    return phenotypic_values[2][agent_site, :]
-  end
-end
+generations = 14
+space = (2, 2)
 
 function env_resources(time::Int)
   if time < 7
@@ -34,7 +9,7 @@ function env_resources(time::Int)
   end
 end
 
-## 2. Species properties
+## 1. Species properties
 ##----------------------------------------------------------------
 
 species1 = Dict(
@@ -60,13 +35,13 @@ species1 = Dict(
   :N => [1000, 0, 0, 0],  # number of individuals per site at time 0
   :environmental_noise => 0.0,  # variance of a normal distribution with mean 0
   # each row is the optimal phenotypes for each site for all abiotic traits. There are as many element as number of sites times number of abiotic traits. The first N elements are for the first abiotic trait, where N is the number of sites, and so on.
-  :optimal_phenotypes => optphens1,
+  :optimal_phenotypes => [fill([1.5 for p in 1:1], space...) for t in 0:generations], # optimal phenotypes per site and time for each phenotype
   :age => 5,  # max age
   :reproduction_start_age => 1,
   :reproduction_end_age => 5,
   :recombination => 1, # Mean of a Poisson distributions for number of crossing overs
   :initial_energy => 0, # A parameter for parental care of infants. Values more than 0 indicate that newly born individuals can survive for a number of times without requiring food from the environment/other species. The consumption rate (i.e. how many generations this initial energy suffices) is determined by the sum of the corresponding rows in "food sources"
-  :bottleneck_function => bn  # The function has two argument: agent and model. It returns true or false for death or survival, respectively.
+  :bottleneck_function => [fill(0.0, space...) for t in 0:generations]  # an array of arrays with probablity of external death at each site and generation.
 )
 
 species2 = Dict(
@@ -89,27 +64,27 @@ species2 = Dict(
   :mutation_magnitudes => [0.05, 0.0, 0.01],
   :N => [1000, 0, 0, 0],
   :environmental_noise => 0.01,
-  :optimal_phenotypes => optphens2,
+  :optimal_phenotypes => [fill([1.5 for i in 1:2], space...) for t in 0:generations],
   :age => 3,
   :reproduction_start_age => 1,
   :reproduction_end_age => 3,
   :recombination => 1,
   :initial_energy => 0,
-  :bottleneck_function => bn1
+  :bottleneck_function => [fill(0.0, space...) for t in 0:generations]
 )
 
-## 3. Model parameters
+## 2. Model parameters
 ##----------------------------------------------------------------
 
 #NB this dict should be called model_parameters
 
 model_parameters = Dict(
   :species => [species1, species2],
-  :generations => 14,  # number of simulation steps
-  :space => (2, 2),
+  :generations => generations,  # number of simulation steps
+  :space => space,
   :metric => "chebyshev",  # how many neighbors a space site has. "chebyshev" metric means that the r-neighborhood of a position are all positions within the hypercube having side length of 2*floor(r) and being centered in the origin position. "euclidean" metric means that the r-neighborhood of a position are all positions whose cartesian indices have Euclidean distance ≤ r from the cartesian index of the given position.
   :periodic => false,  # whether boundaries of the space are connected
-  :resources => env_resources,  # a function that returns a vector of integers for the available resources per site at a given time. It accepts only the model object as the input.
+  :resources => [env_resources(x) for x in 0:generations],  # a function that returns a vector of integers for the available resources per site at a given time. It accepts only the model object as the input.
   :interactions => [0.1 0.0; 0.0 -1.0],  # How individuals from different species interact. value  is strength of interaction (between 0 and 1). Sign is the direction of interaction where positive means similar individuals interact more strongly and negative is dissimilar ones tend to interact more. 
   :food_sources => [1.0 0.0; 0.5 0.0],  # What each species feeds on (consumption rate). Has priority over interactions. Non-zero diagonal means the food resource is from the environment. It will be read from rows (species order) to columns (species order).
   :seed => 3

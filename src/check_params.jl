@@ -1,4 +1,4 @@
-function check_yml_params(d)
+function check_param_names(d)
   species_keys = [:name, :number_of_genes, :number_of_phenotypes, :abiotic_phenotypes, :biotic_phenotypes, :migration_phenotype, :migration_threshold, :ploidy, :epistasis_matrix, :pleiotropy_matrix, :growth_rate, :expression_array, :selection_coefficient, :mutation_probabilities, :mutation_magnitudes, :N, :vision_radius, :check_fraction, :environmental_noise, :optimal_phenotypes, :age, :recombination, :initial_energy, :bottleneck_function, :reproduction_start_age, :reproduction_end_age]
   model_keys = [:species, :generations, :space, :metric, :periodic, :resources, :interactions, :food_sources, :seed]
   species = d[:species]
@@ -41,9 +41,13 @@ function check_param_shapes(d)
     @assert typeof(dd[:recombination]) <: Real "recombination of species $spname should be type numeric"
     @assert typeof(dd[:initial_energy]) <: Real "Initial energy should be a number"
     # bottleneck should be nothing or array/string
-    @assert typeof(dd[:bottleneck_function]) <: Function || isnothing(dd[:bottleneck_function]) "bottleneck function for species $spname is not a function or `nothing`"
+    @assert typeof(dd[:bottleneck_function]) <: AbstractArray || isnothing(dd[:bottleneck_function]) "bottleneck function for species $spname is not an `Array` or `nothing`"
     @assert typeof(dd[:selection_coefficient]) <: AbstractFloat "selection coefficient of species $spname should be floating point number"
     @assert typeof(dd[:migration_threshold]) <: AbstractFloat "migration_threshold of species $spname should be floating point number"
+    # Checking the dimensions of optimal phenotypes
+    @assert length(dd[:optimal_phenotypes]) == (d[:generations] + 1) "Species $spname: optimal phenotypes should be defined for every generation including step 0 (generations + 1)."
+    @assert length(dd[:optimal_phenotypes][1]) == prod(d[:space]) "Species $spname: at each generation, optimal phenotypes should be defined for all sites."
+    @assert length(dd[:optimal_phenotypes][1][1]) == length(dd[:abiotic_phenotypes]) "Species $spname : optimal phenotypes at each site should be defined for all abiotic phenotypes. If there is only one abiotic phenotype, define the optimal phenotype in a vector (vector of length 1)."
   end
   # Space should be 2D
   if !isnothing(d[:space])
@@ -52,7 +56,12 @@ function check_param_shapes(d)
   @assert typeof(d[:space]) <: Tuple || isnothing(d[:space]) "Space should be either a tuple or `nothing`"
   # Resources
   
-  @assert typeof(d[:resources]) <: Function "Resources function not defined"
+  @assert typeof(d[:resources]) <: AbstractArray "Resources function no an array"
+  @assert length(d[:resources]) == d[:generations] + 1 "resources is not as long as generations+1"
+  if !isnothing(d[:space])
+    @assert length(d[:resources][1]) == prod(d[:space]) "Each inner array of resources is not as long as space size" 
+    @assert size(d[:resources][1]) == d[:space] "Inner arrays of resources does not have the same dimension as the space."
+  end
 
   # Interactions
   @assert typeof(d[:interactions]) <: AbstractArray "Interactions should be an array(matrix)"

@@ -19,13 +19,13 @@ mutable struct Ind{B<:AbstractFloat,C<:AbstractArray,D<:AbstractArray,E<:Abstrac
   isalive::Bool
 end
 
-struct Params{F<:AbstractFloat,I<:Int,N<:AbstractString,X<:Function, Fun, FunVec}
+struct Params{F<:AbstractFloat,I<:Int,N<:AbstractString}
   ngenes::Vector{I}
   nphenotypes::Vector{I}
   growthrates::Vector{F}
   selectionCoeffs::Vector{F}
   ploidy::Vector{I}
-  optvals::Vector{X}
+  optvals::Vector{Vector{Matrix{Vector{F}}}}
   mutProbs::Vector{Vector{DiscreteNonParametric{Bool,Float64,Vector{Bool},Vector{Float64}}}}
   mutMagnitudes::Vector{Vector{UnivariateDistribution{S} where S<:ValueSupport}}
   N::Vector{Vector{I}}
@@ -46,10 +46,10 @@ struct Params{F<:AbstractFloat,I<:Int,N<:AbstractString,X<:Function, Fun, FunVec
   food_sources::Matrix{F}
   interactions::Matrix{F}
   resources::Matrix{I}
-  resources_org::Fun
+  resources_org::Vector{Matrix{I}}
   recombination::Vector{Poisson{F}}
   initial_energy::Vector{F}
-  bottlenecks::FunVec
+  bottlenecks::Vector{Vector{Matrix{F}}}
   repro_start::Vector{Int}
   repro_end::Vector{Int}
 end
@@ -166,11 +166,11 @@ function create_properties(dd)
   bottlenecks = [allspecies[i][:bottleneck_function] for i in 1:nspecies]
   repro_start = [allspecies[i][:reproduction_start_age] for i in 1:nspecies]
   repro_end = [allspecies[i][:reproduction_end_age] for i in 1:nspecies]
-  resources = dd[:resources](0)
+  resources = dd[:resources][1]
 
   # reshape single value matrices to (1,1)
   if length(resources) == 1
-    resources = reshape(resources, 1,1)
+    resources = reshape(resources, 1, 1)
     dd[:food_sources] = reshape(dd[:food_sources], 1, 1)
     dd[:interactions] = reshape(dd[:interactions], 1, 1)
   end
@@ -181,17 +181,17 @@ function create_properties(dd)
 end
 
 function return_opt_phenotype(species::Int, site::Int, model::ABM)
-  ss = vertex2coord(site, model)
-  model.optvals[species](ss, model)
+  # ss = vertex2coord(site, model)
+  model.optvals[species][model.step[1]+1][site]
 end
 
 function return_opt_phenotype(species::Int, site::Tuple{Int,Int}, model::ABM)
-  model.optvals[species]( site, model)
+  model.optvals[species][model.step[1]+1][site...]
 end
 
 function model_step!(model::ABM)
   model.step[1] += 1
-  model.resources .= model.resources_org(model.step[1])
+  model.resources .= model.resources_org[model.step[1]+1]
 end
 
 function agent_step!(agent::Ind, model::ABM)
@@ -206,13 +206,13 @@ function agent_step!(agent::Ind, model::ABM)
   burn_energy!(agent)
   # consume basic energy if agent can
   consume_food!(agent, model)
-  # interact with other species
-  interact!(agent, model)
   # Kill the agent if it doesn't have energy
   if agent.isalive && agent.energy < 0
     remove_agent!(agent, model)
     return
   end
+  # interact with other species
+  interact!(agent, model)
   # survive!(agent, model)
   if !agent.isalive
     return
@@ -221,21 +221,17 @@ function agent_step!(agent::Ind, model::ABM)
   migrate!(agent, model)
   # reproduction for the haploid
   reproduce!(agent, model)
-  
+
   if agent.isalive && agent.age ≥ model.max_ages[agent.species]
     remove_agent!(agent, model)
   end
   # bottleneck
-  if agent.isalive && model.bottlenecks[agent.species](agent, model)
-    if EvoDynamics.bottleneck(agent, model)
+  bn_prob = model.bottlenecks[agent.species][model.step[1]+1][agent.pos...]
+  if agent.isalive && bn_prob > 0.0
+    if rand() < bn_prob
       remove_agent!(agent, model)
     end
   end
-end
-
-function bottleneck(agent, model)
-  # @info "Package bottleneck function"
-  return false
 end
 
 function remove_agent!(agent, model)
