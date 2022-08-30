@@ -1,4 +1,4 @@
-generations = 5
+generations = 14
 space = (2, 2)
 
 function env_resources(time::Int)
