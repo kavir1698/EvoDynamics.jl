@@ -81,7 +81,7 @@ function create_one_offspring(ag1::Ind, ag2::Ind, model::ABM)
   W = adjust_fitness(W, ag1.species, model)
   initial_energy = model.initial_energy[species]
 
-  offspring = add_agent!(ag1.pos, model, ag1.species, bph, abph, episMat, pleioMat, q, 0, sex, interaction_history, initial_energy, W, true)
+  offspring = add_agent!(ag1.pos, model, ag1.species, bph, abph, episMat, pleioMat, q, 1, sex, interaction_history, initial_energy, W, true, 0, -1)
   return offspring
 end
 
@@ -117,9 +117,11 @@ function reproduce!(agent::Ind, model::ABM)
     interaction_history = deepcopy(agent.interaction_history)
     interaction_history[1:end] .= 0
     for c in 1:nchildren
-      offspring = add_agent!(agent.pos, model, agent.species, agent.biotic_phenotype, agent.abiotic_phenotype, agent.epistasisMat, agent.pleiotropyMat, agent.q, 0, agent.sex, interaction_history, model.initial_energy[agent.species], agent.W, true)
+      offspring = add_agent!(agent.pos, model, agent.species, agent.biotic_phenotype, agent.abiotic_phenotype, agent.epistasisMat, agent.pleiotropyMat, agent.q, 1, agent.sex, interaction_history, model.initial_energy[agent.species], agent.W, true, 0, -1)
       mutate!(offspring, model)
     end
+  elseif model.ploidy[agent.species] == 2 && agent.interaction_history[agent.species] == model.step[1] && agent.time_met_other_sex == model.step[1]
+    reproduce!(agent, model[agent.mate], model)
   end
 end
 

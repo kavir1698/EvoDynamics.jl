@@ -1,4 +1,4 @@
-generations = 44
+generations = 5
 space = (2, 2)
 
 function env_resources(time::Int)
@@ -38,9 +38,9 @@ species1 = Dict(
   :environmental_noise => 0.0,  # variance of a normal distribution with mean 0
   # each row is the optimal phenotypes for each site for all abiotic traits. There are as many element as number of sites times number of abiotic traits. The first N elements are for the first abiotic trait, where N is the number of sites, and so on.
   :optimal_phenotypes => [fill([1.4 for p in 1:1], space...) for t in 0:generations], # optimal phenotypes per site and time for each phenotype
-  :age => 5,  # max age
+  :age => 4,  # max age
   :reproduction_start_age => 1,
-  :reproduction_end_age => 5,
+  :reproduction_end_age => 4,
   :mating_scheme => 0, # 0 means number of children between a pair is independent of the phenotype of the pair. 1 means the more similar they are, the more children they will have (assortative mating). -1 means the more dissimilar they are, the more children they will have (dissortative mating).
   :recombination => 1, # Mean of a Poisson distributions for number of crossing overs
   :initial_energy => 0, # A parameter for parental care of infants. Values more than 0 indicate that newly born individuals can survive for a number of times without requiring food from the environment/other species. The consumption rate (i.e. how many generations this initial energy suffices) is determined by the sum of the corresponding rows in "food sources"
@@ -91,7 +91,7 @@ model_parameters = Dict(
   :metric => "chebyshev",  # how many neighbors a space site has. "chebyshev" metric means that the r-neighborhood of a position are all positions within the hypercube having side length of 2*floor(r) and being centered in the origin position. "euclidean" metric means that the r-neighborhood of a position are all positions whose cartesian indices have Euclidean distance ≤ r from the cartesian index of the given position.
   :periodic => false,  # whether boundaries of the space are connected
   :resources => [env_resources(x) for x in 0:generations],  # a function that returns a vector of integers for the available resources per site at a given time. It accepts only the model object as the input.
-  :interactions => [0.1 1.0; 1.0 -1.0],  # How individuals from different species interact. value  is probability of interaction (between 0 and 1). Sign is the direction of interaction where positive means similar individuals interact more strongly and negative is dissimilar ones tend to interact more. If you want full interaction, use 1 or -1 for nondiagonals. Diagonals are used for competition/cooperation.
+  :interactions => [0.1 1.0; 1.0 1.0],  # How individuals from different species interact. value  is probability of interaction (between 0 and 1). Sign is the direction of interaction where positive means similar individuals interact more strongly and negative is dissimilar ones tend to interact more. If you want full interaction, use 1 or -1 for nondiagonals. Diagonals are used for competition/cooperation.
   :food_sources => [1.0 0.0; 1.7 0.0],  # What each species feeds on (consumption rate). Non-zero diagonal means the food resource is from the environment. It will be read from rows (species order) to columns (species order).
   :seed => 3
 )

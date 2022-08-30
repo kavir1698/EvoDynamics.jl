@@ -17,6 +17,8 @@ mutable struct Ind{B<:AbstractFloat,C<:AbstractArray,D<:AbstractArray,E<:Abstrac
   energy::B  # determines whether need to feed (energy=0) or not.
   W::B  # survival probability
   isalive::Bool
+  mate::Int  # id of mate. Only relevant for diploids
+  time_met_other_sex::Int
 end
 
 struct Params{F<:AbstractFloat,I<:Int,N<:AbstractString}
@@ -103,7 +105,7 @@ function model_initiation(dd)
         end
         interaction_history = MVector{model.nspecies,Int}(fill(-1, model.nspecies))
         initial_energy = model.initial_energy[sp]
-        add_agent!(model.nodes[pos], model, sp, biotic_ph, abiotic_ph, epistasisMat[sp], pleiotropyMat[sp], expressionArrays[sp], 1, sex, interaction_history, initial_energy, W, true)
+        add_agent!(model.nodes[pos], model, sp, biotic_ph, abiotic_ph, epistasisMat[sp], pleiotropyMat[sp], expressionArrays[sp], 1, sex, interaction_history, initial_energy, W, true, 0, -1)
       end
     end
   end
@@ -208,7 +210,7 @@ function agent_step!(agent::Ind, model::ABM)
   burn_energy!(agent)
   # consume basic energy if agent can
   consume_food!(agent, model)
-  # interact with other species
+  # interact with other species: predation, cooperation, competition.
   interact!(agent, model)
   # Kill the agent if it doesn't have energy
   if agent.isalive && agent.energy < 0
@@ -219,10 +221,10 @@ function agent_step!(agent::Ind, model::ABM)
   if !agent.isalive
     return
   end
+  # reproduction for both haploids and diploids
+  reproduce!(agent, model)
   # migrate
   migrate!(agent, model)
-  # reproduction for the haploid
-  reproduce!(agent, model)
 
   if agent.isalive && agent.age ≥ model.max_ages[agent.species]
     remove_agent!(agent, model)

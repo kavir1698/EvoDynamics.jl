@@ -113,7 +113,9 @@ function interact!(ag1::Ind, ag2::Ind, model::ABM)
     end
   else # interaction
     if sp1 == sp2 && ag1.sex != ag2.sex && model.ploidy[sp1] == 2 && in_reproduction_age(ag1, model) && in_reproduction_age(ag2, model)  # reproduce
-      reproduce!(ag1::Ind, ag2::Ind, model::ABM)
+      # reproduce!(ag1, ag2, model)
+      ag1.mate = ag2.id
+      ag1.time_met_other_sex = model.step[1]
     else
       ix_value1 = model.interactions[sp1, sp2]
       ix_value2 = model.interactions[sp2, sp1]
