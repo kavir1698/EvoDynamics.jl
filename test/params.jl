@@ -43,7 +43,7 @@ species1 = Dict(
   :reproduction_end_age => 4,
   :mating_scheme => 0, # 0 means number of children between a pair is independent of the phenotype of the pair. 1 means the more similar they are, the more children they will have (assortative mating). -1 means the more dissimilar they are, the more children they will have (dissortative mating).
   :recombination => 1, # Mean of a Poisson distributions for number of crossing overs
-  :initial_energy => 0, # A parameter for parental care of infants. Values more than 0 indicate that newly born individuals can survive for a number of times without requiring food from the environment/other species. The consumption rate (i.e. how many generations this initial energy suffices) is determined by the sum of the corresponding rows in "food sources"
+  :initial_energy => 0, # A parameter for parental care of infants. Values more than 0 indicate that newly born individuals can survive for a number of times without requiring food from the environment/other species. The consumption rate (i.e. how many generations this initial energy suffices) is determined by the sum of the corresponding rows in "food sources". Note that having initial energy larger than zero can lead to infinite population growth because agents without food can reproduce and their offsprings also reproduce without food. Use with care, for example, when start age of reproduction is larger than 1.
   :bottleneck_function => [fill(0.0, space...) for t in 0:generations]  # an array of arrays with probablity of external death at each site and generation.
 )
 

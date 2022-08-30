@@ -3,7 +3,7 @@ function get_biotic_phenotype(species, epistasisMat, pleiotropyMat, expressionAr
   abp = model.biotic_phenotypes[species]
   x = pleiotropyMat[abp, abp] * (epistasisMat[abp, abp] * expressionArray[abp])  # phenotypic values
   d = model.E[species]
-  z = x .+ rand(d)
+  z = x .+ rand(model.rng, d)
   return z
 end
 
@@ -16,7 +16,7 @@ function get_abiotic_phenotype(species, epistasisMat, pleiotropyMat, expressionA
   if d.σ == 0 && d.μ == 0
     randd = 0.0
   else
-    randd = rand(d)
+    randd = rand(model.rng, d)
   end
   z = x .+ randd
   return z
@@ -102,13 +102,13 @@ function interact!(ag1::Ind, ag2::Ind, model::ABM)
   if sp1 != sp2 && model.food_sources[sp1, sp2] > 0  # predation
     d = phenotypic_distance(ag1, ag2, model)
     prob = interaction_power(ag1, ag2, d, model)
-    if rand() < prob
+    if rand(model.rng) < prob
       eat!(ag1, ag2, model)
     end
   elseif sp1 != sp2 && model.food_sources[sp2, sp1] > 0 # predation
-    d = phenotypic_distance(ag1, ag2, model)
-    prob = interaction_power(ag1, ag2, d, model)
-    if rand() < prob
+    d = phenotypic_distance(ag2, ag1, model)
+    prob = interaction_power(ag2, ag1, d, model)
+    if rand(model.rng) < prob
       eat!(ag2, ag1, model)
     end
   else # interaction

@@ -8,7 +8,7 @@ function migrate!(agent::Ind, model::ABM)
 
   sites = collect(nearby_positions(agent, model, model.vision_radius[agent.species]))
   if model.check_fraction[agent.species] == 0
-    destination = rand(sites)
+    destination = rand(model.rng, sites)
   else
     nsites = length(sites)
     nsites_selected = ceil(Int, model.check_fraction[agent.species] * nsites)

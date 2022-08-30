@@ -59,15 +59,15 @@ function create_one_offspring(ag1::Ind, ag2::Ind, model::ABM)
   if model.recombination[species] == 0
     nco1, nco2 = 0, 0
   else
-    nco1, nco2 = rand(model.recombination[species], 2)
+    nco1, nco2 = rand(model.rng, model.recombination[species], 2)
   end
 
   cross_overs1 = crossing_overs(nsites, nco1)
   cross_overs2 = crossing_overs(nsites, nco2)
-  gametes1 = create_gamete(ag1, cross_overs1, nsites, rand((true, false)))
-  gametes2 = create_gamete(ag2, cross_overs2, nsites, rand((true, false)))
+  gametes1 = create_gamete(ag1, cross_overs1, nsites, rand(model.rng, (true, false)))
+  gametes2 = create_gamete(ag2, cross_overs2, nsites, rand(model.rng, (true, false)))
 
-  sex = rand((true, false))
+  sex = rand(model.rng, (true, false))
   interaction_history = MVector{model.nspecies,Int}(fill(0, model.nspecies))
 
   # Merge gametes
@@ -97,7 +97,7 @@ function reproduce!(ag1::Ind, ag2::Ind, model::ABM)
     reproduction_success = interaction_power(ag1, ag2, d, model)
   end
   growth_rate = model.growthrates[ag1.species]
-  nchildren = rand(Poisson(reproduction_success * growth_rate))
+  nchildren = rand(model.rng, Poisson(reproduction_success * growth_rate))
   for c in 1:nchildren
     offspring = create_one_offspring(ag1, ag2, model)
     mutate!(offspring, model)
@@ -111,8 +111,8 @@ function reproduce!(agent::Ind, model::ABM)
   if model.ploidy[agent.species] == 1 && in_reproduction_age(agent, model)
     growth_rate = model.growthrates[agent.species]
     # W = agent.W >= 0.0 ? agent.W : 0.0
-    # nchildren = rand(Poisson(growth_rate * W))
-    nchildren = rand(Poisson(growth_rate))
+    # nchildren = rand(model.rng, Poisson(growth_rate * W))
+    nchildren = rand(model.rng, Poisson(growth_rate))
     nchildren == 0 && return
     interaction_history = deepcopy(agent.interaction_history)
     interaction_history[1:end] .= 0

@@ -101,7 +101,7 @@ function model_initiation(dd)
         W = adjust_fitness(W, sp, model)
         sex = false
         if model.ploidy[sp] == 2
-          sex = rand((true, false))
+          sex = rand(model.rng, (true, false))
         end
         interaction_history = MVector{model.nspecies,Int}(fill(-1, model.nspecies))
         initial_energy = model.initial_energy[sp]
@@ -202,7 +202,7 @@ end
 
 function agent_step!(agent::Ind, model::ABM)
   # abiotic survive
-  abiotic_survive!(agent, model)  # the agent first survives then feeds, reproduces, and interacts.
+  abiotic_survive!(agent, model)
   if !agent.isalive
     return
   end
@@ -217,7 +217,6 @@ function agent_step!(agent::Ind, model::ABM)
     remove_agent!(agent, model)
     return
   end
-  # survive!(agent, model)
   if !agent.isalive
     return
   end
@@ -232,7 +231,7 @@ function agent_step!(agent::Ind, model::ABM)
   # bottleneck
   bn_prob = model.bottlenecks[agent.species][model.step[1]+1][agent.pos...]
   if agent.isalive && bn_prob > 0.0
-    if rand() < bn_prob
+    if rand(model.rng) < bn_prob
       remove_agent!(agent, model)
     end
   end
@@ -257,8 +256,6 @@ function survive!(agent::Ind, model::ABM)
     remove_agent!(agent, model)
   elseif agent.age ≥ model.max_ages[agent.species]
     remove_agent!(agent, model)
-    # elseif rand() > agent.W 
-    #   remove_agent!(agent, model)
   end
 end
 
@@ -266,7 +263,7 @@ end
 Kills the agent by chance given its fitness `W`.
 """
 function abiotic_survive!(agent::Ind, model::ABM)
-  if agent.isalive && rand() > agent.W
+  if agent.isalive && rand(model.rng) > agent.W
     remove_agent!(agent, model)
   end
 end
@@ -299,19 +296,19 @@ end
 function mutate!(agent::Ind, model::ABM)
   mutated = false
   # mutate gene expression
-  if rand(model.mutProbs[agent.species][1])
-    agent.q .+= rand(model.mutMagnitudes[agent.species][1], model.ngenes[agent.species] * model.ploidy[agent.species])
+  if rand(model.rng, model.mutProbs[agent.species][1])
+    agent.q .+= rand(model.rng, model.mutMagnitudes[agent.species][1], model.ngenes[agent.species] * model.ploidy[agent.species])
     mutated = true
   end
   # mutate pleiotropy matrix
-  if rand(model.mutProbs[agent.species][2])
-    randnumbers = rand(model.mutMagnitudes[agent.species][2], size(agent.pleiotropyMat))
+  if rand(model.rng, model.mutProbs[agent.species][2])
+    randnumbers = rand(model.rng, model.rng, model.mutMagnitudes[agent.species][2], size(agent.pleiotropyMat))
     agent.pleiotropyMat[randnumbers] .= .!agent.pleiotropyMat[randnumbers]
     mutated = true
   end
   # mutate epistasis matrix
-  if rand(model.mutProbs[agent.species][3])
-    agent.epistasisMat .+= rand(model.mutMagnitudes[agent.species][3], size(agent.epistasisMat))
+  if rand(model.rng, model.mutProbs[agent.species][3])
+    agent.epistasisMat .+= rand(model.rng, model.mutMagnitudes[agent.species][3], size(agent.epistasisMat))
     mutated = true
   end
   # update biotic and abiotic phenotypes and W
