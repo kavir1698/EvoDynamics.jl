@@ -12,7 +12,7 @@ function migrate!(agent::Ind, model::ABM)
   else
     nsites = length(sites)
     nsites_selected = ceil(Int, model.check_fraction[agent.species] * nsites)
-    sites_checked = EvoDynamics.sample(sites, nsites_selected, replace=false)
+    sites_checked = sample(model.rng, sites, nsites_selected, replace=false)
     # check sites and move to the best one
     distance, site_index = pick_site(agent, sites_checked, nsites_selected, model)
     current_place = check_site(agent, agent.pos, model)

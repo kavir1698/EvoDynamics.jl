@@ -158,7 +158,7 @@ function target_species_ids(agent, model::ABM)
   elseif foundlen < nspecies
     return allids
   else
-    species_ids = sample(allids, nspecies, replace=false)
+    species_ids = sample(model.rng, allids, nspecies, replace=false)
     return species_ids  
   end
 end

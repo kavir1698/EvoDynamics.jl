@@ -2,7 +2,7 @@
 """
 Returns a bitarray for sites to be selected from the first (false) and second (true) homologous chromosome.
 """
-function crossing_overs(nsites::Int, ncrossing_overs::Int)
+function crossing_overs(nsites::Int, ncrossing_overs::Int, RNG)
   output = falses(nsites)
   if ncrossing_overs == 0
     return output
@@ -10,7 +10,7 @@ function crossing_overs(nsites::Int, ncrossing_overs::Int)
     output[1:2:end] .= true
     return output
   end
-  breaking_points = sample(1:(nsites-1), ncrossing_overs, replace=false, ordered=true)
+  breaking_points = sample(RNG, 1:(nsites-1), ncrossing_overs, replace=false, ordered=true)
   last = true
   counter = 0
   for site in 1:nsites
@@ -62,8 +62,8 @@ function create_one_offspring(ag1::Ind, ag2::Ind, model::ABM)
     nco1, nco2 = rand(model.rng, model.recombination[species], 2)
   end
 
-  cross_overs1 = crossing_overs(nsites, nco1)
-  cross_overs2 = crossing_overs(nsites, nco2)
+  cross_overs1 = crossing_overs(nsites, nco1, model.rng)
+  cross_overs2 = crossing_overs(nsites, nco2, model.rng)
   gametes1 = create_gamete(ag1, cross_overs1, nsites, rand(model.rng, (true, false)))
   gametes2 = create_gamete(ag2, cross_overs2, nsites, rand(model.rng, (true, false)))
 
