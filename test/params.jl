@@ -32,8 +32,8 @@ species1 = Dict(
   :selection_coefficient => 0.02,
   :abiotic_variance => 1.0, # variance of a normal distribution used in determining the phenotypic distance of agents to the optimal environmental phenotypes. The larger the variance, the less important is the distance.
   :biotic_variance => 10.0, # same as above but for determining the biotic phenotypic distance between two individuals (used in any kind of interaction). Larger values mean that all pairs are equally likely to interact, regardless of their phenotype difference. 
-  :mutation_probabilities => [0.9, 0.0, 0.0],  # for gene expression array, pleiotropy matrix and epistasis matrix, respectively
-  :mutation_magnitudes => [0.05, 0.0, 0.01], # same as above
+  :mutation_probabilities => [0.99, 0.99, 0.99],  # for gene expression array, pleiotropy matrix and epistasis matrix, respectively
+  :mutation_magnitudes => [0.01, 0.1, 0.1], # same as above
   :N => [1000, 0, 0, 0],  # number of individuals per site at time 0
   :environmental_noise => 0.0,  # variance of a normal distribution with mean 0
   # each row is the optimal phenotypes for each site for all abiotic traits. There are as many element as number of sites times number of abiotic traits. The first N elements are for the first abiotic trait, where N is the number of sites, and so on.

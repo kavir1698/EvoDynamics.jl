@@ -105,7 +105,7 @@ function model_initiation(dd)
         end
         interaction_history = MVector{model.nspecies,Int}(fill(-1, model.nspecies))
         initial_energy = model.initial_energy[sp]
-        add_agent!(model.nodes[pos], model, sp, biotic_ph, abiotic_ph, epistasisMat[sp], pleiotropyMat[sp], expressionArrays[sp], 1, sex, interaction_history, initial_energy, W, true, 0, -1)
+        add_agent!(model.nodes[pos], model, sp, deepcopy(biotic_ph), deepcopy(abiotic_ph), deepcopy(epistasisMat[sp]), deepcopy(pleiotropyMat[sp]), deepcopy(expressionArrays[sp]), 1, sex, deepcopy(interaction_history), initial_energy, W, true, 0, -1)
       end
     end
   end
@@ -302,7 +302,7 @@ function mutate!(agent::Ind, model::ABM)
   end
   # mutate pleiotropy matrix
   if rand(model.rng, model.mutProbs[agent.species][2])
-    randnumbers = rand(model.rng, model.rng, model.mutMagnitudes[agent.species][2], size(agent.pleiotropyMat))
+    randnumbers = rand(model.rng, model.mutMagnitudes[agent.species][2], size(agent.pleiotropyMat))
     agent.pleiotropyMat[randnumbers] .= .!agent.pleiotropyMat[randnumbers]
     mutated = true
   end

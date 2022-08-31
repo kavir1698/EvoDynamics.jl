@@ -81,7 +81,7 @@ function create_one_offspring(ag1::Ind, ag2::Ind, model::ABM)
   W = adjust_fitness(W, ag1.species, model)
   initial_energy = model.initial_energy[species]
 
-  offspring = add_agent!(ag1.pos, model, ag1.species, bph, abph, episMat, pleioMat, q, 1, sex, interaction_history, initial_energy, W, true, 0, -1)
+  offspring = add_agent!(ag1.pos, model, ag1.species, deepcopy(bph), deepcopy(abph), deepcopy(episMat), deepcopy(pleioMat), deepcopy(q), 1, sex, deepcopy(interaction_history), initial_energy, W, true, 0, -1)
   return offspring
 end
 
@@ -93,7 +93,7 @@ function reproduce!(ag1::Ind, ag2::Ind, model::ABM)
   if model.mating_schemes[ag1.species] == 0.0
     reproduction_success = 1.0
   else
-    d = phenotypic_distance(ag1.biotic_phenotype, ag2.biotic_phenotype, model.mating_schemes[ag1.species], model.biotic_variances[ag1.species])
+    d = phenotypic_distance(ag1, ag2, model)
     reproduction_success = interaction_power(ag1, ag2, d, model)
   end
   growth_rate = model.growthrates[ag1.species]
@@ -117,7 +117,7 @@ function reproduce!(agent::Ind, model::ABM)
     interaction_history = deepcopy(agent.interaction_history)
     interaction_history[1:end] .= 0
     for c in 1:nchildren
-      offspring = add_agent!(agent.pos, model, agent.species, agent.biotic_phenotype, agent.abiotic_phenotype, agent.epistasisMat, agent.pleiotropyMat, agent.q, 1, agent.sex, interaction_history, model.initial_energy[agent.species], agent.W, true, 0, -1)
+      offspring = add_agent!(agent.pos, model, agent.species, deepcopy(agent.biotic_phenotype), deepcopy(agent.abiotic_phenotype), deepcopy(agent.epistasisMat), deepcopy(agent.pleiotropyMat), deepcopy(agent.q), 1, agent.sex, interaction_history, model.initial_energy[agent.species], agent.W, true, 0, -1)
       mutate!(offspring, model)
     end
   elseif model.ploidy[agent.species] == 2 && agent.interaction_history[agent.species] == model.step[1] && agent.time_met_other_sex == model.step[1]

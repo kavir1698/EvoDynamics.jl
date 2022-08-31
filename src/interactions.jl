@@ -32,7 +32,7 @@ Distance is a probability and is calculated by the number of standard deviations
 
 Variance can stand for selection coefficient, with a larger variance, less sever the difference.
 """
-function phenotypic_distance(phenotype1, phenotype2, interaction_coeff, variance::Real)
+function phenotypic_distance_different_species(phenotype1, phenotype2, interaction_coeff, variance::Real)
   distance = 0.0
   counter = 0.0
   for ph1 in phenotype1
@@ -50,7 +50,23 @@ function phenotypic_distance(phenotype1, phenotype2, interaction_coeff, variance
   return distance
 end
 
-phenotypic_distance(ag1::Ind, ag2::Ind, model) = phenotypic_distance(ag1.biotic_phenotype, ag2.biotic_phenotype, model.interactions[ag1.species, ag2.species], model.biotic_variances[ag1.species])
+function phenotypic_distance_same_species(phenotype1, phenotype2, interaction_coeff, variance::Real)
+  distance = 0.0
+  counter = 0.0
+  for (ph1, ph2) in zip(phenotype1, phenotype2)
+      d = abs(0.5 - cdf(Normal(ph1, variance), ph2)) # 0.5 is the value when ph1 and ph2 are identical
+      distance += d
+      counter += 1.0
+  end
+  distance += distance  # Double the distance so that it is in range 0 to 1.
+  distance /= counter  # average distance
+  if interaction_coeff < 0
+    distance = 1.0 - distance
+  end
+  return distance
+end
+
+phenotypic_distance(ag1::Ind, ag2::Ind, model) = ag1.species == ag2.species ? phenotypic_distance_same_species(ag1.biotic_phenotype, ag2.biotic_phenotype, model.interactions[ag1.species, ag2.species], model.biotic_variances[ag1.species]) : phenotypic_distance_different_species(ag1.biotic_phenotype, ag2.biotic_phenotype, model.interactions[ag1.species, ag2.species], model.biotic_variances[ag1.species])
 
 """
 Abiotic distance to the optimal values
