@@ -3,7 +3,7 @@ function get_biotic_phenotype(species, epistasisMat, pleiotropyMat, expressionAr
   abp = model.biotic_phenotypes[species]
   x = pleiotropyMat[abp, abp] * (epistasisMat[abp, abp] * expressionArray[abp])  # phenotypic values
   d = model.E[species]
-  z = x .+ rand(d)
+  z = x .+ rand(model.rng, d)
   return z
 end
 
@@ -16,7 +16,7 @@ function get_abiotic_phenotype(species, epistasisMat, pleiotropyMat, expressionA
   if d.σ == 0 && d.μ == 0
     randd = 0.0
   else
-    randd = rand(d)
+    randd = rand(model.rng, d)
   end
   z = x .+ randd
   return z
@@ -28,11 +28,11 @@ get_abiotic_phenotype(ag::Ind, model::ABM) = get_abiotic_phenotype(ag.species, a
 """
 Calculates the average distance between two sets of phenotypes.
 
-Distance is a probability and is calculated by the number of standard deviation that phenotype 2 is different from phenotype 1.
+Distance is a probability and is calculated by the number of standard deviations that phenotype 2 is different from phenotype 1.
 
 Variance can stand for selection coefficient, with a larger variance, less sever the difference.
 """
-function phenotypic_distance(phenotype1, phenotype2, interaction_coeff, variance::Real)
+function phenotypic_distance_different_species(phenotype1, phenotype2, interaction_coeff, variance::Real)
   distance = 0.0
   counter = 0.0
   for ph1 in phenotype1
@@ -50,7 +50,23 @@ function phenotypic_distance(phenotype1, phenotype2, interaction_coeff, variance
   return distance
 end
 
-phenotypic_distance(ag1::Ind, ag2::Ind, model) = phenotypic_distance(ag1.biotic_phenotype, ag2.biotic_phenotype, model.interactions[ag1.species, ag2.species], variance)
+function phenotypic_distance_same_species(phenotype1, phenotype2, interaction_coeff, variance::Real)
+  distance = 0.0
+  counter = 0.0
+  for (ph1, ph2) in zip(phenotype1, phenotype2)
+      d = abs(0.5 - cdf(Normal(ph1, variance), ph2)) # 0.5 is the value when ph1 and ph2 are identical
+      distance += d
+      counter += 1.0
+  end
+  distance += distance  # Double the distance so that it is in range 0 to 1.
+  distance /= counter  # average distance
+  if interaction_coeff < 0
+    distance = 1.0 - distance
+  end
+  return distance
+end
+
+phenotypic_distance(ag1::Ind, ag2::Ind, model) = ag1.species == ag2.species ? phenotypic_distance_same_species(ag1.biotic_phenotype, ag2.biotic_phenotype, model.interactions[ag1.species, ag2.species], model.biotic_variances[ag1.species]) : phenotypic_distance_different_species(ag1.biotic_phenotype, ag2.biotic_phenotype, model.interactions[ag1.species, ag2.species], model.biotic_variances[ag1.species])
 
 """
 Abiotic distance to the optimal values
@@ -69,7 +85,7 @@ function abiotic_distance(phenotype, optimal, variance)
 end
 
 function abiotic_fitness(abiotic_phenotype, species::Int, pos, model::ABM)
-  rawW = 1.0 - abiotic_distance(abiotic_phenotype, return_opt_phenotype(species, pos, model), variance)
+  rawW = 1.0 - abiotic_distance(abiotic_phenotype, return_opt_phenotype(species, pos, model), model.abiotic_variances[species])
   # W = adjust_abiotic_fitness(rawW, model.selectionCoeffs[species])
   return rawW
 end
@@ -101,17 +117,21 @@ function interact!(ag1::Ind, ag2::Ind, model::ABM)
 
   if sp1 != sp2 && model.food_sources[sp1, sp2] > 0  # predation
     d = phenotypic_distance(ag1, ag2, model)
-    if rand() < d
+    prob = interaction_power(ag1, ag2, d, model)
+    if rand(model.rng) < prob
       eat!(ag1, ag2, model)
     end
   elseif sp1 != sp2 && model.food_sources[sp2, sp1] > 0 # predation
-    d = phenotypic_distance(ag1, ag2, model)
-    if rand() < d
+    d = phenotypic_distance(ag2, ag1, model)
+    prob = interaction_power(ag2, ag1, d, model)
+    if rand(model.rng) < prob
       eat!(ag2, ag1, model)
     end
   else # interaction
     if sp1 == sp2 && ag1.sex != ag2.sex && model.ploidy[sp1] == 2 && in_reproduction_age(ag1, model) && in_reproduction_age(ag2, model)  # reproduce
-      reproduce!(ag1::Ind, ag2::Ind, model::ABM)
+      # reproduce!(ag1, ag2, model)
+      ag1.mate = ag2.id
+      ag1.time_met_other_sex = model.step[1]
     else
       ix_value1 = model.interactions[sp1, sp2]
       ix_value2 = model.interactions[sp2, sp1]
@@ -154,7 +174,7 @@ function target_species_ids(agent, model::ABM)
   elseif foundlen < nspecies
     return allids
   else
-    species_ids = sample(allids, nspecies, replace=false)
+    species_ids = sample(model.rng, allids, nspecies, replace=false)
     return species_ids  
   end
 end

@@ -1,5 +1,3 @@
-export runmodel
-
 "Returns a tuple whose entries are the mean fitness of each species."
 function mean_fitness_per_species(model::ABM)
   mean_fitness = Array{Float64}(undef, model.nspecies)

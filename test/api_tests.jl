@@ -1,4 +1,3 @@
-#TODO: more tests
 @testset "Model" begin
   adata, mdata, models = runmodel(param_file)
   @test size(mdata, 1) == 15

@@ -8,18 +8,10 @@ using EvoDynamics
 # A simple one-species model with no spatial structure. Model parameters are in a .jl file as follows:
 
 # ```julia
-# ## 1. Functions
-# function bn(agent::AbstractAgent, model::ABM)
-#   return false
-# end
+# generations = 20
+# space = (1, 1)
 
-# function optphens(site::Tuple{Int,Int}, model::ABM)
-#   return [1.5]
-# end
-
-# env_resources(time::Int) = [200]
-
-# ## 2. Species parameters
+# ## 1. Species parameters
 
 # species1 = Dict(
 #   :name => "a",
@@ -30,43 +22,47 @@ using EvoDynamics
 #   :migration_phenotype => 0,
 #   :migration_threshold => 3.5,
 #   :vision_radius => 0,
-#   :check_fraction => 0,
+#   :check_fraction => 0.0,
 #   :ploidy => 1,
 #   :epistasis_matrix => [1.0 0.0; 0.0 1.0],
 #   :pleiotropy_matrix => Bool[1 0; 0 1],
 #   :growth_rate => 1.0,
 #   :expression_array => [0.28, 0.46],
-#   :selection_coefficient => 0.5,
+#   :selection_coefficient => 0.1,
 #   :mutation_probabilities => [0.9, 0.0, 0.0],
 #   :mutation_magnitudes => [0.05, 0.0, 0.0],
 #   :N => [100],
 #   :environmental_noise => 0.01,
-#   :optimal_phenotypes => optphens,
-#   :bottleneck_function => bn,
+#   :optimal_phenotypes => [fill([1.5 for p in 1:1], space...) for t in 0:generations],
+#   :bottlenecks => [fill(0.0, space...) for t in 0:generations],
 #   :age => 2,
 #   :recombination => 0,
-#   :initial_energy => 0
+#   :initial_energy => 0,
 #   :reproduction_start_age => 1,
-#   :reproduction_end_age => 1,
+#   :reproduction_end_age => 2,
+#   :abiotic_variance => 1.0,
+#   :biotic_variance => 1.0,
+#   :mating_scheme => 1
 # )
 
-# ## 3. Model parameters
+# ## 2. Model parameters
 
 # #NB this dict should be called model_parameters
 # model_parameters = Dict(
 #   :species => [species1],
-#   :generations => 5,
-#   :space => nothing,
+#   :generations => generations,
+#   :space => space,
 #   :metric => "chebyshev",
 #   :periodic => false,
-#   :resources => env_resources,
+#   :resources => [fill(200, 1, 1) for i in 0:generations],
 #   :interactions => [-0.1],
 #   :food_sources => [1.0],
 #   :seed => nothing
 # )
 # ```
 
-param_file = "../../examples/paramfile1.jl" #hide
+param_file = "../../examples/paramfile1.jl"
+
 agentdata, modeldata, model = runmodel(param_file);
 
 modeldata

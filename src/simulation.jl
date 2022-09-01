@@ -17,15 +17,17 @@ mutable struct Ind{B<:AbstractFloat,C<:AbstractArray,D<:AbstractArray,E<:Abstrac
   energy::B  # determines whether need to feed (energy=0) or not.
   W::B  # survival probability
   isalive::Bool
+  mate::Int  # id of mate. Only relevant for diploids
+  time_met_other_sex::Int
 end
 
-struct Params{F<:AbstractFloat,I<:Int,N<:AbstractString,X<:Function, Fun, FunVec}
+struct Params{F<:AbstractFloat,I<:Int,N<:AbstractString}
   ngenes::Vector{I}
   nphenotypes::Vector{I}
   growthrates::Vector{F}
   selectionCoeffs::Vector{F}
   ploidy::Vector{I}
-  optvals::Vector{X}
+  optvals::Vector{Vector{Matrix{Vector{F}}}}
   mutProbs::Vector{Vector{DiscreteNonParametric{Bool,Float64,Vector{Bool},Vector{Float64}}}}
   mutMagnitudes::Vector{Vector{UnivariateDistribution{S} where S<:ValueSupport}}
   N::Vector{Vector{I}}
@@ -46,15 +48,16 @@ struct Params{F<:AbstractFloat,I<:Int,N<:AbstractString,X<:Function, Fun, FunVec
   food_sources::Matrix{F}
   interactions::Matrix{F}
   resources::Matrix{I}
-  resources_org::Fun
+  resources_org::Vector{Matrix{I}}
   recombination::Vector{Poisson{F}}
   initial_energy::Vector{F}
-  bottlenecks::FunVec
+  bottlenecks::Vector{Vector{Matrix{F}}}
   repro_start::Vector{Int}
   repro_end::Vector{Int}
+  biotic_variances::Vector{F}
+  abiotic_variances::Vector{F}
+  mating_schemes::Vector{Int}
 end
-
-const variance = 1.0
 
 """
     model_initiation(dd)
@@ -98,11 +101,11 @@ function model_initiation(dd)
         W = adjust_fitness(W, sp, model)
         sex = false
         if model.ploidy[sp] == 2
-          sex = rand((true, false))
+          sex = rand(model.rng, (true, false))
         end
-        interaction_history = MVector{model.nspecies,Int}(fill(0, model.nspecies))
+        interaction_history = MVector{model.nspecies,Int}(fill(-1, model.nspecies))
         initial_energy = model.initial_energy[sp]
-        add_agent!(model.nodes[pos], model, sp, biotic_ph, abiotic_ph, epistasisMat[sp], pleiotropyMat[sp], expressionArrays[sp], 0, sex, interaction_history, initial_energy, W, true)
+        add_agent!(model.nodes[pos], model, sp, deepcopy(biotic_ph), deepcopy(abiotic_ph), deepcopy(epistasisMat[sp]), deepcopy(pleiotropyMat[sp]), deepcopy(expressionArrays[sp]), 1, sex, deepcopy(interaction_history), initial_energy, W, true, 0, -1)
       end
     end
   end
@@ -163,42 +166,43 @@ function create_properties(dd)
   names = Dict(i => allspecies[i][:name] for i in 1:nspecies)
   recombination = [Poisson(allspecies[i][:recombination]) for i in 1:nspecies]
   initial_energy = [AbstractFloat(allspecies[i][:initial_energy]) for i in 1:nspecies]
-  bottlenecks = [allspecies[i][:bottleneck_function] for i in 1:nspecies]
+  bottlenecks = [allspecies[i][:bottlenecks] for i in 1:nspecies]
   repro_start = [allspecies[i][:reproduction_start_age] for i in 1:nspecies]
   repro_end = [allspecies[i][:reproduction_end_age] for i in 1:nspecies]
-  resources = dd[:resources](0)
+  resources = dd[:resources][1]
+  biotic_variances = [allspecies[i][:biotic_variance] for i in 1:nspecies]
+  abiotic_variances = [allspecies[i][:abiotic_variance] for i in 1:nspecies]
+  mating_schemes = [allspecies[i][:mating_scheme] for i in 1:nspecies]
 
   # reshape single value matrices to (1,1)
   if length(resources) == 1
-    resources = reshape(resources, 1,1)
+    resources = reshape(resources, 1, 1)
     dd[:food_sources] = reshape(dd[:food_sources], 1, 1)
     dd[:interactions] = reshape(dd[:interactions], 1, 1)
   end
 
-  properties = Params(ngenes, nphenotypes, growthrates, selectionCoeffs, ploidy, optvals, Mdists, Ddists, Ns, Ed, generations, nspecies, Ns, migration_traits, vision_radius, check_fraction, migration_thresholds, step, nnodes, biotic_phenotyps, abiotic_phenotyps, max_ages, names, dd[:food_sources], dd[:interactions], resources, dd[:resources], recombination, initial_energy, bottlenecks, repro_start, repro_end)
+  properties = Params(ngenes, nphenotypes, growthrates, selectionCoeffs, ploidy, optvals, Mdists, Ddists, Ns, Ed, generations, nspecies, Ns, migration_traits, vision_radius, check_fraction, migration_thresholds, step, nnodes, biotic_phenotyps, abiotic_phenotyps, max_ages, names, dd[:food_sources], dd[:interactions], resources, dd[:resources], recombination, initial_energy, bottlenecks, repro_start, repro_end, biotic_variances, abiotic_variances, mating_schemes)
 
   return properties, (epistasisMatS, pleiotropyMatS, expressionArraysS)
 end
 
 function return_opt_phenotype(species::Int, site::Int, model::ABM)
-  ss = vertex2coord(site, model)
-  model.optvals[species](ss, model)
+  # ss = vertex2coord(site, model)
+  model.optvals[species][model.step[1]+1][site]
 end
 
 function return_opt_phenotype(species::Int, site::Tuple{Int,Int}, model::ABM)
-  model.optvals[species]( site, model)
+  model.optvals[species][model.step[1]+1][site...]
 end
 
 function model_step!(model::ABM)
   model.step[1] += 1
-  model.resources .= model.resources_org(model.step[1])
+  model.resources .= model.resources_org[model.step[1]+1]
 end
 
 function agent_step!(agent::Ind, model::ABM)
-  # update age
-  agent.age += 1
   # abiotic survive
-  abiotic_survive!(agent, model)  # the agent first survives then feeds, reproduces, and interacts.
+  abiotic_survive!(agent, model)
   if !agent.isalive
     return
   end
@@ -206,36 +210,33 @@ function agent_step!(agent::Ind, model::ABM)
   burn_energy!(agent)
   # consume basic energy if agent can
   consume_food!(agent, model)
-  # interact with other species
+  # interact with other species: predation, cooperation, competition.
   interact!(agent, model)
   # Kill the agent if it doesn't have energy
   if agent.isalive && agent.energy < 0
     remove_agent!(agent, model)
     return
   end
-  # survive!(agent, model)
   if !agent.isalive
     return
   end
+  # reproduction for both haploids and diploids
+  reproduce!(agent, model)
   # migrate
   migrate!(agent, model)
-  # reproduction for the haploid
-  reproduce!(agent, model)
-  
+
   if agent.isalive && agent.age ≥ model.max_ages[agent.species]
     remove_agent!(agent, model)
   end
   # bottleneck
-  if agent.isalive && model.bottlenecks[agent.species](agent, model)
-    if EvoDynamics.bottleneck(agent, model)
+  bn_prob = model.bottlenecks[agent.species][model.step[1]+1][agent.pos...]
+  if agent.isalive && bn_prob > 0.0
+    if rand(model.rng) < bn_prob
       remove_agent!(agent, model)
     end
   end
-end
-
-function bottleneck(agent, model)
-  # @info "Package bottleneck function"
-  return false
+  # update age
+  agent.age += 1
 end
 
 function remove_agent!(agent, model)
@@ -255,16 +256,14 @@ function survive!(agent::Ind, model::ABM)
     remove_agent!(agent, model)
   elseif agent.age ≥ model.max_ages[agent.species]
     remove_agent!(agent, model)
-    # elseif rand() > agent.W 
-    #   remove_agent!(agent, model)
   end
 end
 
 """
-Kills the agent by chance given its fitness `W`
+Kills the agent by chance given its fitness `W`.
 """
 function abiotic_survive!(agent::Ind, model::ABM)
-  if agent.isalive && rand() > agent.W
+  if agent.isalive && rand(model.rng) > agent.W
     remove_agent!(agent, model)
   end
 end
@@ -297,19 +296,19 @@ end
 function mutate!(agent::Ind, model::ABM)
   mutated = false
   # mutate gene expression
-  if rand(model.mutProbs[agent.species][1])
-    agent.q .+= rand(model.mutMagnitudes[agent.species][1], model.ngenes[agent.species] * model.ploidy[agent.species])
+  if rand(model.rng, model.mutProbs[agent.species][1])
+    agent.q .+= rand(model.rng, model.mutMagnitudes[agent.species][1], model.ngenes[agent.species] * model.ploidy[agent.species])
     mutated = true
   end
   # mutate pleiotropy matrix
-  if rand(model.mutProbs[agent.species][2])
-    randnumbers = rand(model.mutMagnitudes[agent.species][2], size(agent.pleiotropyMat))
+  if rand(model.rng, model.mutProbs[agent.species][2])
+    randnumbers = rand(model.rng, model.mutMagnitudes[agent.species][2], size(agent.pleiotropyMat))
     agent.pleiotropyMat[randnumbers] .= .!agent.pleiotropyMat[randnumbers]
     mutated = true
   end
   # mutate epistasis matrix
-  if rand(model.mutProbs[agent.species][3])
-    agent.epistasisMat .+= rand(model.mutMagnitudes[agent.species][3], size(agent.epistasisMat))
+  if rand(model.rng, model.mutProbs[agent.species][3])
+    agent.epistasisMat .+= rand(model.rng, model.mutMagnitudes[agent.species][3], size(agent.epistasisMat))
     mutated = true
   end
   # update biotic and abiotic phenotypes and W
