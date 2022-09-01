@@ -166,7 +166,7 @@ function create_properties(dd)
   names = Dict(i => allspecies[i][:name] for i in 1:nspecies)
   recombination = [Poisson(allspecies[i][:recombination]) for i in 1:nspecies]
   initial_energy = [AbstractFloat(allspecies[i][:initial_energy]) for i in 1:nspecies]
-  bottlenecks = [allspecies[i][:bottleneck_function] for i in 1:nspecies]
+  bottlenecks = [allspecies[i][:bottlenecks] for i in 1:nspecies]
   repro_start = [allspecies[i][:reproduction_start_age] for i in 1:nspecies]
   repro_end = [allspecies[i][:reproduction_end_age] for i in 1:nspecies]
   resources = dd[:resources][1]

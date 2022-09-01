@@ -87,7 +87,7 @@ end
 
 """
 Sexual reproduction for diploid individuals.
-Whether it is assortative or dissortative depends on the sign of the corresponding element in the interaction matrix. 
+Whether it is assortative or disassortative depends on the sign of the corresponding element in the interaction matrix. 
 """
 function reproduce!(ag1::Ind, ag2::Ind, model::ABM)
   if model.mating_schemes[ag1.species] == 0.0

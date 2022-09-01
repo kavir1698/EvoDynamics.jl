@@ -41,10 +41,10 @@ species1 = Dict(
   :age => 4,  # max age
   :reproduction_start_age => 1,
   :reproduction_end_age => 4,
-  :mating_scheme => 0, # 0 means number of children between a pair is independent of the phenotype of the pair. 1 means the more similar they are, the more children they will have (assortative mating). -1 means the more dissimilar they are, the more children they will have (dissortative mating).
+  :mating_scheme => 0, # 0 means number of children between a pair is independent of the phenotype of the pair. 1 means the more similar they are, the more children they will have (assortative mating). -1 means the more dissimilar they are, the more children they will have (disassortative mating).
   :recombination => 1, # Mean of a Poisson distributions for number of crossing overs
-  :initial_energy => 0, # A parameter for parental care of infants. Values more than 0 indicate that newly born individuals can survive for a number of times without requiring food from the environment/other species. The consumption rate (i.e. how many generations this initial energy suffices) is determined by the sum of the corresponding rows in "food sources". Note that having initial energy larger than zero can lead to infinite population growth because agents without food can reproduce and their offsprings also reproduce without food. Use with care, for example, when start age of reproduction is larger than 1.
-  :bottleneck_function => [fill(0.0, space...) for t in 0:generations]  # an array of arrays with probablity of external death at each site and generation.
+  :initial_energy => 0, # A parameter for parental care of infants. Values more than 0 indicate that newly born individuals can survive for a number of times without requiring food from the environment/other species. Note that having initial energy larger than zero can lead to infinite population growth because agents without food can reproduce and their offsprings also reproduce without food. Use with care, for example, when start age of reproduction is larger than 1.
+  :bottlenecks => [fill(0.0, space...) for t in 0:generations]  # an array of matrices with probablity of external death at each site and generation.
 )
 
 species2 = Dict(
@@ -76,7 +76,7 @@ species2 = Dict(
   :mating_scheme => 0,
   :recombination => 1,
   :initial_energy => 0,
-  :bottleneck_function => [fill(0.0, space...) for t in 0:generations]
+  :bottlenecks => [fill(0.0, space...) for t in 0:generations]
 )
 
 ## 2. Model parameters
@@ -90,7 +90,7 @@ model_parameters = Dict(
   :space => space,
   :metric => "chebyshev",  # how many neighbors a space site has. "chebyshev" metric means that the r-neighborhood of a position are all positions within the hypercube having side length of 2*floor(r) and being centered in the origin position. "euclidean" metric means that the r-neighborhood of a position are all positions whose cartesian indices have Euclidean distance ≤ r from the cartesian index of the given position.
   :periodic => false,  # whether boundaries of the space are connected
-  :resources => [env_resources(x) for x in 0:generations],  # a function that returns a vector of integers for the available resources per site at a given time. It accepts only the model object as the input.
+  :resources => [env_resources(x) for x in 0:generations],
   :interactions => [0.1 1.0; 1.0 1.0],  # How individuals from different species interact. value  is probability of interaction (between 0 and 1). Sign is the direction of interaction where positive means similar individuals interact more strongly and negative is dissimilar ones tend to interact more. If you want full interaction, use 1 or -1 for nondiagonals. Diagonals are used for competition/cooperation.
   :food_sources => [1.0 0.0; 1.7 0.0],  # What each species feeds on (consumption rate). Non-zero diagonal means the food resource is from the environment. It will be read from rows (species order) to columns (species order).
   :seed => 3

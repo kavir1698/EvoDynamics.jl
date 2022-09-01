@@ -1,4 +1,4 @@
-generations = 14
+generations = 30
 space = (2, 2)
 
 ## 1. Species parameters
@@ -44,7 +44,7 @@ species1 = Dict(
   :N => [1000, 0, 0, 0],
   :environmental_noise => 0.01,
   :optimal_phenotypes => [fill([1.4 for p in 1:1], space...) for t in 0:generations],
-  :bottleneck_function => [fill(0.0, space...) for t in 0:generations],
+  :bottlenecks => [fill(0.0, space...) for t in 0:generations],
   :age => 5,
   :recombination => 1,
   :initial_energy => 1,
@@ -91,14 +91,14 @@ species2 = Dict(
   :N => [100, 0, 0, 0],
   :environmental_noise => 0.01,
   :optimal_phenotypes => [fill([1.4, 1.6], space...) for t in 0:generations],
-  :bottleneck_function => [fill(0.0, space...) for t in 0:generations],
+  :bottlenecks => [fill(0.0, space...) for t in 0:generations],
   :age => 3,
   :recombination => 0,
   :initial_energy => 0,
   :reproduction_start_age => 1,
   :reproduction_end_age => 3,
   :abiotic_variance => 1.0,
-  :biotic_variance => 1.0,
+  :biotic_variance => 2.0,
   :mating_scheme => 0
 )
 
@@ -119,7 +119,7 @@ model_parameters = Dict(
                     1.0 0.0],
 
   :food_sources => [1.0 0.0; 
-                    2.5 0.0],
+                    1.0 0.0],
 
-  :seed => nothing
+  :seed => 32
 )

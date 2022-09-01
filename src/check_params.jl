@@ -1,5 +1,5 @@
 function check_param_names(d)
-  species_keys = [:name, :number_of_genes, :number_of_phenotypes, :abiotic_phenotypes, :biotic_phenotypes, :migration_phenotype, :migration_threshold, :ploidy, :epistasis_matrix, :pleiotropy_matrix, :growth_rate, :expression_array, :selection_coefficient, :mutation_probabilities, :mutation_magnitudes, :N, :vision_radius, :check_fraction, :environmental_noise, :optimal_phenotypes, :age, :recombination, :initial_energy, :bottleneck_function, :reproduction_start_age, :reproduction_end_age, :abiotic_variance, :biotic_variance, :mating_scheme]
+  species_keys = [:name, :number_of_genes, :number_of_phenotypes, :abiotic_phenotypes, :biotic_phenotypes, :migration_phenotype, :migration_threshold, :ploidy, :epistasis_matrix, :pleiotropy_matrix, :growth_rate, :expression_array, :selection_coefficient, :mutation_probabilities, :mutation_magnitudes, :N, :vision_radius, :check_fraction, :environmental_noise, :optimal_phenotypes, :age, :recombination, :initial_energy, :bottlenecks, :reproduction_start_age, :reproduction_end_age, :abiotic_variance, :biotic_variance, :mating_scheme]
   model_keys = [:species, :generations, :space, :metric, :periodic, :resources, :interactions, :food_sources, :seed]
   species = d[:species]
   for sp in species
@@ -41,7 +41,7 @@ function check_param_shapes(d)
     @assert typeof(dd[:recombination]) <: Real "recombination of species $spname should be type numeric"
     @assert typeof(dd[:initial_energy]) <: Real "Initial energy should be a number"
     # bottleneck should be nothing or array/string
-    @assert typeof(dd[:bottleneck_function]) <: AbstractArray || isnothing(dd[:bottleneck_function]) "bottleneck function for species $spname is not an `Array` or `nothing`"
+    @assert typeof(dd[:bottlenecks]) <: AbstractArray || isnothing(dd[:bottlenecks]) "bottleneck function for species $spname is not an `Array` or `nothing`"
     @assert typeof(dd[:selection_coefficient]) <: AbstractFloat "selection coefficient of species $spname should be floating point number"
     @assert typeof(dd[:migration_threshold]) <: AbstractFloat "migration_threshold of species $spname should be floating point number"
     @assert typeof(dd[:abiotic_variance]) <: AbstractFloat "Species $spname: abiotic variance should be a floating number"
