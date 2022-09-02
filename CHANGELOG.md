@@ -1,3 +1,10 @@
+# v0.16
+
+Users can modify the sequence of events in the simulations by providing their own stepping functions in the `runmodel` functions.
+
+# v0.15
+
+Breaking. Because of problems with using a function in the parameter file, this version uses a .jl file for parameters. Functions cannot be parameters, use arrays instead.
 
 # v0.13.0
 
