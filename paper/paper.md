@@ -44,6 +44,8 @@ Forward-time model are more powerful in handling complex evolutionary scenarios.
 Being written in the Julia language, it is both performant and easily accessible to users to investigate the implementation of the code and to modify it, if needed. This is in contrast with most of the package that are written in a low-level language (e.g. C++) and have an interface in an high-level language (e.g. @guillaumeNemo2006;@schiffersALADYN2014;@curratSPLATCHE32019;@bocediRangeShifter2021).
 Additionally, `EvoDynamics.jl` is built on top of `Agent.jl` package [@datserisAgents2022], which gives users great flexibility in defining any kind of data they want to collect.
 
+`EvoDynamics.jl` is being used in a couple of studies to understand the effect of genetic architecture on species coexistence.
+
 # Acknowledgements
 
 
