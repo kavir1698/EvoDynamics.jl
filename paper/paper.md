@@ -20,87 +20,32 @@ affiliations:
    index: 1
  - name: Institution Name, Country
    index: 2
-date: 2 September 2022
+date: 5 September 2022p
 bibliography: paper.bib
 ---
 
 # Summary
 
-The forces on stars, galaxies, and dark matter under external gravitational
-fields lead to the dynamical evolution of structures in the universe. The orbits
-of these bodies are therefore key to understanding the formation, history, and
-future state of galaxies. The field of "galactic dynamics," which aims to model
-the gravitating components of galaxies to study their structure and evolution,
-is now well-established, commonly taught, and frequently used in astronomy.
-Aside from toy problems and demonstrations, the majority of problems require
-efficient numerical tools, many of which require the same base code (e.g., for
-performing numerical orbit integration).
+Evolutionary dynamics (changes in allele frequencies, selective pressure on phenotypes, multi-level and antagonistic selection) are functions of innumerable evolutionary and ecological processes across time and space, such as interactions among genes, genotypes and phenotypes, phenotypes and abiotic environment, and complex species interactions [loeuilleInfluence2010;@schoenerNewest2011;@ellegrenDeterminants2016].
+Traditionally, evolutionary theory have focused on one or a few levels of biological organization, with limited entities (e.g.genes, species) because such complex interactions are not easy to manage analytically.
+To address the complexity, in silico simulations have been widely used.
+These tools have been used in a wide range of applications, to answer questions such as the relationship between genetic diversity and species richness, the causes of gradients in genetic diversity, factor affecting population structure, and the effect of human actions on species and genetic variation [@leighOpportunities2021].
+A problem with such simulations is reproducibility, replication and extension of the results [@alstonBeginner2021].
+This is where a modeling framework becomes valuable. It will not only building complex simulations accessible to a large fraction of biologists who are not programmers, but also promote best practices in building models to make it accessible to other researchers. 
 
 # Statement of need
 
-`Gala` is an Astropy-affiliated Python package for galactic dynamics. Python
-enables wrapping low-level languages (e.g., C) for speed without losing
-flexibility or ease-of-use in the user-interface. The API for `Gala` was
-designed to provide a class-based and user-friendly interface to fast (C or
-Cython-optimized) implementations of common operations such as gravitational
-potential and force evaluation, orbit integration, dynamical transformations,
-and chaos indicators for nonlinear dynamics. `Gala` also relies heavily on and
-interfaces well with the implementations of physical units and astronomical
-coordinate systems in the `Astropy` package [@astropy] (`astropy.units` and
-`astropy.coordinates`).
+`EvoDynamics.jl` is an open source framework for studying the link between ecological and evolutionary systems, i.e. eco-evolutionary interactions [@postEcoevolutionary2009].
+The package aims to 1) make it possible for non-programmers to connect micro to macro in evolution and ecology, 2) through an agent-based model with explicit genetic architecture, create a continuum of biological levels of organization to understand their robustness and 3) provide a tool to ease the reproducibility and replication of results.
+There is a large of number frameworks for studying genetic diversity. Currently, 236 genetic simulators are listed on the [National Cancer Institute's website](https://surveillance.cancer.gov/genetic-simulation-resources/packages/). These tools can be divided into two classes of backward-time (also knows as coalescent-based) and forward-time simulators (e.g. @guillaumeNemo2006;@schiffersALADYN2014;@hallerSLiM2017;@curratSPLATCHE32019;@zhangAdmixSim2021;@bocediRangeShifter2021).
+Forward-time model are more powerful in handling complex evolutionary scenarios.
 
-`Gala` was designed to be used by both astronomical researchers and by
-students in courses on gravitational dynamics or astronomy. It has already been
-used in a number of scientific publications [@Pearson:2017] and has also been
-used in graduate courses on Galactic dynamics to, e.g., provide interactive
-visualizations of textbook material [@Binney:2008]. The combination of speed,
-design, and support for Astropy functionality in `Gala` will enable exciting
-scientific explorations of forthcoming data releases from the *Gaia* mission
-[@gaia] by students and experts alike.
-
-# Mathematics
-
-Single dollars ($) are required for inline mathematics e.g. $f(x) = e^{\pi/x}$
-
-Double dollars make self-standing equations:
-
-$$\Theta(x) = \left\{\begin{array}{l}
-0\textrm{ if } x < 0\cr
-1\textrm{ else}
-\end{array}\right.$$
-
-You can also use plain \LaTeX for equations
-\begin{equation}\label{eq:fourier}
-\hat f(\omega) = \int_{-\infty}^{\infty} f(x) e^{i\omega x} dx
-\end{equation}
-and refer to \autoref{eq:fourier} from text.
-
-# Citations
-
-Citations to entries in paper.bib should be in
-[rMarkdown](http://rmarkdown.rstudio.com/authoring_bibliographies_and_citations.html)
-format.
-
-If you want to cite a software repository URL (e.g. something on GitHub without a preferred
-citation) then you can do it with the example BibTeX entry below for @fidgit.
-
-For a quick reference, the following citation commands can be used:
-- `@author:2001`  ->  "Author et al. (2001)"
-- `[@author:2001]` -> "(Author et al., 2001)"
-- `[@author1:2001; @author2:2001]` -> "(Author1 et al., 2001; Author2 et al., 2002)"
-
-# Figures
-
-Figures can be included like this:
-![Caption for example figure.\label{fig:example}](figure.png)
-and referenced from text using \autoref{fig:example}.
-
-Figure sizes can be customized by adding an optional second parameter:
-![Caption for example figure.](figure.png){ width=20% }
+`EvoDynamics.jl` allows building agent-based models with complex genetic architectures through providing epistasis and pleiotropy matrices, and connecting that to arbitrary complex food webs, allowing any kind of species-species interactions (mutualism, commensalism, parasitism, competition). To our knowledge, this is the only framework that connects genetic architecture to such level of species interactions.
+Being written in the Julia language, it is both performant and easily accessible to users to investigate the implementation of the code and to modify it, if needed. This is in contrast with most of the package that are written in a low-level language (e.g. C++) and have an interface in an high-level language (e.g. @guillaumeNemo2006;@schiffersALADYN2014;@curratSPLATCHE32019;@bocediRangeShifter2021).
+Additionally, `EvoDynamics.jl` is built on top of `Agent.jl` package [@datserisAgents2022], which gives users great flexibility in defining any kind of data they want to collect.
 
 # Acknowledgements
 
-We acknowledge contributions from Brigitta Sipocz, Syrtis Major, and Semyeong
-Oh, and support from Kathryn Johnston during the genesis of this project.
 
 # References
+
