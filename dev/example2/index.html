@@ -39,6 +39,7 @@ species1 = Dict(
   :growth_rate =&gt; 2.8,
   :expression_array =&gt; [0.28878032859775615, 0.4629421231828499, 0.26092147517051467, 0.952859489607121, 0.9638502824424, 0.05038142018016245, 0.05930756376654234, 0.033459292878885716, 0.32421526342800044, 0.9029235877297073, 0.7670060809312949, 0.12766808941531993, 0.8656895869985795, 0.342191940658253],
   :selection_coefficient =&gt; 0.1,
+  :phenotype_contribution_to_fitness =&gt; nothing,
   :mutation_probabilities =&gt; [0.9, 0.0, 0.0],
   :mutation_magnitudes =&gt; [0.05, 0.0, 0.01],
   :N =&gt; [1000, 0, 0, 0],
@@ -84,6 +85,7 @@ species2 = Dict(
   :growth_rate =&gt; 1.5,
   :expression_array =&gt; [0.24923147816626035, 0.7155732641738595, 0.9655184311211502, 0.8638149724268844, 0.5075272565823061, 0.9189652626508431, 0.7897640036022151, 0.17091233765481717],
   :selection_coefficient =&gt; 0.1,
+  :phenotype_contribution_to_fitness =&gt; nothing,
   :mutation_probabilities =&gt; [0.9, 0.0, 0.0],
   :mutation_magnitudes =&gt; [0.05, 0.0, 0.01],
   :N =&gt; [100, 0, 0, 0],
@@ -127,4 +129,4 @@ agentdata, modeldata, model = runmodel(param_file);
 modeldata
 
 plot(1:size(modeldata, 1), getindex.(modeldata[:, 3], 1), xlabel=&quot;Time&quot;, ylabel=&quot;N&quot;, label=&quot;Prey&quot;)
-plot!(1:size(modeldata, 1), getindex.(modeldata[:, 3], 2), label=&quot;Predator&quot;)</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../example1/">« Simple Wright-Fisher</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.23 on <span class="colophon-date" title="Wednesday 7 September 2022 14:08">Wednesday 7 September 2022</span>. Using Julia version 1.8.0.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+plot!(1:size(modeldata, 1), getindex.(modeldata[:, 3], 2), label=&quot;Predator&quot;)</code></pre><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../example1/">« Simple Wright-Fisher</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.23 on <span class="colophon-date" title="Wednesday 7 September 2022 15:04">Wednesday 7 September 2022</span>. Using Julia version 1.8.0.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
