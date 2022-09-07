@@ -29,6 +29,7 @@ using EvoDynamics
 #   :growth_rate => 1.0,
 #   :expression_array => [0.28, 0.46],
 #   :selection_coefficient => 0.1,
+# :phenotype_contribution_to_fitness => nothing,
 #   :mutation_probabilities => [0.9, 0.0, 0.0],
 #   :mutation_magnitudes => [0.05, 0.0, 0.0],
 #   :N => [100],

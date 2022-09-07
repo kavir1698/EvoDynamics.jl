@@ -33,7 +33,7 @@ end
 function check_site(agent, site, model)
   phenotype = agent.abiotic_phenotype
   optimal = return_opt_phenotype(agent.species, site, model)
-  abiotic_distance(phenotype, optimal, model.abiotic_variances[agent.species])
+  abiotic_distance(phenotype, optimal, model.abiotic_variances[agent.species], model.phenotype_contribution_to_fitness[agent.species])
 end
 
 function pick_site(agent, sites, nsites, model)

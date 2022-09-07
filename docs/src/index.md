@@ -18,6 +18,7 @@ See [Tutorial](@ref) for running the model, and [Model description](@ref) for a 
 * Space is a grid on which individuals can migrate.
 * Possibility to model a complex environment with spatio-temporally varying resources.
 * Allows time varying optimal phenotypic value per site per species.
+* Allow differential contribution of traits to fitness.
 * Possibility of killing individuals at certain times and sites.
 * Modeling both haploid and diploid species.
 * Time-variable selection strength.
