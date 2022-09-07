@@ -20,6 +20,7 @@ See [Tutorial](@ref) for running the model, and [Model description](@ref) for a 
 * Allows time varying optimal phenotypic value per site per species.
 * Possibility of killing individuals at certain times and sites.
 * Modeling both haploid and diploid species.
+* Time-variable selection strength.
 * Includes mutation and recombination.
 * Easy data collection.
 * Runs replicates and collects data in a table automatically.

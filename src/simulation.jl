@@ -25,7 +25,7 @@ struct Params{F<:AbstractFloat,I<:Int,N<:AbstractString}
   ngenes::Vector{I}
   nphenotypes::Vector{I}
   growthrates::Vector{F}
-  selectionCoeffs::Vector{F}
+  selectionCoeffs::Vector{Vector{F}}
   ploidy::Vector{I}
   optvals::Vector{Vector{Matrix{Vector{F}}}}
   mutProbs::Vector{Vector{DiscreteNonParametric{Bool,Float64,Vector{Bool},Vector{Float64}}}}
@@ -270,13 +270,13 @@ end
 
 function adjust_fitness!(agent::Ind, model::ABM)
   W = agent.W < 0 ? 0.0 : agent.W
-  newW = 1.0 - ((1.0 - W) * model.selectionCoeffs[agent.species])
+  newW = 1.0 - ((1.0 - W) * model.selectionCoeffs[agent.species][model.step[1]+1])
   agent.W = newW
 end
 
 function adjust_fitness(W, species, model::ABM)
   W2 = W < 0 ? 0.0 : W
-  newW = 1.0 - ((1.0 - W2) * model.selectionCoeffs[species])
+  newW = 1.0 - ((1.0 - W2) * model.selectionCoeffs[species][model.step[1]+1])
   return newW
 end
 

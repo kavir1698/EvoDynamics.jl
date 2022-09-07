@@ -1,6 +1,7 @@
 # v0.16
 
-Users can modify the sequence of events in the simulations by providing their own stepping functions in the `runmodel` functions.
+* Users can modify the sequence of events in the simulations by providing their own stepping functions in the `runmodel` functions.
+* Allows time-variable selection coefficients per species so that selection can be relaxed or increase during the simulation.
 
 # v0.15
 

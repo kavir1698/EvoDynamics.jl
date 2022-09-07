@@ -42,7 +42,12 @@ function check_param_shapes(d)
     @assert typeof(dd[:initial_energy]) <: Real "Initial energy should be a number"
     # bottleneck should be nothing or array/string
     @assert typeof(dd[:bottlenecks]) <: AbstractArray || isnothing(dd[:bottlenecks]) "bottleneck function for species $spname is not an `Array` or `nothing`"
-    @assert typeof(dd[:selection_coefficient]) <: AbstractFloat "selection coefficient of species $spname should be floating point number"
+    @assert typeof(dd[:selection_coefficient]) <: AbstractFloat || typeof(dd[:selection_coefficient]) <: AbstractFloat "selection coefficient of species $spname should be either a floating point number or an array of floating point numbers as long as generations plus 1 (for generation zero)."
+    if typeof(dd[:selection_coefficient]) <: AbstractFloat 
+      dd[:selection_coefficient] = [dd[:selection_coefficient] for gen in 0:d[:generations]]
+    else
+      @assert length(dd[:selection_coefficient]) == (length(dd[:generations]) + 1) "Species $spname: selection coefficients should be as long as generations plus 1 (to account for generation zero generation)" 
+    end
     @assert typeof(dd[:migration_threshold]) <: AbstractFloat "migration_threshold of species $spname should be floating point number"
     @assert typeof(dd[:abiotic_variance]) <: AbstractFloat "Species $spname: abiotic variance should be a floating number"
     @assert typeof(dd[:biotic_variance]) <: AbstractFloat "Species $spname: biotic variance should be a floating number"

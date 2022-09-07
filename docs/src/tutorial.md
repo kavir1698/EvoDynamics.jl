@@ -99,3 +99,7 @@ addprocs(4)
 @everywhere EvoDynamics.load_parameters(param_file)
 adata, mdata, models = runmodel(param_file, replicates=10, parallel=true)
 ```
+
+## Modifying the sequence of events and specific functions
+
+If you want to change the sequence of events within each time-step, you can do so by providing your own stepping function to the `runmodel` function. With this flexibility, you can also keep the sequence as it is, but change one specific event within the sequence by using a different function for it. A good staring point would be to copy the `agent_step!` function from the package (at `src/simulation.jl`).
