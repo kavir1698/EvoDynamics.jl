@@ -25,7 +25,7 @@ struct Params{F<:AbstractFloat,I<:Int,N<:AbstractString}
   ngenes::Vector{I}
   nphenotypes::Vector{I}
   growthrates::Vector{F}
-  selectionCoeffs::Vector{F}
+  selectionCoeffs::Vector{Vector{F}}
   ploidy::Vector{I}
   optvals::Vector{Vector{Matrix{Vector{F}}}}
   mutProbs::Vector{Vector{DiscreteNonParametric{Bool,Float64,Vector{Bool},Vector{Float64}}}}
@@ -57,6 +57,7 @@ struct Params{F<:AbstractFloat,I<:Int,N<:AbstractString}
   biotic_variances::Vector{F}
   abiotic_variances::Vector{F}
   mating_schemes::Vector{Int}
+  phenotype_contribution_to_fitness::Vector{Vector{F}}
 end
 
 """
@@ -173,6 +174,7 @@ function create_properties(dd)
   biotic_variances = [allspecies[i][:biotic_variance] for i in 1:nspecies]
   abiotic_variances = [allspecies[i][:abiotic_variance] for i in 1:nspecies]
   mating_schemes = [allspecies[i][:mating_scheme] for i in 1:nspecies]
+  phenotypic_contributions = [allspecies[i][:phenotype_contribution_to_fitness] for i in 1:nspecies]
 
   # reshape single value matrices to (1,1)
   if length(resources) == 1
@@ -181,7 +183,7 @@ function create_properties(dd)
     dd[:interactions] = reshape(dd[:interactions], 1, 1)
   end
 
-  properties = Params(ngenes, nphenotypes, growthrates, selectionCoeffs, ploidy, optvals, Mdists, Ddists, Ns, Ed, generations, nspecies, Ns, migration_traits, vision_radius, check_fraction, migration_thresholds, step, nnodes, biotic_phenotyps, abiotic_phenotyps, max_ages, names, dd[:food_sources], dd[:interactions], resources, dd[:resources], recombination, initial_energy, bottlenecks, repro_start, repro_end, biotic_variances, abiotic_variances, mating_schemes)
+  properties = Params(ngenes, nphenotypes, growthrates, selectionCoeffs, ploidy, optvals, Mdists, Ddists, Ns, Ed, generations, nspecies, Ns, migration_traits, vision_radius, check_fraction, migration_thresholds, step, nnodes, biotic_phenotyps, abiotic_phenotyps, max_ages, names, dd[:food_sources], dd[:interactions], resources, dd[:resources], recombination, initial_energy, bottlenecks, repro_start, repro_end, biotic_variances, abiotic_variances, mating_schemes, phenotypic_contributions)
 
   return properties, (epistasisMatS, pleiotropyMatS, expressionArraysS)
 end
@@ -270,13 +272,13 @@ end
 
 function adjust_fitness!(agent::Ind, model::ABM)
   W = agent.W < 0 ? 0.0 : agent.W
-  newW = 1.0 - ((1.0 - W) * model.selectionCoeffs[agent.species])
+  newW = 1.0 - ((1.0 - W) * model.selectionCoeffs[agent.species][model.step[1]+1])
   agent.W = newW
 end
 
 function adjust_fitness(W, species, model::ABM)
   W2 = W < 0 ? 0.0 : W
-  newW = 1.0 - ((1.0 - W2) * model.selectionCoeffs[species])
+  newW = 1.0 - ((1.0 - W2) * model.selectionCoeffs[species][model.step[1]+1])
   return newW
 end
 

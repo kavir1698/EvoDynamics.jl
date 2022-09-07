@@ -1,5 +1,5 @@
 function check_param_names(d)
-  species_keys = [:name, :number_of_genes, :number_of_phenotypes, :abiotic_phenotypes, :biotic_phenotypes, :migration_phenotype, :migration_threshold, :ploidy, :epistasis_matrix, :pleiotropy_matrix, :growth_rate, :expression_array, :selection_coefficient, :mutation_probabilities, :mutation_magnitudes, :N, :vision_radius, :check_fraction, :environmental_noise, :optimal_phenotypes, :age, :recombination, :initial_energy, :bottlenecks, :reproduction_start_age, :reproduction_end_age, :abiotic_variance, :biotic_variance, :mating_scheme]
+  species_keys = [:name, :number_of_genes, :number_of_phenotypes, :abiotic_phenotypes, :biotic_phenotypes, :migration_phenotype, :migration_threshold, :ploidy, :epistasis_matrix, :pleiotropy_matrix, :growth_rate, :expression_array, :selection_coefficient, :mutation_probabilities, :mutation_magnitudes, :N, :vision_radius, :check_fraction, :environmental_noise, :optimal_phenotypes, :age, :recombination, :initial_energy, :bottlenecks, :reproduction_start_age, :reproduction_end_age, :abiotic_variance, :biotic_variance, :mating_scheme, :phenotype_contribution_to_fitness]
   model_keys = [:species, :generations, :space, :metric, :periodic, :resources, :interactions, :food_sources, :seed]
   species = d[:species]
   for sp in species
@@ -42,7 +42,12 @@ function check_param_shapes(d)
     @assert typeof(dd[:initial_energy]) <: Real "Initial energy should be a number"
     # bottleneck should be nothing or array/string
     @assert typeof(dd[:bottlenecks]) <: AbstractArray || isnothing(dd[:bottlenecks]) "bottleneck function for species $spname is not an `Array` or `nothing`"
-    @assert typeof(dd[:selection_coefficient]) <: AbstractFloat "selection coefficient of species $spname should be floating point number"
+    @assert typeof(dd[:selection_coefficient]) <: AbstractFloat || typeof(dd[:selection_coefficient]) <: AbstractFloat "selection coefficient of species $spname should be either a floating point number or an array of floating point numbers as long as generations plus 1 (for generation zero)."
+    if typeof(dd[:selection_coefficient]) <: AbstractFloat 
+      dd[:selection_coefficient] = [dd[:selection_coefficient] for gen in 0:d[:generations]]
+    else
+      @assert length(dd[:selection_coefficient]) == (length(dd[:generations]) + 1) "Species $spname: selection coefficients should be as long as generations plus 1 (to account for generation zero generation)" 
+    end
     @assert typeof(dd[:migration_threshold]) <: AbstractFloat "migration_threshold of species $spname should be floating point number"
     @assert typeof(dd[:abiotic_variance]) <: AbstractFloat "Species $spname: abiotic variance should be a floating number"
     @assert typeof(dd[:biotic_variance]) <: AbstractFloat "Species $spname: biotic variance should be a floating number"
@@ -50,6 +55,13 @@ function check_param_shapes(d)
     @assert length(dd[:optimal_phenotypes]) == (d[:generations] + 1) "Species $spname: optimal phenotypes should be defined for every generation including step 0 (generations + 1)."
     @assert length(dd[:optimal_phenotypes][1]) == prod(d[:space]) "Species $spname: at each generation, optimal phenotypes should be defined for all sites."
     @assert length(dd[:optimal_phenotypes][1][1]) == length(dd[:abiotic_phenotypes]) "Species $spname : optimal phenotypes at each site should be defined for all abiotic phenotypes. If there is only one abiotic phenotype, define the optimal phenotype in a vector (vector of length 1)."
+    if isnothing(dd[:phenotype_contribution_to_fitness])
+      dd[:phenotype_contribution_to_fitness] = [1.0 for phen in dd[:abiotic_phenotypes]]
+    else
+    @assert typeof(dd[:phenotype_contribution_to_fitness]) <: AbstractArray "Species $spname: `phenotype_contribution_to_fitness` should be either `nothing` or a vector of floating numbers"
+    @assert eltype(dd[:phenotype_contribution_to_fitness]) <: AbstractFloat "Species $spname: elements of `phenotype_contribution_to_fitness` should be floating point numbers."
+    @assert length(dd[:phenotype_contribution_to_fitness]) == length(dd[:abiotic_phenotypes]) "Species $spname: length of `phenotype_contribution_to_fitness` should be as long as abiotic phenotypes."
+    end
     # mating scheme
     @assert typeof(dd[:mating_scheme]) <: Int "Species $spname: mating scheme should be an integer." 
     @assert in(dd[:mating_scheme], [-1, 0, 1]) "Species $spname: mating scheme should be one of the following values: -1, 0, 1."

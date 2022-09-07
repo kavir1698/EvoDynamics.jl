@@ -71,13 +71,13 @@ phenotypic_distance(ag1::Ind, ag2::Ind, model) = ag1.species == ag2.species ? ph
 """
 Abiotic distance to the optimal values
 """
-function abiotic_distance(phenotype, optimal, variance)
+function abiotic_distance(phenotype, optimal, variance, phenotypic_contributions)
   distance = 0.0
   counter = 0.0
   for i in eachindex(phenotype)
     d = abs(0.5 - cdf(Normal(optimal[i],  variance), phenotype[i]))
-    distance += d
-    counter += 1.0
+    distance += (d * phenotypic_contributions[i])
+    counter += phenotypic_contributions[i]
   end
   distance += distance
   distance /= counter
@@ -85,8 +85,8 @@ function abiotic_distance(phenotype, optimal, variance)
 end
 
 function abiotic_fitness(abiotic_phenotype, species::Int, pos, model::ABM)
-  rawW = 1.0 - abiotic_distance(abiotic_phenotype, return_opt_phenotype(species, pos, model), model.abiotic_variances[species])
-  # W = adjust_abiotic_fitness(rawW, model.selectionCoeffs[species])
+  rawW = 1.0 - abiotic_distance(abiotic_phenotype, return_opt_phenotype(species, pos, model), model.abiotic_variances[species], model.phenotype_contribution_to_fitness[species])
+  # W = adjust_abiotic_fitness(rawW, model.selectionCoeffs[species][model.step[1]+1])
   return rawW
 end
 

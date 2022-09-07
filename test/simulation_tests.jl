@@ -103,9 +103,9 @@ end
   @test EvoDynamics.phenotypic_distance(agent, agent2, model) == EvoDynamics.phenotypic_distance(agent2, agent, model)
 
   optphen = EvoDynamics.return_opt_phenotype(agent2.species, agent.pos, model)
-  @test EvoDynamics.abiotic_distance(agent2.abiotic_phenotype, optphen, model.abiotic_variances[agent2.species]) > 0
+  @test EvoDynamics.abiotic_distance(agent2.abiotic_phenotype, optphen, model.abiotic_variances[agent2.species], model.phenotype_contribution_to_fitness[agent2.species]) > 0
   agent2.abiotic_phenotype .= optphen
-  @test EvoDynamics.abiotic_distance(agent2.abiotic_phenotype, optphen, model.abiotic_variances[agent2.species]) == 0
+  @test EvoDynamics.abiotic_distance(agent2.abiotic_phenotype, optphen, model.abiotic_variances[agent2.species], model.phenotype_contribution_to_fitness[agent2.species]) == 0
   @test EvoDynamics.abiotic_fitness(agent2, model) == 1.0
 
   EvoDynamics.interact!(agent, agent2, model)
