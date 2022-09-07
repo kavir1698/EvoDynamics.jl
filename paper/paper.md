@@ -11,16 +11,18 @@ authors:
   - name: Ali R. Vahdati
     orcid: 0000-0003-0895-1495
     equal-contrib: true
-    affiliation: 1 # (Multiple affiliations must be quoted)
-  - name: Carlos J. Melian
-    equal-contrib: true # (This is how you can denote equal contributions between multiple authors)
-    affiliation: 2
+    affiliation: 1
+  - name: Carlos J. Melián
+    equal-contrib: true
+    affiliation: "2, 3"
 affiliations:
  - name: University of Zurich, Zurich, Switzerland
    index: 1
- - name: Institution Name, Country
+ - name: Department of Fish Ecology and Evolution, Eawag, Centre of Ecology, Evolution and Biogeochemistry, Switzerland
    index: 2
-date: 5 September 2022p
+ - name: Institute of Ecology and Evolution, Aquatic Ecology, University of Bern, Baltzerstrasse 6, CH-3012, Bern, Switzerland.
+   index: 3
+date: 10 September 2022
 bibliography: paper.bib
 ---
 
