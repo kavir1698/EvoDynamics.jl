@@ -167,15 +167,34 @@ Returns as many random ids from the agent site as the number of species.
 """
 function target_species_ids(agent, model::ABM)
   nspecies = model.nspecies
-  allids = collect(nearby_ids(agent, model, 0))
+  allids = ids_in_position(agent, model)
   foundlen = length(allids)
   if foundlen == 0
     return Int[]
   elseif foundlen < nspecies
     return allids
   else
-    species_ids = sample(model.rng, allids, nspecies, replace=false)
-    return species_ids  
+    samespecies = Int[]
+    otherspecies = Int[]
+    agsp = agent.species
+    for id in allids
+      if model[id].species == agsp
+        push!(samespecies, id)
+      else
+        push!(otherspecies, id)
+      end
+    end
+    if length(samespecies) > 0
+      samespecies_id = [rand(model.rng, samespecies)]
+    else
+      samespecies_id = Int[]
+    end
+    if nspecies > 1 && length(otherspecies) > 0
+      otherspecies_ids = sample(model.rng, otherspecies, nspecies - 1, replace=false)
+    else
+      otherspecies_ids = Int[]
+    end
+    return vcat(otherspecies_ids, samespecies_id)
   end
 end
 
