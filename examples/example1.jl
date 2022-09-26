@@ -62,8 +62,10 @@ using EvoDynamics
 # )
 # ```
 
-param_file = "../../examples/paramfile1.jl"
+param_file = "../examples/paramfile1.jl"
 
-agentdata, modeldata, model = runmodel(param_file);
+agentdata, modeldata = runmodel(param_file);
+
+# By default, `runmodel` uses the following functions for data collection: `mean_fitness_per_species`, `species_N`. They collect the mean fitness and the population size of each species per time step. This is just a sample data. You can collect any kind of data from the model by writing your own data collection function (see [Collecting data](@ref)). 
 
 modeldata

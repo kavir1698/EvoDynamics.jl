@@ -123,5 +123,5 @@ model_parameters = Dict(
   :food_sources => [1.0 0.0; 
                     1.0 0.0],
 
-  :seed => 32
+  :seed => nothing
 )

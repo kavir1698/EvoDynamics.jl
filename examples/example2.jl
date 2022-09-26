@@ -131,14 +131,15 @@ using Plots
 #   :food_sources => [1.0 0.0
 #                     1.0 0.0], 
 
-#   :seed => 32
+#   :seed => nothing
 # )
 # ```
 
-param_file = "../../examples/paramfile2.jl"  #hide
+param_file = "../examples/paramfile2.jl"  #hide
 agentdata, modeldata, model = runmodel(param_file);
 
-modeldata
+# By default, `runmodel` uses the following functions for data collection: `mean_fitness_per_species`, `species_N`.
+# They collect the mean fitness and the population size of each species per time step. This is just a sample data. You can collect any kind of data from the model by writing your own data collection function (see [Collecting data](@ref)).
 
 plot(1:size(modeldata, 1), getindex.(modeldata[:, 3], 1), xlabel="Time", ylabel="N", label="Prey")
 plot!(1:size(modeldata, 1), getindex.(modeldata[:, 3], 2), label="Predator")

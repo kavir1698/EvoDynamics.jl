@@ -4,7 +4,7 @@
 
 All parameters of a model are written in a julia (`.jl`) file. Parameters are divided into two sections: species specific and model specific. Parameters for each species and for the model are written in separate dictionary (`Dict`) objects. The keys of the dictionary should be Symbols (use colon : before the names).
 
-An easy way to parameterize a model is to copy an existing set of parameters from the [Examples](@ref) and modify them.
+An easy way to parameterize a model is to copy an existing set of parameters from the Examples section and modify them.
 
 ### 1. Species specific parameters
 

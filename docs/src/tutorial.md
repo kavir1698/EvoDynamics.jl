@@ -41,7 +41,7 @@ We can the use the `runmodel` function to create a model from these parameters a
 runmodel
 ```
 
-```@example
+```jl
 using EvoDynamics
 agentdata, modeldata, model = runmodel("parameters.jl")
 ```
