@@ -189,8 +189,13 @@ function target_species_ids(agent, model::ABM)
     else
       samespecies_id = Int[]
     end
-    if nspecies > 1 && length(otherspecies) > 0
-      otherspecies_ids = sample(model.rng, otherspecies, nspecies - 1, replace=false)
+    otherspecieslength = length(otherspecies)
+    if nspecies > 1 && otherspecieslength > 0
+      if (nspecies-1) < otherspecieslength
+        otherspecies_ids = sample(model.rng, otherspecies, nspecies - 1, replace=false)
+      else
+        otherspecies_ids = otherspecies
+      end
     else
       otherspecies_ids = Int[]
     end
