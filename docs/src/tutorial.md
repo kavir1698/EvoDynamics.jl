@@ -46,6 +46,20 @@ using EvoDynamics
 agentdata, modeldata, model = runmodel("parameters.jl")
 ```
 
+Within `runmodel`, before the parameters are used for constructing and ABM object, they are checked for correctness in type and shape using the `load_parameters` function.
+
+```@docs
+load_parameters
+```
+
+And then, using the `model_initiation` function, an agent-based model (ABM) is constructed.
+
+```@docs
+model_initiation
+```
+
+Having and ABM object and parameters that define the run conditions, the `runmodel` function uses `run!` or `ensemblerun!` functions from the `Agents.jl` package to run the model and collect data.
+
 ## Creating simulation parameter files
 
 EvoDynamics.jl reads simulation parameters ([Model description](@ref)) from a julia file containing dictionaries and functions. This file can be populated manually using a text editor or from within a Julia session.
