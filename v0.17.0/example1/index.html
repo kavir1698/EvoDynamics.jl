@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Simple Wright-Fisher · EvoDynamics.jl</title><script data-outdated-warner src="../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.045/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.13.24/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../">EvoDynamics.jl</a></span></div><form class="docs-search" action="../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../">Introduction</a></li><li><a class="tocitem" href="../model_description/">Model description</a></li><li><a class="tocitem" href="../tutorial/">Tutorial</a></li><li><span class="tocitem">Examples</span><ul><li class="is-active"><a class="tocitem" href>Simple Wright-Fisher</a></li><li><a class="tocitem" href="../example2/">Predator prey</a></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Examples</a></li><li class="is-active"><a href>Simple Wright-Fisher</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Simple Wright-Fisher</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/kavir1698/EvoDynamics.jl/blob/master/examples/example1.jl" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="Simple-Wright-Fisher"><a class="docs-heading-anchor" href="#Simple-Wright-Fisher">Simple Wright-Fisher</a><a id="Simple-Wright-Fisher-1"></a><a class="docs-heading-anchor-permalink" href="#Simple-Wright-Fisher" title="Permalink"></a></h1><p>We can create and run simple Wright-Fisher simulations with EvoDynamics.jl. To that end, we define a single haploid species, in an unstructured space, with two single genes affecting biotic and abiotic traits, respectively.</p><pre><code class="language-julia hljs">using EvoDynamics</code></pre><p>A simple one-species model with no spatial structure. Model parameters are in a .jl file as follows:</p><pre><code class="language-julia hljs">generations = 20
+space = (1, 1)
+
+## 1. Species parameters
+
+species1 = Dict(
+  :name =&gt; &quot;a&quot;,
+  :number_of_genes =&gt; 2,
+  :number_of_phenotypes =&gt; 2,
+  :abiotic_phenotypes =&gt; [1],
+  :biotic_phenotypes =&gt; [2],
+  :migration_phenotype =&gt; 0,
+  :migration_threshold =&gt; 3.5,
+  :vision_radius =&gt; 0,
+  :check_fraction =&gt; 0.0,
+  :ploidy =&gt; 1,
+  :epistasis_matrix =&gt; [1.0 0.0; 0.0 1.0],
+  :pleiotropy_matrix =&gt; Bool[1 0; 0 1],
+  :growth_rate =&gt; 1.0,
+  :expression_array =&gt; [0.28, 0.46],
+  :selection_coefficient =&gt; 0.1,
+:phenotype_contribution_to_fitness =&gt; nothing,
+  :mutation_probabilities =&gt; [0.9, 0.0, 0.0],
+  :mutation_magnitudes =&gt; [0.05, 0.0, 0.0],
+  :N =&gt; [100],
+  :environmental_noise =&gt; 0.01,
+  :optimal_phenotypes =&gt; [fill([1.5 for p in 1:1], space...) for t in 0:generations],
+  :bottlenecks =&gt; [fill(0.0, space...) for t in 0:generations],
+  :age =&gt; 2,
+  :recombination =&gt; 0,
+  :initial_energy =&gt; 0,
+  :reproduction_start_age =&gt; 1,
+  :reproduction_end_age =&gt; 2,
+  :abiotic_variance =&gt; 1.0,
+  :biotic_variance =&gt; 1.0,
+  :mating_scheme =&gt; 1
+)
+
+## 2. Model parameters
+
+#NB this dict should be called model_parameters
+model_parameters = Dict(
+  :species =&gt; [species1],
+  :generations =&gt; generations,
+  :space =&gt; space,
+  :metric =&gt; &quot;chebyshev&quot;,
+  :periodic =&gt; false,
+  :resources =&gt; [fill(200, 1, 1) for i in 0:generations],
+  :interactions =&gt; [-0.1],
+  :food_sources =&gt; [1.0],
+  :seed =&gt; nothing
+)</code></pre><pre><code class="language-julia hljs">param_file = &quot;../examples/paramfile1.jl&quot;
+
+agentdata, modeldata = runmodel(param_file);</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">[ Info: Loading the parameters...
+[ Info: Running the model...
+run! progress:  10%|███▋                                |  ETA: 0:00:02run! progress: 100%|████████████████████████████████████| Time: 0:00:01</code></pre><p>By default, <code>runmodel</code> uses the following functions for data collection: <code>mean_fitness_per_species</code>, <code>species_N</code>. They collect the mean fitness and the population size of each species per time step. This is just a sample data. You can collect any kind of data from the model by writing your own data collection function (see <a href="../tutorial/#Collecting-data">Collecting data</a>).</p><pre><code class="language-julia hljs">modeldata</code></pre><div class="data-frame"><p>21 rows × 3 columns</p><table class="data-frame"><thead><tr><th></th><th>step</th><th>mean_fitness_per_species</th><th>species_N</th></tr><tr><th></th><th title="Int64">Int64</th><th title="Vector{Float64}">Array…</th><th title="Vector{Int64}">Array…</th></tr></thead><tbody><tr><th>1</th><td>0</td><td>[0.922205]</td><td>[100]</td></tr><tr><th>2</th><td>1</td><td>[0.922266]</td><td>[194]</td></tr><tr><th>3</th><td>2</td><td>[0.922782]</td><td>[275]</td></tr><tr><th>4</th><td>3</td><td>[0.922677]</td><td>[315]</td></tr><tr><th>5</th><td>4</td><td>[0.92225]</td><td>[337]</td></tr><tr><th>6</th><td>5</td><td>[0.922368]</td><td>[332]</td></tr><tr><th>7</th><td>6</td><td>[0.922745]</td><td>[342]</td></tr><tr><th>8</th><td>7</td><td>[0.922939]</td><td>[307]</td></tr><tr><th>9</th><td>8</td><td>[0.92239]</td><td>[324]</td></tr><tr><th>10</th><td>9</td><td>[0.922647]</td><td>[335]</td></tr><tr><th>11</th><td>10</td><td>[0.922334]</td><td>[331]</td></tr><tr><th>12</th><td>11</td><td>[0.92249]</td><td>[322]</td></tr><tr><th>13</th><td>12</td><td>[0.922147]</td><td>[323]</td></tr><tr><th>14</th><td>13</td><td>[0.922968]</td><td>[337]</td></tr><tr><th>15</th><td>14</td><td>[0.922984]</td><td>[314]</td></tr><tr><th>16</th><td>15</td><td>[0.92327]</td><td>[293]</td></tr><tr><th>17</th><td>16</td><td>[0.924243]</td><td>[295]</td></tr><tr><th>18</th><td>17</td><td>[0.923644]</td><td>[292]</td></tr><tr><th>19</th><td>18</td><td>[0.923919]</td><td>[323]</td></tr><tr><th>20</th><td>19</td><td>[0.924031]</td><td>[335]</td></tr><tr><th>21</th><td>20</td><td>[0.923258]</td><td>[347]</td></tr></tbody></table></div><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../tutorial/">« Tutorial</a><a class="docs-footer-nextpage" href="../example2/">Predator prey »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.23 on <span class="colophon-date" title="Tuesday 8 November 2022 10:11">Tuesday 8 November 2022</span>. Using Julia version 1.8.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
