@@ -21,7 +21,7 @@ affiliations:
     index: 1
   - name: Department of Fish Ecology and Evolution, Eawag, Centre of Ecology, Evolution and Biogeochemistry, Switzerland
     index: 2
-  - name: Institute of Ecology and Evolution, Aquatic Ecology, University of Bern, Baltzerstrasse 6, CH-3012, Bern, Switzerland.
+  - name: Institute of Ecology and Evolution, Aquatic Ecology, University of Bern, Bern, Switzerland.
     index: 3
 date: 8 September 2022
 bibliography: paper.bib
@@ -29,9 +29,9 @@ bibliography: paper.bib
 
 # Summary
 
-Genotype-phenotype maps are usually complex. Studies connecting the mechanisms driving genome and phenome evolution have been done mostly in isolation. Because of the rarity of studies considering the mapping between the genotypes to phenotypes, simulations explicitly taking into account the complex genotype-phenotype architecture are incipient [@bty197]. `EvoDynamics.jl` aims to connect genomes and phenomes in an easy building-block way to allow exploring many scenarios connecting the two.
+Genotype-phenotype maps are usually complex. Studies connecting the mechanisms driving genome and phenome evolution have been done mostly in isolation. Because of the rarity of studies considering the mapping between the genotypes to phenotypes, simulations explicitly taking into account the complex genotype-phenotype architecture are incipient [@bty197]. `EvoDynamics.jl` aims to connect genomes and phenomes in a flexible way enabling the exploration of many scenarios connecting the two.
 
-Genotype-phenotype mapping occurs within a species, but between species interactions do occur in ecosystems. Yet, the genotype-to-phenotype-to-biodiversity connection is mostly unexplored. The second aim of `EvoDynamics.jl` is to tackle the genotype-phenotype coupling not only within a species but also between species. This is particularly important for understanding the role of the genetic-phenotype architecture for biodiversity response to global change. 
+Genotype-phenotype mapping occurs within a species, but between species interactions do occur in ecosystems. Yet, the genotype-to-phenotype-to-biodiversity connection is mostly unexplored. The second aim of `EvoDynamics.jl` is to tackle the genotype-phenotype coupling not only within a species but also between species. This is particularly important for understanding the role of the genetic-phenotype architecture for biodiversity responses to global change. 
 
 Coupling genomes to phenomes is full of challenges. This is because evolutionary dynamics, i.e., changes in allele frequencies, selective pressure on phenotypes, multi-level and antagonistic selection, among others, are functions of innumerable evolutionary and ecological processes across levels, time and space, such as interactions among genes, genotypes and phenotypes, phenotypes and abiotic environment, and complex species interactions [@loeuilleInfluence2010;@schoenerNewest2011;@ellegrenDeterminants2016;@melianetal2018].
 
