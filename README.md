@@ -3,6 +3,7 @@
 <!-- [![](https://img.shields.io/badge/docs-stable-blue.svg)](https://kavir1698.github.io/EvoDynamics.jl/stable) -->
 [![](https://img.shields.io/badge/docs-latest-blue.svg)](https://kavir1698.github.io/EvoDynamics.jl/dev)
 ![GitHub Workflow Status](https://img.shields.io/github/workflow/status/kavir1698/EvoDynamics.jl/CI)
+[![DOI](https://joss.theoj.org/papers/10.21105/joss.04775/status.svg)](https://doi.org/10.21105/joss.04775)
 
 Evolutionary dynamics on multi-trait networks.
 
