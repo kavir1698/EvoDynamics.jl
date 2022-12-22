@@ -46,7 +46,8 @@ Creates and runs a model given `parameters`. Returns a `DataFrame` of collected 
 * parallel::Bool = false Whether to run replicates in parallel. If `true`, you should add processors to your julia session (e.g. by `addprocs(n)`) and define your parameters and `EvoDynamics` on all workers. To do that, add `@everywhere` before them. For example, `@everywhere EvoDynamics`.
 * seeds = optionally, provide an array of integers as seeds for each replicate.
 * agentstep=EvoDynamics.agent_step! Define your own agent stepping if you wish to change the sequence of events or change any one event.
-* modelstep=EvoDynamics.model_step!  
+* modelstep=EvoDynamics.model_step!
+* showprogress::Bool = false Whether to show a progress meter of the simulations.
 """
 function runmodel(param_file::AbstractString;
   adata=nothing, mdata=[mean_fitness_per_species, species_N],
@@ -55,7 +56,8 @@ function runmodel(param_file::AbstractString;
   parallel::Bool=false,
   seeds=nothing,
   agentstep=EvoDynamics.agent_step!,
-  modelstep=EvoDynamics.model_step!
+  modelstep=EvoDynamics.model_step!,
+  showprogress=false
 )
 
   if !isnothing(seeds) && replicates > 0
@@ -76,12 +78,12 @@ function runmodel(param_file::AbstractString;
     model = model_initiation(dd)
 
     # run model and collect data
-    agdata, modata = run!(model, agentstep, modelstep, model.generations, adata=adata, mdata=mdata, when=whenn, agents_first=false, showprogress=true)
+    agdata, modata = run!(model, agentstep, modelstep, model.generations, adata=adata, mdata=mdata, when=whenn, agents_first=false, showprogress=showprogress)
     return agdata, modata, [model]
   else
     models = [model_generator(i, seeds, param_file) for i in 1:replicates]
 
-    agdata, modata, models = ensemblerun!(models, agentstep, modelstep, dd[:generations], adata=adata, mdata=mdata, when=whenn, parallel=parallel, agents_first=false)
+    agdata, modata, models = ensemblerun!(models, agentstep, modelstep, dd[:generations], adata=adata, mdata=mdata, when=whenn, parallel=parallel, agents_first=false, showprogress=showprogress)
     return agdata, modata, models
   end
 end
