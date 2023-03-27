@@ -24,18 +24,18 @@ See [Simple Wright-Fisher](@ref) and [Predator prey](@ref) for complete examples
 
 ```
 
-The order of these sections is important because each section uses objects from its preceding sections. 
+The order of these sections is important because each section relies on objects from its preceding sections.
 
-Functions are used to create parameters that may change temporally and spatially. The following parameters are functions: bottleneck function which kills certain agents at certain times and spaces, optimal phenotype values which returns the optimal phenotype for a species at a given time and space, and environmental resources that may change over time.
+Functions are used to create parameters that may change temporally and spatially. The following parameters are functions: bottleneck function, which kills specific agents at certain times and locations; optimal phenotype values, which returns the optimal phenotype for a species at a given time and location; and environmental resources that may change over time.
 
 
-You may create as many species as you want. Parameters of each species is a dictionary.
+You may create as many species as you want. Parameters of each species are stored in a dictionary.
 
-Model parameters is one dictionary that stores general parameters of the model, such as number of generations, space size, and species interaction parameters.
+Model parameters is a dictionary that stores general parameters of the model, such as the number of generations, space size, and species interaction parameters.
 
-First, define your model parameters (here, we call it `parameters.jl`). [Simple Wright-Fisher](@ref) and [Predator prey](@ref) have examples of initiation parameters. See [Model description](@ref) for a description of each parameter.
+First, define your model parameters (here, we call it `parameters.jl`) [Simple Wright-Fisher](@ref) and [Predator prey](@ref) have examples of initiation parameters. See [Model description](@ref) for a description of each parameter.
 
-We can the use the `runmodel` function to create a model from these parameters and run the simulation.
+You can use the `runmodel` function to create a model from these parameters and run the simulation.
 
 ```@docs
 runmodel
