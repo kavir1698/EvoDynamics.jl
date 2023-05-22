@@ -2,12 +2,12 @@
 
 <!-- [![](https://img.shields.io/badge/docs-stable-blue.svg)](https://kavir1698.github.io/EvoDynamics.jl/stable) -->
 [![](https://img.shields.io/badge/docs-latest-blue.svg)](https://kavir1698.github.io/EvoDynamics.jl/dev)
-![GitHub Workflow Status](https://img.shields.io/github/workflow/status/kavir1698/EvoDynamics.jl/CI)
+![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/kavir1698/EvoDynamics.jl/CI.yml?branch=master)
 [![DOI](https://joss.theoj.org/papers/10.21105/joss.04775/status.svg)](https://doi.org/10.21105/joss.04775)
 
 EvoDynamics.jl is a powerful framework designed to explore and understand the dynamics of biological systems across multiple scales. It offers a comprehensive set of tools and models to study evolutionary and ecological processes, providing a bridge between genotypes, phenotypes, and their intricate interactions with the environment and other species. By incorporating eco-evolutionary feedbacks, EvoDynamics.jl allows for the investigation of rapidly evolving populations that continuously adapt to changing conditions, particularly in antagonistic interactions, competitive scenarios, and mutualistic relationships.
 
-See the docs [![](https://img.shields.io/badge/docs-latest-blue.svg)](https://kavir1698.github.io/EvoDynamics.jl/dev) for more details.
+See the [![](https://img.shields.io/badge/docs-latest-blue.svg)](https://kavir1698.github.io/EvoDynamics.jl/dev) for more details.
 
 ## Installation
 
