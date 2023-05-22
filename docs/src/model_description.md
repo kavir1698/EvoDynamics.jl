@@ -26,8 +26,8 @@ Each species should have a dictionary object containing the following parameters
 * __growth\_rate__: The mean of a Poisson distribution for the number of offspring per reproduction. This number is fully realized when the fitness of a haploid individual is 1 or the distance between the biotic phenotypes of two diploid individuals is 0. Otherwise, the actual growth rate is a fraction of this value.
 * __selection\_coefficient__: A number between 0 and 1 that determines the importance of fitness. 0 represents a model without selection. To specify time-variable selection coefficient, provide a vector with a length equal to the number of generations plus 1 (to account for generation zero).
 * __phenotype\_contribution\_to\_fitness__: The relative contribution of each __abiotic phenotype__ to fitness. This parameter can be `nothing` to denote equal contribution of all abiotic phenotypes, or it can be a vector of numbers with as many elements as there are abiotic phenotypes.
-* __mutation\_probabilities__: A _vector of three numbers_ each of which specifies the probability for a different type of mutations: mutation probability of the _expression\_array_, _pleiotropy\_matrix_, and _epistasis\_matrix_, respectively.
-* __mutation\_magnitudes__: A _vector of numbers_ with the same size as _mutation\_probabilities_ that determines the magnitude of mutation for each of the three categories. Specifically, the numbers represent the variances of normal distributions with mean 0 for the expression array and epistasis matrices, and the probability of changing a 0 and 1 in the pleiotropy matrix. When mutating an offspring, it first checks whether there will be a mutation (_mutation\_probabilities_), and if positive, a mutation with a magnitude determined by _mutation\_magnitudes_ occurs.
+* __mutation\_probabilities__: A _vector of three numbers_ each of which specifies the probability for a different type of mutations: mutation probability of the `expression_array`, `pleiotropy_matrix`, and `epistasis_matrix`, respectively.
+* __mutation\_magnitudes__: A _vector of numbers_ with the same size as `mutation_probabilities` that determines the magnitude of mutation for each of the three categories. Specifically, the numbers represent the variances of normal distributions with mean 0 for the expression array and epistasis matrices, and the probability of changing a 0 and 1 in the pleiotropy matrix. When mutating an offspring, it first checks whether there will be a mutation (`mutation_probabilities`), and if positive, a mutation with a magnitude determined by _mutation\_magnitudes_ occurs.
 * __N__: A _vector of integers_ representing the initial number of individuals at each site.
 * __environmental\_noise__: A number for the variance of a normal distribution with mean 0 that will be added to the phenotypes.
 * __optimal\_phenotypes__: A _vector of matrices_ representing the optimal phenotypes at each time step. Each matrix represents the optimal phenotypes for each site in space. The optimal phenotype at each site is a vector as long as the `abiotic_phenotypes`. The vector is as long as the number of model steps (generations) plus 1 (for time zero).
@@ -71,7 +71,7 @@ The simulations are fully agent-based, meaning that agents do not receive any mo
 
 ### Migration
 
-If a species has the capability to migrate (i.e., `migration\_phenotype` is not 0), then at each time step, it is checked whether the phenotypic value of the migration phenotype is above the `migration\_threshold`. If it is, then the agent checks a random `check\_fraction` of the neighboring sites and moves to the most suitable site. Suitability is calculated by comparing the agent's abiotic phenotype and the optimal abiotic phenotypic value for each site. If the checked neighbors have worse conditions than the current site, the agent does not move.
+If a species has the capability to migrate (i.e., `migration_phenotype` is not 0), then at each time step, it is checked whether the phenotypic value of the migration phenotype is above the `migration_threshold`. If it is, then the agent checks a random `check_fraction` of the neighboring sites and moves to the most suitable site. Suitability is calculated by comparing the agent's abiotic phenotype and the optimal abiotic phenotypic value for each site. If the checked neighbors have worse conditions than the current site, the agent does not move.
 
 
 ### Burn energy
@@ -80,7 +80,7 @@ Agent's energy is reduced by one unit.
 
 ### Eat
 
-If the agent is able to eat from the environment (the diagonal of `food\_sources` at the corresponding row and column is non-zero) and there are any environmental resources left at the agent's site, its energy level is boosted by the value in the corresponding element at `food\_sources`.
+If the agent is able to eat from the environment (the diagonal of `food_sources` at the corresponding row and column is non-zero) and there are any environmental resources left at the agent's site, its energy level is boosted by the value in the corresponding element at `food_sources`.
 
 
 ### Interacting with other individuals
@@ -101,15 +101,15 @@ If the two individuals are not predator-prey and they are from the same species 
 
 ### Reproduction
 
-If an individual is haploid and in reproductive age, it reproduces an identical offspring to itself, except that the expression array, pleiotropy matrix, and the epistasis matrix of the offspring will mutate based on the probabilities and magnitudes in the `mutation\_probabilities` and `mutation\_magnitudes` matrices. The number of offspring is a random number from a Poisson distribution with a mean equal to the species' growth rate times the fitness of the individual.
+If an individual is haploid and in reproductive age, it reproduces an identical offspring to itself, except that the expression array, pleiotropy matrix, and the epistasis matrix of the offspring will mutate based on the probabilities and magnitudes in the `mutation_probabilities` and `mutation_magnitudes` matrices. The number of offspring is a random number from a Poisson distribution with a mean equal to the species' growth rate times the fitness of the individual.
 
-If two diploid individuals mate to reproduce, their reproductive success is proportional to their phenotypic distance (depending on `mating\_scheme`). The number of offspring is a random number from a Poisson distribution with a mean equal to the reproductive success of the two individuals times the growth rate of the species.
+If two diploid individuals mate to reproduce, their reproductive success is proportional to their phenotypic distance (depending on `mating_scheme`). The number of offspring is a random number from a Poisson distribution with a mean equal to the reproductive success of the two individuals times the growth rate of the species.
 
 Each offspring of diploid individuals inherits a gamete from each parent. A gamete is half of the expression array, pleiotropy matrix, and epistasis matrix. If recombination is allowed (value > 0), then the gametes undergo crossing over. The number of crossing overs is a random number from a Poisson distribution with a mean equal to the `recombination` parameter.
 
 #### Survival
 
-At each step, the agent may die due to several factors. First, it dies if it has negative energy (has not been able to eat enough). Second, it dies if it is too old (greater than the maximum age). Third, it dies with a probability negatively correlated to its fitness. This probability is adjusted by the `selection\_coefficient`. If the selection coefficient is zero, then the individual does not die. If it is one, the fitness determines a 100% survival rate.
+At each step, the agent may die due to several factors. First, it dies if it has negative energy (has not been able to eat enough). Second, it dies if it is too old (greater than the maximum age). Third, it dies with a probability negatively correlated to its fitness. This probability is adjusted by the `selection_coefficient`. If the selection coefficient is zero, then the individual does not die. If it is one, the fitness determines a 100% survival rate.
 
 #### Fitness
 
@@ -117,4 +117,4 @@ The fitness of individuals is determined by their abiotic fitness, i.e., their a
 
 #### Mutation
 
-Mutation can occur at three levels: changing the expression of each gene, changing the pleiotropy matrix, and changing the epistasis interactions between genes. The probability that a mutation occurs at each of these levels is controlled by the `mutation\_probabilities` parameter. The size of mutations, when they occur, is controlled by the `mutation\_magnitudes` parameter, which represents the variances of normal distributions. A mutation in the gene expression and epistasis matrix is carried out by adding a random number from a normal distribution to the existing values. The pleiotropy matrix is mutated by switching 0s and 1s with the probability given in the third element of `mutation\_magnitudes`.
+Mutation can occur at three levels: changing the expression of each gene, changing the pleiotropy matrix, and changing the epistasis interactions between genes. The probability that a mutation occurs at each of these levels is controlled by the `mutation_probabilities` parameter. The size of mutations, when they occur, is controlled by the `mutation_magnitudes` parameter, which represents the variances of normal distributions. A mutation in the gene expression and epistasis matrix is carried out by adding a random number from a normal distribution to the existing values. The pleiotropy matrix is mutated by switching 0s and 1s with the probability given in the third element of `mutation_magnitudes`.
