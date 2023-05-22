@@ -5,7 +5,9 @@
 ![GitHub Workflow Status](https://img.shields.io/github/workflow/status/kavir1698/EvoDynamics.jl/CI)
 [![DOI](https://joss.theoj.org/papers/10.21105/joss.04775/status.svg)](https://doi.org/10.21105/joss.04775)
 
-EvoDynamics.jl is a package for simulating the evolutionary dynamics of species in a spatially structured environment. The package allows users to define species-specific and model-specific parameters to study various aspects of population genetics, ecology, and evolution. It is a fully agent-based model, allowing individual organisms to interact with their environment and other organisms in various ways.
+EvoDynamics.jl is a powerful framework designed to explore and understand the dynamics of biological systems across multiple scales. It offers a comprehensive set of tools and models to study evolutionary and ecological processes, providing a bridge between genotypes, phenotypes, and their intricate interactions with the environment and other species. By incorporating eco-evolutionary feedbacks, EvoDynamics.jl allows for the investigation of rapidly evolving populations that continuously adapt to changing conditions, particularly in antagonistic interactions, competitive scenarios, and mutualistic relationships.
+
+See the docs [![](https://img.shields.io/badge/docs-latest-blue.svg)](https://kavir1698.github.io/EvoDynamics.jl/dev) for more details.
 
 ## Installation
 

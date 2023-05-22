@@ -22,7 +22,7 @@ format = Documenter.HTML(
     ),
 pages = [
 	"Introduction" => "index.md",
-	"Model description" => "model_description.md",
+    "Model Parameters and Simulation Outline" => "model_description.md",
 	"Tutorial" => "tutorial.md",
 	"Examples" => [
 	  "Simple Wright-Fisher" => "example1.md",

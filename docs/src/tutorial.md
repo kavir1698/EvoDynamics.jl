@@ -33,7 +33,7 @@ You may create as many species as you want. Parameters of each species are store
 
 Model parameters is a dictionary that stores general parameters of the model, such as the number of generations, space size, and species interaction parameters.
 
-First, define your model parameters (here, we call it `parameters.jl`) [Simple Wright-Fisher](@ref) and [Predator prey](@ref) have examples of initiation parameters. See [Model description](@ref) for a description of each parameter.
+First, define your model parameters (here, we call it `parameters.jl`) [Simple Wright-Fisher](@ref) and [Predator prey](@ref) have examples of initiation parameters. See [Model Parameters and Simulation Outline](@ref) for a description of each parameter.
 
 You can use the `runmodel` function to create a model from these parameters and run the simulation.
 
@@ -62,7 +62,7 @@ Having and ABM object and parameters that define the run conditions, the `runmod
 
 ## Creating simulation parameter files
 
-EvoDynamics.jl reads simulation parameters ([Model description](@ref)) from a julia file containing dictionaries and functions. This file can be populated manually using a text editor or from within a Julia session.
+EvoDynamics.jl reads simulation parameters ([Model Parameters and Simulation Outline](@ref)) from a julia file containing dictionaries and functions. This file can be populated manually using a text editor or from within a Julia session.
 
 ## Collecting data
 
