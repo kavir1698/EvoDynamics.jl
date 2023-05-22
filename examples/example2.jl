@@ -1,12 +1,18 @@
 
 # # Predator prey
 
-# Here we create a predator prey model of two species, one haploid and one diploid.
+# The predator-prey model is a fundamental concept in ecological studies, aiming to understand the dynamics and interactions between predator and prey populations. These models simulate the complex relationship between species where predators consume prey as their primary source of food, influencing the population sizes of both species over time.
+
+# In this example, we demonstrate how to set up and run a simple predator-prey simulation using EvoDynamics.jl. By defining the parameters of two species, one acting as the predator and the other as the prey, we can observe their population dynamics and interactions over multiple generations. This example showcases the flexibility and ease of use of EvoDynamics.jl, empowering researchers to explore various more complex scenarios with multiple predators and preys in a complex food web, modify model parameters, and analyze the outcomes. 
+
+# For this example, we create a predator-prey model consisting of two species: one haploid and one diploid. The model simulates the interactions between these species over multiple generations using EvoDynamics.jl.
+
+# To begin, we import the necessary packages:
 
 using EvoDynamics
 using Plots
 
-# Model parameters are in a .jl file as follows:
+# Next, we define the model parameters for our predator-prey simulation. The parameters are organized in a Julia (.jl) file as follows:
 
 # ```julia
 # generations = 14
@@ -135,11 +141,27 @@ using Plots
 # )
 # ```
 
+# To run the predator-prey simulation, we provide the path to the parameter file (`param_file`) and execute the `runmodel` function:
+
 param_file = "../examples/paramfile2.jl"  #hide
 agentdata, modeldata, model = runmodel(param_file);
 
-# By default, `runmodel` uses the following functions for data collection: `mean_fitness_per_species`, `species_N`.
-# They collect the mean fitness and the population size of each species per time step. This is just a sample data. You can collect any kind of data from the model by writing your own data collection function (see [Collecting data](@ref)).
+# By default, the `runmodel` function uses the `mean_fitness_per_species` and `species_N` functions for data collection, which calculate the mean fitness and population size of each species at each time step. However, you can customize data collection by writing your own functions (see [Collecting data](@ref)).
+
+# The simulation generates two main types of output: `agentdata` and `modeldata`.
+
+# * `agentdata`: This `DataFrame` contains information about individual agents, their characteristics, and their evolutionary dynamics. It provides detailed data on each agent's genetic makeup, phenotypic traits, fitness values, and other relevant information. Users can access and analyze agent-level data for further investigation and insights.
+# * `modeldata`: This `DataFrame` contains aggregated data summarizing the population-level dynamics over time. It includes metrics such as mean fitness per species, population size per species, and other relevant population-level statistics. Users can utilize this data to visualize and analyze the overall trends and patterns observed during the simulation.
+
+# You can use plotting libraries such as Plots.jl to create visualizations of population dynamics, fitness trends, or any other specific metrics of interest.
+
+# Example code for visualizing population sizes over time using Plots.jl:
 
 plot(1:size(modeldata, 1), getindex.(modeldata[:, 3], 1), xlabel="Time", ylabel="N", label="Prey")
 plot!(1:size(modeldata, 1), getindex.(modeldata[:, 3], 2), label="Predator")
+
+# This code snippet generates a plot showing the population sizes of the prey and predator species over time, based on the modeldata output.
+
+# With the output data at hand, users have the flexibility to conduct further analyses, visualize different aspects of the simulation, and extract valuable insights from the evolutionary dynamics of the predator-prey model.
+
+# Additionally, it is worth noting that `runmodel` allows you to pass custom data collection functions to collect specific data of interest during the simulation. By defining your own data collection functions, you can extract additional information or metrics from the simulation and include them in the output. Please refer to the documentation on [Collecting data](@ref) for more information on how to define and utilize custom data collection functions.

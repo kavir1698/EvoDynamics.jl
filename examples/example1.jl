@@ -1,11 +1,13 @@
 
 # # Simple Wright-Fisher
 
-# We can create and run simple Wright-Fisher simulations with EvoDynamics.jl. To that end, we define a single haploid species, in an unstructured space, with two single genes affecting biotic and abiotic traits, respectively. 
+# In this example, we demonstrate how to create and run simple Wright-Fisher simulations using EvoDynamics.jl. The Wright-Fisher model is a classic population genetics model that describes the genetic drift in a population due to random sampling during reproduction. EvoDynamics.jl allows us to simulate the dynamics of a single haploid species in an unstructured space, with two genes affecting both biotic and abiotic traits.
+
+# To get started, we first import the EvoDynamics.jl package:
 
 using EvoDynamics
 
-# A simple one-species model with no spatial structure. Model parameters are in a .jl file as follows:
+# Next, we define the model parameters for our simple one-species Wright-Fisher simulation. The parameters are organized in a Julia (.jl) file as follows:
 
 # ```julia
 # generations = 20
@@ -62,10 +64,16 @@ using EvoDynamics
 # )
 # ```
 
+# In this example, we set the number of generations to 20 and define an unstructured space with a single site (1, 1). The species parameters are specified for a single species named "a", which has two genes influencing two phenotypes (one abiotic and one biotic). The model parameters include information about the species, generation count, space dimensions, metric type, periodic boundaries, resource availability, species interactions, and random seed.
+
+# To run the simulation, we use the runmodel function, passing the parameter file path as an argument:
+
 param_file = "../examples/paramfile1.jl"
 
 agentdata, modeldata = runmodel(param_file);
 
-# By default, `runmodel` uses the following functions for data collection: `mean_fitness_per_species`, `species_N`. They collect the mean fitness and the population size of each species per time step. This is just a sample data. You can collect any kind of data from the model by writing your own data collection function (see [Collecting data](@ref)). 
+# By default, `runmodel` uses the following functions for data collection: `mean_fitness_per_species`, `species_N`. They collect the mean fitness and the population size of each species per time step. This is just a sample data. However, you can customize your own data collection function to gather specific information from the model (see [Collecting data](@ref)).
+
+# Finally, we can examine the results of the simulation by inspecting the `modeldata`:
 
 modeldata
