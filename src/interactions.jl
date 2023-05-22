@@ -159,7 +159,7 @@ end
 """
 function eat!(ag1, ag2, model)
   ag1.energy += model.food_sources[ag1.species, ag2.species]
-  remove_agent!(ag2, model)
+  kill_agent!(ag2, model)
 end
 
 """

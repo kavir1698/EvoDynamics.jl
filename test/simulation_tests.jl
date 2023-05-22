@@ -1,7 +1,7 @@
 @testset "Basic functions" begin
   dd = EvoDynamics.load_parameters(param_file)
   model = EvoDynamics.model_initiation(dd)
-  EvoDynamics.remove_agent!(model[1], model)
+  EvoDynamics.kill_agent!(model[1], model)
   @test !haskey(model.agents, 1) == true
 
   EvoDynamics.consume_food!(model[2], model)
