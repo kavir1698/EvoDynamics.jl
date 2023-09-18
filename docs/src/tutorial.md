@@ -24,31 +24,45 @@ See [Simple Wright-Fisher](@ref) and [Predator prey](@ref) for complete examples
 
 ```
 
-The order of these sections is important because each section uses objects from its preceding sections. 
+The order of these sections is important because each section relies on objects from its preceding sections.
 
-Functions are used to create parameters that may change temporally and spatially. The following parameters are functions: bottleneck function which kills certain agents at certain times and spaces, optimal phenotype values which returns the optimal phenotype for a species at a given time and space, and environmental resources that may change over time.
+Functions are used to create parameters that may change temporally and spatially. The following parameters are functions: bottleneck function, which kills specific agents at certain times and locations; optimal phenotype values, which returns the optimal phenotype for a species at a given time and location; and environmental resources that may change over time.
 
 
-You may create as many species as you want. Parameters of each species is a dictionary.
+You may create as many species as you want. Parameters of each species are stored in a dictionary.
 
-Model parameters is one dictionary that stores general parameters of the model, such as number of generations, space size, and species interaction parameters.
+Model parameters is a dictionary that stores general parameters of the model, such as the number of generations, space size, and species interaction parameters.
 
-First, define your model parameters (here, we call it `parameters.jl`). [Simple Wright-Fisher](@ref) and [Predator prey](@ref) have examples of initiation parameters. See [Model description](@ref) for a description of each parameter.
+First, define your model parameters (here, we call it `parameters.jl`) [Simple Wright-Fisher](@ref) and [Predator prey](@ref) have examples of initiation parameters. See [Model Parameters and Simulation Outline](@ref) for a description of each parameter.
 
-We can the use the `runmodel` function to create a model from these parameters and run the simulation.
+You can use the `runmodel` function to create a model from these parameters and run the simulation.
 
 ```@docs
 runmodel
 ```
 
-```@example
+```jl
 using EvoDynamics
 agentdata, modeldata, model = runmodel("parameters.jl")
 ```
 
+Within `runmodel`, before the parameters are used for constructing and ABM object, they are checked for correctness in type and shape using the `load_parameters` function.
+
+```@docs
+load_parameters
+```
+
+And then, using the `model_initiation` function, an agent-based model (ABM) is constructed.
+
+```@docs
+model_initiation
+```
+
+Having and ABM object and parameters that define the run conditions, the `runmodel` function uses `run!` or `ensemblerun!` functions from the `Agents.jl` package to run the model and collect data.
+
 ## Creating simulation parameter files
 
-EvoDynamics.jl reads simulation parameters ([Model description](@ref)) from a julia file containing dictionaries and functions. This file can be populated manually using a text editor or from within a Julia session.
+EvoDynamics.jl reads simulation parameters ([Model Parameters and Simulation Outline](@ref)) from a julia file containing dictionaries and functions. This file can be populated manually using a text editor or from within a Julia session.
 
 ## Collecting data
 

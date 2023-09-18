@@ -63,7 +63,8 @@ end
 """
     model_initiation(dd)
 
-Innitializes the model.
+Innitializes the model and returns an ABM object that includes all the initial agents.
+The input of the function is a dictionary returned by the `load_parameters` function.
 """
 function model_initiation(dd)
 
@@ -216,7 +217,7 @@ function agent_step!(agent::Ind, model::ABM)
   interact!(agent, model)
   # Kill the agent if it doesn't have energy
   if agent.isalive && agent.energy < 0
-    remove_agent!(agent, model)
+    kill_agent!(agent, model)
     return
   end
   if !agent.isalive
@@ -228,22 +229,22 @@ function agent_step!(agent::Ind, model::ABM)
   migrate!(agent, model)
 
   if agent.isalive && agent.age ≥ model.max_ages[agent.species]
-    remove_agent!(agent, model)
+    kill_agent!(agent, model)
   end
   # bottleneck
   bn_prob = model.bottlenecks[agent.species][model.step[1]+1][agent.pos...]
   if agent.isalive && bn_prob > 0.0
     if rand(model.rng) < bn_prob
-      remove_agent!(agent, model)
+      kill_agent!(agent, model)
     end
   end
   # update age
   agent.age += 1
 end
 
-function remove_agent!(agent, model)
+function kill_agent!(agent, model)
   agent.isalive = false
-  kill_agent!(agent, model)
+  Agents.remove_agent!(agent, model)
 end
 
 """
@@ -255,9 +256,9 @@ function survive!(agent::Ind, model::ABM)
   if !agent.isalive
     return
   elseif agent.energy < 0
-    remove_agent!(agent, model)
+    kill_agent!(agent, model)
   elseif agent.age ≥ model.max_ages[agent.species]
-    remove_agent!(agent, model)
+    kill_agent!(agent, model)
   end
 end
 
@@ -266,7 +267,7 @@ Kills the agent by chance given its fitness `W`.
 """
 function abiotic_survive!(agent::Ind, model::ABM)
   if agent.isalive && rand(model.rng) > agent.W
-    remove_agent!(agent, model)
+    kill_agent!(agent, model)
   end
 end
 

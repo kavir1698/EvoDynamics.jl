@@ -159,7 +159,7 @@ end
 """
 function eat!(ag1, ag2, model)
   ag1.energy += model.food_sources[ag1.species, ag2.species]
-  remove_agent!(ag2, model)
+  kill_agent!(ag2, model)
 end
 
 """
@@ -167,15 +167,39 @@ Returns as many random ids from the agent site as the number of species.
 """
 function target_species_ids(agent, model::ABM)
   nspecies = model.nspecies
-  allids = collect(nearby_ids(agent, model, 0))
+  allids = ids_in_position(agent, model)
   foundlen = length(allids)
   if foundlen == 0
     return Int[]
   elseif foundlen < nspecies
     return allids
   else
-    species_ids = sample(model.rng, allids, nspecies, replace=false)
-    return species_ids  
+    samespecies = Int[]
+    otherspecies = Int[]
+    agsp = agent.species
+    for id in allids
+      if model[id].species == agsp
+        push!(samespecies, id)
+      else
+        push!(otherspecies, id)
+      end
+    end
+    if length(samespecies) > 0
+      samespecies_id = [rand(model.rng, samespecies)]
+    else
+      samespecies_id = Int[]
+    end
+    otherspecieslength = length(otherspecies)
+    if nspecies > 1 && otherspecieslength > 0
+      if (nspecies-1) < otherspecieslength
+        otherspecies_ids = sample(model.rng, otherspecies, nspecies - 1, replace=false)
+      else
+        otherspecies_ids = otherspecies
+      end
+    else
+      otherspecies_ids = Int[]
+    end
+    return vcat(otherspecies_ids, samespecies_id)
   end
 end
 

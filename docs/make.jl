@@ -1,7 +1,7 @@
 using Pkg
 Pkg.activate(@__DIR__)
 
-using Documenter, Agents, Distributions, Random, StatsBase, Plots
+using Documenter, Agents, Distributions, Random, StatsBase, Plots, DataFrames
 using EvoDynamics
 using Literate
 
@@ -22,7 +22,7 @@ format = Documenter.HTML(
     ),
 pages = [
 	"Introduction" => "index.md",
-	"Model description" => "model_description.md",
+    "Model Parameters and Simulation Outline" => "model_description.md",
 	"Tutorial" => "tutorial.md",
 	"Examples" => [
 	  "Simple Wright-Fisher" => "example1.md",

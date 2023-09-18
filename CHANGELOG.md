@@ -1,3 +1,7 @@
+# v0.17
+
+* Update interaction rules so that the probability within species interactions are independent of the abundance of other species in a site.
+
 # v0.16
 
 * Users can modify the sequence of events in the simulations by providing their own stepping functions in the `runmodel` functions.
