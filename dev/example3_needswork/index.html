@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Contagious Disease Spread · EvoDynamics.jl</title><script data-outdated-warner src="../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.045/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.13.24/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../">EvoDynamics.jl</a></span></div><form class="docs-search" action="../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../">Introduction</a></li><li><a class="tocitem" href="../model_description/">Model Parameters and Simulation Outline</a></li><li><a class="tocitem" href="../tutorial/">Tutorial</a></li><li><span class="tocitem">Examples</span><ul><li><a class="tocitem" href="../example1/">Simple Wright-Fisher</a></li><li><a class="tocitem" href="../example2/">Predator prey</a></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li class="is-active"><a href>Contagious Disease Spread</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Contagious Disease Spread</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/kavir1698/EvoDynamics.jl/blob/master/docs/src/example3_needswork.md" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="Contagious-Disease-Spread"><a class="docs-heading-anchor" href="#Contagious-Disease-Spread">Contagious Disease Spread</a><a id="Contagious-Disease-Spread-1"></a><a class="docs-heading-anchor-permalink" href="#Contagious-Disease-Spread" title="Permalink"></a></h1><p>In this example, we will simulate the spread of a contagious disease in a spatially explicit population using EvoDynamics.jl.</p><h2 id="Model-Description"><a class="docs-heading-anchor" href="#Model-Description">Model Description</a><a id="Model-Description-1"></a><a class="docs-heading-anchor-permalink" href="#Model-Description" title="Permalink"></a></h2><p>The model consists of multiple agents representing individuals in a two-dimensional space. Each agent can be in one of three states: susceptible, infected, or recovered. The disease spreads through direct contact between infected and susceptible individuals.</p><h2 id="Model-Parameters"><a class="docs-heading-anchor" href="#Model-Parameters">Model Parameters</a><a id="Model-Parameters-1"></a><a class="docs-heading-anchor-permalink" href="#Model-Parameters" title="Permalink"></a></h2><p>The model parameters are defined in a Julia file (<code>parameters.jl</code>) and include:</p><pre><code class="language-julia hljs">generations = 100
+space = (50, 50)
+
+## Species parameters
+
+species = Dict(
+    :name =&gt; &quot;individual&quot;,
+    :number_of_genes =&gt; 1,
+    :number_of_phenotypes =&gt; 1,
+    :migration_phenotype =&gt; 1,
+    :migration_threshold =&gt; 1.0,
+    :vision_radius =&gt; 1,
+    :check_fraction =&gt; 0.5,
+    :ploidy =&gt; 1,
+    :epistasis_matrix =&gt; ones(1, 1),
+    :pleiotropy_matrix =&gt; ones(1, 1),
+    :growth_rate =&gt; 1.0,
+    :expression_array =&gt; [1.0],
+    :selection_coefficient =&gt; 0.0,
+    :phenotype_contribution_to_fitness =&gt; nothing,
+    :mutation_probabilities =&gt; [0.0],
+    :mutation_magnitudes =&gt; [0.0],
+    :N =&gt; [space[1] * space[2], 0, 0],
+    :environmental_noise =&gt; 0.0,
+    :optimal_phenotypes =&gt; [ones(space...) for _ in 0:generations],
+    :bottlenecks =&gt; [zeros(space...) for _ in 0:generations],
+    :age =&gt; 0,
+    :recombination =&gt; 0,
+    :initial_energy =&gt; 1.0,
+    :reproduction_start_age =&gt; 1,
+    :reproduction_end_age =&gt; 1,
+    :abiotic_variance =&gt; 0.0,
+    :biotic_variance =&gt; 0.0,
+    :mating_scheme =&gt; 0
+)
+
+## Model parameters
+
+model_parameters = Dict(
+    :species =&gt; [species],
+    :generations =&gt; generations,
+    :space =&gt; space,
+    :metric =&gt; &quot;euclidean&quot;,
+    :periodic =&gt; true,
+    :resources =&gt; zeros(generations + 1, space...),
+    :interactions =&gt; zeros(1, 1),
+    :food_sources =&gt; ones(1, 1),
+    :seed =&gt; nothing
+)</code></pre><h2 id="Simulation"><a class="docs-heading-anchor" href="#Simulation">Simulation</a><a id="Simulation-1"></a><a class="docs-heading-anchor-permalink" href="#Simulation" title="Permalink"></a></h2><p>To run the simulation and visualize the spread of the disease over time, we can use the following code:</p><pre><code class="language-julia hljs">using EvoDynamics
+using Plots
+
+# Run the model
+agentdata, modeldata, model = runmodel(&quot;parameters.jl&quot;)
+
+# Plot the disease spread over time
+heatmap(modeldata[end, 2], color=:coolwarm, xlabel=&quot;X&quot;, ylabel=&quot;Y&quot;, title=&quot;Contagious Disease Spread&quot;)</code></pre><h2 id="Interpretation"><a class="docs-heading-anchor" href="#Interpretation">Interpretation</a><a id="Interpretation-1"></a><a class="docs-heading-anchor-permalink" href="#Interpretation" title="Permalink"></a></h2><p>The resulting heatmap shows the spatial distribution of the disease at the final time step. Dark blue regions represent areas with a high concentration of infected individuals, while light blue regions indicate areas with few or no infections. By analyzing the spatial patterns, we can gain insights into the dynamics of disease spread in the population.</p><p>By simulating the spread of a contagious disease in a spatially explicit population, EvoDynamics.jl provides a flexible framework for studying epidemiology, population dynamics, and other related phenomena. Users can customize the model parameters to explore different scenarios, such as varying the initial number of infected individuals, adjusting the contact rate between individuals, or introducing spatial heterogeneity in susceptibility.</p><p>Additionally, EvoDynamics.jl allows for the collection of various data during the simulation. Users can define their own data collection functions to monitor and analyze specific aspects of the model, such as the number of infected individuals over time, the spatial clustering of infections, or the impact of different intervention strategies.</p><p>With the ability to simulate and analyze complex systems, EvoDynamics.jl empowers researchers to gain insights into the dynamics of contagious diseases, inform public health interventions, and explore strategies for disease control and prevention.</p><p>By leveraging EvoDynamics.jl&#39;s capabilities, users can extend and customize the model described above to address their specific research questions or explore other fascinating phenomena. The package&#39;s flexibility, combined with the power of Julia&#39;s scientific computing ecosystem, opens up a wide range of possibilities for modeling and simulating dynamic systems in various domains.</p><p>This example demonstrates the potential of EvoDynamics.jl for simulating contagious disease spread in a spatially explicit population. The code and model parameters provided serve as a starting point, and users can adapt them to their specific needs and research goals.</p></article><nav class="docs-footer"><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.24 on <span class="colophon-date" title="Monday 16 October 2023 10:06">Monday 16 October 2023</span>. Using Julia version 1.9.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
