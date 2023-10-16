@@ -48,6 +48,11 @@ Creates and runs a model given `parameters`. Returns a `DataFrame` of collected 
 * agentstep=EvoDynamics.agent_step! Define your own agent stepping if you wish to change the sequence of events or change any one event.
 * modelstep=EvoDynamics.model_step!
 * showprogress::Bool = false Whether to show a progress meter of the simulations.
+* offline_run::Bool = false When false, all the output is saved in memory. When true, It will be written to a file in the intervals specified by `writing_interval`. The files in which it writes to are `adata_filename` and `mdata_filename`. It only works when `parallel = false`.
+* writing_interval = 1 See `offline_run`.
+* mdata_filename = "mdata.csv" See `offline_run`.
+* adata_filename = "adata.csv" See `offline_run`.
+
 """
 function runmodel(param_file::AbstractString;
   adata=nothing, mdata=[mean_fitness_per_species, species_N],
@@ -57,7 +62,11 @@ function runmodel(param_file::AbstractString;
   seeds=nothing,
   agentstep=EvoDynamics.agent_step!,
   modelstep=EvoDynamics.model_step!,
-  showprogress=false
+  showprogress=false,
+  offline_run=false,
+  writing_interval=1,
+  mdata_filename="mdata.csv",
+  adata_filename="adata.csv"
 )
 
   if !isnothing(seeds) && replicates > 0
@@ -76,10 +85,13 @@ function runmodel(param_file::AbstractString;
   @info "Running the model..."
   if replicates == 0
     model = model_initiation(dd)
-
-    # run model and collect data
-    agdata, modata = run!(model, agentstep, modelstep, model.generations, adata=adata, mdata=mdata, when=whenn, agents_first=false, showprogress=showprogress)
-    return agdata, modata, [model]
+    if offline_run
+      offline_run!(model, agentstep, modelstep, model.generations, adata=adata, mdata=mdata, when=whenn, agents_first=false, showprogress=showprogress, adata_filename=adata_filename, mdata_filename=mdata_filename,writing_interval=writing_interval)
+    else
+      # run model and collect data
+      agdata, modata = run!(model, agentstep, modelstep, model.generations, adata=adata, mdata=mdata, when=whenn, agents_first=false, showprogress=showprogress)
+      return agdata, modata, [model]
+    end
   else
     models = [model_generator(i, seeds, param_file) for i in 1:replicates]
 
