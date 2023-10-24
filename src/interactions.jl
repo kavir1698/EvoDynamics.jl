@@ -166,41 +166,87 @@ end
 Returns as many random ids from the agent site as the number of species.
 """
 function target_species_ids(agent, model::ABM)
+  ## A third optimization: just sampling from the ids in the region. The problem is that there will be few interactions when the number of of species is way lower than other species. But the advantage is a huge speedup.
   nspecies = model.nspecies
   allids = ids_in_position(agent, model)
   foundlen = length(allids)
-  if foundlen == 0
-    return Int[]
-  elseif foundlen < nspecies
+  if foundlen <= nspecies
     return allids
+  elseif foundlen == 0
+    return Int[]
   else
-    samespecies = Int[]
-    otherspecies = Int[]
-    agsp = agent.species
-    for id in allids
-      if model[id].species == agsp
-        push!(samespecies, id)
-      else
-        push!(otherspecies, id)
-      end
-    end
-    if length(samespecies) > 0
-      samespecies_id = [rand(model.rng, samespecies)]
-    else
-      samespecies_id = Int[]
-    end
-    otherspecieslength = length(otherspecies)
-    if nspecies > 1 && otherspecieslength > 0
-      if (nspecies-1) < otherspecieslength
-        otherspecies_ids = sample(model.rng, otherspecies, nspecies - 1, replace=false)
-      else
-        otherspecies_ids = otherspecies
-      end
-    else
-      otherspecies_ids = Int[]
-    end
-    return vcat(otherspecies_ids, samespecies_id)
+    return sample(model.rng, allids, nspecies, replace=false)
   end
+
+  ## A bit optimized code
+  # nspecies = model.nspecies
+  # allids = ids_in_position(agent, model)
+  # foundlen = length(allids)
+  # if foundlen == 0
+  #   return Int[]
+  # elseif foundlen < nspecies
+  #   return allids
+  # end
+  # samespecies = Int[]
+  # otherspecies = Int[]
+  # agsp = agent.species
+  # for id in allids
+  #   if model[id].species == agsp
+  #     push!(samespecies, id)
+  #   else
+  #     push!(otherspecies, id)
+  #   end
+  # end
+
+  # samespecies_id = isempty(samespecies) ? Int[] : [rand(model.rng, samespecies)]
+
+  # if nspecies > 1
+  #   if length(otherspecies) > nspecies - 1
+  #     otherspecies_ids = sample(model.rng, otherspecies, nspecies - 1, replace=false)
+  #   else
+  #     otherspecies_ids = otherspecies
+  #   end
+  # else
+  #   otherspecies_ids = Int[]
+  # end
+
+  # return vcat(otherspecies_ids, samespecies_id)
+
+  ## Initial code
+  # nspecies = model.nspecies
+  # allids = ids_in_position(agent, model)
+  # foundlen = length(allids)
+  # if foundlen == 0
+  #   return Int[]
+  # elseif foundlen < nspecies
+  #   return allids
+  # end
+  # samespecies = Int[]
+  # otherspecies = Int[]
+  # agsp = agent.species
+  # for id in allids
+  #   if model[id].species == agsp
+  #     push!(samespecies, id)
+  #   else
+  #     push!(otherspecies, id)
+  #   end
+  # end
+  # if length(samespecies) > 0
+  #   samespecies_id = [rand(model.rng, samespecies)]
+  # else
+  #   samespecies_id = Int[]
+  # end
+  # otherspecieslength = length(otherspecies)
+  # if nspecies > 1 && otherspecieslength > 0
+  #   if (nspecies-1) < otherspecieslength
+  #     otherspecies_ids = sample(model.rng, otherspecies, nspecies - 1, replace=false)
+  #   else
+  #     otherspecies_ids = otherspecies
+  #   end
+  # else
+  #   otherspecies_ids = Int[]
+  # end
+  # return vcat(otherspecies_ids, samespecies_id)
 end
 
 """
