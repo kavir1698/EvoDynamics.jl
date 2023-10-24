@@ -132,4 +132,9 @@ end
   EvoDynamics.reproduce!(agent3, agent4, model)
   nagentsafter = EvoDynamics.nagents(model)
   @test nagentsbefore < nagentsafter
+
+  ## predation
+  initial_agents = EvoDynamics.nagents(model)
+  EvoDynamics.eat!(agent2, agent3, model)
+  @test EvoDynamics.nagents(model) == (initial_agents -1)
 end

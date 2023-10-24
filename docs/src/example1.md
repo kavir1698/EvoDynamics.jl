@@ -1,5 +1,5 @@
 ```@meta
-EditURL = "<unknown>/examples/example1.jl"
+EditURL = "../../examples/example1.jl"
 ```
 
 # Simple Wright-Fisher
@@ -11,6 +11,7 @@ To get started, we first import the EvoDynamics.jl package:
 ````@example example1
 using EvoDynamics
 ````
+
 Next, we define the model parameters for our simple one-species Wright-Fisher simulation. The parameters are organized in a Julia (.jl) file as follows:
 
 ```julia
@@ -61,7 +62,7 @@ model_parameters = Dict(
   :space => space,
   :metric => "chebyshev",
   :periodic => false,
-  :resources => [fill(200, 1, 1) for i in 0:generations],
+  :resources => [fill(200.0, 1, 1) for i in 0:generations],
   :interactions => [-0.1],
   :food_sources => [1.0],
   :seed => nothing
@@ -74,9 +75,10 @@ To run the simulation, we use the runmodel function, passing the parameter file 
 
 ````@example example1
 param_file = "../examples/paramfile1.jl"
+
 agentdata, modeldata = runmodel(param_file);
 nothing #hide
-```
+````
 
 By default, `runmodel` uses the following functions for data collection: `mean_fitness_per_species`, `species_N`. They collect the mean fitness and the population size of each species per time step. This is just a sample data. However, you can customize your own data collection function to gather specific information from the model (see [Collecting data](@ref)).
 

@@ -175,7 +175,11 @@ function target_species_ids(agent, model::ABM)
   elseif foundlen == 0
     return Int[]
   else
-    return sample(model.rng, allids, nspecies * 2, replace=false)
+    if foundlen >= nspecies * 2
+      return sample(model.rng, allids, nspecies * 2, replace=false)
+    else
+      return allids
+    end
   end
 
   ## A bit optimized code
