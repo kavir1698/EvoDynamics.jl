@@ -3,9 +3,9 @@ space = (2, 2)
 
 function env_resources(time::Int)
   if time < 7
-    return [2000 1980; 1830 1900]
+    return [2000.0 1980.0; 1830.0 1900.0]
   else
-    return [2000 1980; 1830 1900] .+ 50
+    return [2000.0 1980.0; 1830.0 1900.0] .+ 50
   end
 end
 

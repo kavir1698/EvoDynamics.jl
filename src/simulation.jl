@@ -47,8 +47,8 @@ struct Params{F<:AbstractFloat,I<:Int,N<:AbstractString}
   names::Dict{I,N}
   food_sources::Matrix{F}
   interactions::Matrix{F}
-  resources::Matrix{I}
-  resources_org::Vector{Matrix{I}}
+  resources::Matrix{F}
+  resources_org::Vector{Matrix{F}}
   recombination::Vector{Poisson{F}}
   initial_energy::Vector{F}
   bottlenecks::Vector{Vector{Matrix{F}}}

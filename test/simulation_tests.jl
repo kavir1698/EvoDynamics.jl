@@ -5,7 +5,7 @@
   @test !haskey(model.agents, 1) == true
 
   EvoDynamics.consume_food!(model[2], model)
-  @test model.resources == [1999 1980; 1830 1900]
+  @test model.resources == [1999.0 1980.0; 1830.0 1900.0]
 
   @test EvoDynamics.coord2vertex((2, 1), model) == 2
   @test EvoDynamics.coord2vertex((1, 2), model) == 3
@@ -111,8 +111,8 @@ end
   EvoDynamics.interact!(agent, agent2, model)
   @test agent.isalive == false
 
-  @test length(EvoDynamics.target_species_ids(agent, model)) == 2
-  @test length(EvoDynamics.target_species_ids(agent2, model)) == 2
+  @test length(EvoDynamics.target_species_ids(agent, model)) == 4
+  @test length(EvoDynamics.target_species_ids(agent2, model)) == 4
 
   # reproduction
   nagentsbefore = EvoDynamics.nagents(model)
