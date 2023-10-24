@@ -245,7 +245,7 @@ version = "0.0.20230411+0"
 
 [[deps.EvoDynamics]]
 deps = ["Agents", "Distributions", "LinearAlgebra", "Random", "RandomNumbers", "StaticArrays", "StatsBase", "Test", "YAML"]
-git-tree-sha1 = "6c24d31dd322cf1a706dbac75a916782ee411fca"
+git-tree-sha1 = "62dc838bf10fc9150901b14df043374a22af5214"
 repo-rev = "master"
 repo-url = "https://github.com/kavir1698/EvoDynamics.jl.git"
 uuid = "c8768967-421d-4a02-8523-37736f3dbe06"
