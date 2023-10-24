@@ -85,7 +85,7 @@ If the agent is able to eat from the environment (the diagonal of `food_sources`
 
 ### Interacting with other individuals
 
-At each time step, the agent interacts with individuals from each species in the model. If there are fewer agents at the site than the number of species, the agent interacts with all of them. Otherwise, it interacts with at most one randomly chosen individual from each species. If most of the individuals at the site are from the first species, then the agent is more likely to interact with an individual from the first species and with no individual from the second species. This setup allows interactions between species to depend on the population size of the species at each site.
+At each time step, the agent interacts with individuals from each species in the model. If there are fewer agents at the site than the number of species, the agent interacts with all of them. Otherwise, it interacts with a random selection of individuals in the regions. If most of the individuals at the site are from the first species, then the agent is more likely to interact with an individual from the first species and with no individual from the second species. This setup allows interactions between species to depend on the population size of the species at each site. At each time step, an individual from one species can interact with individuals from each other species at most once.
 
 For each pair of interacting individuals, it is first checked whether one individual feeds on the other. If so, the hunt is successful with a probability proportional to the average phenotypic distance between the biotic phenotypes of the two individuals.
 
