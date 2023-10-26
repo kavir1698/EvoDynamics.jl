@@ -115,20 +115,20 @@ function interact!(ag1::Ind, ag2::Ind, model::ABM)
   ag1.interaction_history[sp2] = model.step[1]
   ag2.interaction_history[sp1] = model.step[1]
 
-  if sp1 != sp2 && model.food_sources[sp1, sp2] > 0  # predation
+  if (sp1 != sp2) && (model.food_sources[sp1, sp2] > 0)  # predation
     d = phenotypic_distance(ag1, ag2, model)
     prob = interaction_power(ag1, ag2, d, model)
     if rand(model.rng) < prob
       eat!(ag1, ag2, model)
     end
-  elseif sp1 != sp2 && model.food_sources[sp2, sp1] > 0 # predation
+  elseif (sp1 != sp2) && (model.food_sources[sp2, sp1] > 0) # predation
     d = phenotypic_distance(ag2, ag1, model)
     prob = interaction_power(ag2, ag1, d, model)
     if rand(model.rng) < prob
       eat!(ag2, ag1, model)
     end
   else # interaction
-    if sp1 == sp2 && ag1.sex != ag2.sex && model.ploidy[sp1] == 2 && in_reproduction_age(ag1, model) && in_reproduction_age(ag2, model)  # reproduce
+    if (sp1 == sp2) && (ag1.sex != ag2.sex) && (model.ploidy[sp1] == 2) && in_reproduction_age(ag1, model) && in_reproduction_age(ag2, model)  # reproduce
       # reproduce!(ag1, ag2, model)
       ag1.mate = ag2.id
       ag1.time_met_other_sex = model.step[1]
@@ -264,14 +264,14 @@ function interact!(agent::Ind, model::ABM)
   for id in target_ids
     target = model[id]
     target_sp = target.species
-    if agent.interaction_history[target_sp] != model.step[1] && target.interaction_history[sp] != model.step[1] # if agent and target have not interacted with such species before
+    if (agent.interaction_history[target_sp] != model.step[1]) && (target.interaction_history[sp] != model.step[1]) # if agent and target have not interacted with such species before
       interact!(agent, target, model)
       # if agent was a prey, check whether it is still alive
-      if model.food_sources[target_sp, sp] > 0
+      # if model.food_sources[target_sp, sp] > 0
         if !agent.isalive
           return
         end
-      end
+      # end
     end
   end
 end

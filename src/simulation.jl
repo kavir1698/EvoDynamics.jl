@@ -200,7 +200,7 @@ end
 
 function model_step!(model::ABM)
   model.step[1] += 1
-  model.resources .= model.resources_org[model.step[1]+1]
+  model.resources .= model.resources_org[model.step[1]+1]  # TODO: add one more param for the growth rate of resources. resources_org would be the maximum value of the resources.
 end
 
 function agent_step!(agent::Ind, model::ABM)
@@ -216,7 +216,7 @@ function agent_step!(agent::Ind, model::ABM)
   # interact with other species: predation, cooperation, competition.
   interact!(agent, model)
   # Kill the agent if it doesn't have energy
-  if agent.isalive && agent.energy < 0
+  if agent.isalive && (agent.energy < 0)
     kill_agent!(agent, model)
     return
   end
@@ -230,12 +230,14 @@ function agent_step!(agent::Ind, model::ABM)
 
   if agent.isalive && agent.age ≥ model.max_ages[agent.species]
     kill_agent!(agent, model)
+    return
   end
   # bottleneck
   bn_prob = model.bottlenecks[agent.species][model.step[1]+1][agent.pos...]
   if agent.isalive && bn_prob > 0.0
     if rand(model.rng) < bn_prob
       kill_agent!(agent, model)
+      return
     end
   end
   # update age
@@ -289,7 +291,7 @@ end
 
 function consume_food!(agent::Ind, model::ABM)
   environmental_consumption = model.food_sources[agent.species, agent.species]
-  if environmental_consumption > 0 && model.resources[agent.pos...] >= environmental_consumption
+  if (environmental_consumption > 0) && (model.resources[agent.pos...] >= environmental_consumption)
     model.resources[agent.pos...] -= environmental_consumption
     agent.energy += environmental_consumption
   end
