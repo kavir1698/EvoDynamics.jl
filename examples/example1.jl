@@ -57,7 +57,7 @@ using EvoDynamics
 #   :space => space,
 #   :metric => "chebyshev",
 #   :periodic => false,
-#   :resources => [fill(200, 1, 1) for i in 0:generations],
+#   :resources => [fill(200.0, 1, 1) for i in 0:generations],
 #   :interactions => [-0.1],
 #   :food_sources => [1.0],
 #   :seed => nothing

@@ -1,12 +1,12 @@
 ```@meta
-EditURL = "<unknown>/examples/example2.jl"
+EditURL = "../../examples/example2.jl"
 ```
 
 # Predator prey
 
 The predator-prey model is a fundamental concept in ecological studies, aiming to understand the dynamics and interactions between predator and prey populations. These models simulate the complex relationship between species where predators consume prey as their primary source of food, influencing the population sizes of both species over time.
 
-In this example, we demonstrate how to set up and run a simple predator-prey simulation using EvoDynamics.jl. By defining the parameters of two species, one acting as the predator and the other as the prey, we can observe their population dynamics and interactions over multiple generations. This example showcases the flexibility and ease of use of EvoDynamics.jl, empowering researchers to explore various more complex scenarios with multiple predators and preys in a complex food web, modify model parameters, and analyze the outcomes. 
+In this example, we demonstrate how to set up and run a simple predator-prey simulation using EvoDynamics.jl. By defining the parameters of two species, one acting as the predator and the other as the prey, we can observe their population dynamics and interactions over multiple generations. This example showcases the flexibility and ease of use of EvoDynamics.jl, empowering researchers to explore various more complex scenarios with multiple predators and preys in a complex food web, modify model parameters, and analyze the outcomes.
 
 For this example, we create a predator-prey model consisting of two species: one haploid and one diploid. The model simulates the interactions between these species over multiple generations using EvoDynamics.jl.
 

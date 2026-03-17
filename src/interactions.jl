@@ -115,20 +115,20 @@ function interact!(ag1::Ind, ag2::Ind, model::ABM)
   ag1.interaction_history[sp2] = model.step[1]
   ag2.interaction_history[sp1] = model.step[1]
 
-  if sp1 != sp2 && model.food_sources[sp1, sp2] > 0  # predation
+  if (sp1 != sp2) && (model.food_sources[sp1, sp2] > 0)  # predation
     d = phenotypic_distance(ag1, ag2, model)
     prob = interaction_power(ag1, ag2, d, model)
     if rand(model.rng) < prob
       eat!(ag1, ag2, model)
     end
-  elseif sp1 != sp2 && model.food_sources[sp2, sp1] > 0 # predation
+  elseif (sp1 != sp2) && (model.food_sources[sp2, sp1] > 0) # predation
     d = phenotypic_distance(ag2, ag1, model)
     prob = interaction_power(ag2, ag1, d, model)
     if rand(model.rng) < prob
       eat!(ag2, ag1, model)
     end
   else # interaction
-    if sp1 == sp2 && ag1.sex != ag2.sex && model.ploidy[sp1] == 2 && in_reproduction_age(ag1, model) && in_reproduction_age(ag2, model)  # reproduce
+    if (sp1 == sp2) && (ag1.sex != ag2.sex) && (model.ploidy[sp1] == 2) && in_reproduction_age(ag1, model) && in_reproduction_age(ag2, model)  # reproduce
       # reproduce!(ag1, ag2, model)
       ag1.mate = ag2.id
       ag1.time_met_other_sex = model.step[1]
@@ -166,41 +166,91 @@ end
 Returns as many random ids from the agent site as the number of species.
 """
 function target_species_ids(agent, model::ABM)
+  ## A third optimization: just sampling from the ids in the region. The problem is that there will be few interactions when the number of of species is way lower than other species. But the advantage is a huge speedup.
   nspecies = model.nspecies
   allids = ids_in_position(agent, model)
   foundlen = length(allids)
-  if foundlen == 0
-    return Int[]
-  elseif foundlen < nspecies
+  if foundlen <= nspecies
     return allids
+  elseif foundlen == 0
+    return Int[]
   else
-    samespecies = Int[]
-    otherspecies = Int[]
-    agsp = agent.species
-    for id in allids
-      if model[id].species == agsp
-        push!(samespecies, id)
-      else
-        push!(otherspecies, id)
-      end
-    end
-    if length(samespecies) > 0
-      samespecies_id = [rand(model.rng, samespecies)]
+    if foundlen >= nspecies * 2
+      return sample(model.rng, allids, nspecies * 2, replace=false)
     else
-      samespecies_id = Int[]
+      return allids
     end
-    otherspecieslength = length(otherspecies)
-    if nspecies > 1 && otherspecieslength > 0
-      if (nspecies-1) < otherspecieslength
-        otherspecies_ids = sample(model.rng, otherspecies, nspecies - 1, replace=false)
-      else
-        otherspecies_ids = otherspecies
-      end
-    else
-      otherspecies_ids = Int[]
-    end
-    return vcat(otherspecies_ids, samespecies_id)
   end
+
+  ## A bit optimized code
+  # nspecies = model.nspecies
+  # allids = ids_in_position(agent, model)
+  # foundlen = length(allids)
+  # if foundlen == 0
+  #   return Int[]
+  # elseif foundlen < nspecies
+  #   return allids
+  # end
+  # samespecies = Int[]
+  # otherspecies = Int[]
+  # agsp = agent.species
+  # for id in allids
+  #   if model[id].species == agsp
+  #     push!(samespecies, id)
+  #   else
+  #     push!(otherspecies, id)
+  #   end
+  # end
+
+  # samespecies_id = isempty(samespecies) ? Int[] : [rand(model.rng, samespecies)]
+
+  # if nspecies > 1
+  #   if length(otherspecies) > nspecies - 1
+  #     otherspecies_ids = sample(model.rng, otherspecies, nspecies - 1, replace=false)
+  #   else
+  #     otherspecies_ids = otherspecies
+  #   end
+  # else
+  #   otherspecies_ids = Int[]
+  # end
+
+  # return vcat(otherspecies_ids, samespecies_id)
+
+  ## Initial code
+  # nspecies = model.nspecies
+  # allids = ids_in_position(agent, model)
+  # foundlen = length(allids)
+  # if foundlen == 0
+  #   return Int[]
+  # elseif foundlen < nspecies
+  #   return allids
+  # end
+  # samespecies = Int[]
+  # otherspecies = Int[]
+  # agsp = agent.species
+  # for id in allids
+  #   if model[id].species == agsp
+  #     push!(samespecies, id)
+  #   else
+  #     push!(otherspecies, id)
+  #   end
+  # end
+  # if length(samespecies) > 0
+  #   samespecies_id = [rand(model.rng, samespecies)]
+  # else
+  #   samespecies_id = Int[]
+  # end
+  # otherspecieslength = length(otherspecies)
+  # if nspecies > 1 && otherspecieslength > 0
+  #   if (nspecies-1) < otherspecieslength
+  #     otherspecies_ids = sample(model.rng, otherspecies, nspecies - 1, replace=false)
+  #   else
+  #     otherspecies_ids = otherspecies
+  #   end
+  # else
+  #   otherspecies_ids = Int[]
+  # end
+  # return vcat(otherspecies_ids, samespecies_id)
 end
 
 """
@@ -214,14 +264,14 @@ function interact!(agent::Ind, model::ABM)
   for id in target_ids
     target = model[id]
     target_sp = target.species
-    if agent.interaction_history[target_sp] != model.step[1] && target.interaction_history[sp] != model.step[1] # if agent and target have not interacted with such species before
+    if (agent.interaction_history[target_sp] != model.step[1]) && (target.interaction_history[sp] != model.step[1]) # if agent and target have not interacted with such species before
       interact!(agent, target, model)
       # if agent was a prey, check whether it is still alive
-      if model.food_sources[target_sp, sp] > 0
+      # if model.food_sources[target_sp, sp] > 0
         if !agent.isalive
           return
         end
-      end
+      # end
     end
   end
 end

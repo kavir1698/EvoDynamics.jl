@@ -114,8 +114,8 @@ model_parameters = Dict(
   :metric => "chebyshev",
   :periodic => false,
   :resources => [
-    [2000 2200;
-    1830 1900] for i in 0:generations],
+    [2000.0 2200.0;
+    1830.0 1900.0] for i in 0:generations],
 
   :interactions => [0.0 1.0;
                     1.0 0.0],
